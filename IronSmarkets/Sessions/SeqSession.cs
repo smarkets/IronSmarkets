@@ -21,9 +21,12 @@
 // SOFTWARE.
 
 using System;
-using System.Collections;
+using System.Collections.Generic;
+using System.Collections.Concurrent;
+using System.Linq;
 using System.Net.Security;
 using System.Text;
+using System.Threading;
 using System.IO;
 
 using ProtoBuf;
@@ -36,16 +39,22 @@ using Eto = IronSmarkets.Proto.Eto;
 
 namespace IronSmarkets.Sessions
 {
-    public class SeqSession : IDisposable
+    public sealed class SeqSession : IDisposable
     {
         private readonly SessionSocket _socket;
         private readonly ISessionSettings _settings;
+        private readonly ConcurrentQueue<Seto.Payload> _sendBuffer =
+            new ConcurrentQueue<Seto.Payload>();
 
-        private bool disposed = false;
+        private readonly object _reader = new object();
+        private readonly object _writer = new object();
+
+        private int _disposed = 0;
 
         private ulong _inSequence;
         private ulong _outSequence;
         private string _sessionId = null;
+        private bool _loginSent = false;
 
         public ulong InSequence { get { return _inSequence; } }
         public ulong OutSequence { get { return _outSequence; } }
@@ -61,6 +70,14 @@ namespace IronSmarkets.Sessions
             _outSequence = _settings.OutSequence;
         }
 
+        public bool IsDisposed
+        {
+            get
+            {
+                return Thread.VolatileRead(ref this._disposed) == 1;
+            }
+        }
+
         ~SeqSession()
         {
             var disp = this as IDisposable;
@@ -70,14 +87,18 @@ namespace IronSmarkets.Sessions
 
         public void Login()
         {
-            if (disposed)
+            if (IsDisposed)
                 throw new ObjectDisposedException(
                     "SeqSession",
                     "Called Login on disposed object");
 
+            // TODO: Should we throw an exception here?
+            if (_loginSent)
+                return;
+
             _socket.Connect();
 
-            // Construct the login payload protobuf
+            // Construct the login payload protobfuinter
             // TODO: Create some message factories so this is less ugly
             var loginPayload = new Seto.Payload {
                 Type = Seto.PayloadType.PAYLOADLOGIN,
@@ -100,7 +121,7 @@ namespace IronSmarkets.Sessions
 
             Send(loginPayload);
             var response = Receive();
-            
+            _loginSent = true;
             if (response.EtoPayload.Type == Eto.PayloadType.PAYLOADLOGOUT)
             {
                 string message;
@@ -133,7 +154,10 @@ namespace IronSmarkets.Sessions
 
         public void Logout()
         {
-            Logout(true);
+            if (_loginSent)
+            {
+                Logout(true);
+            }
         }
 
         public void Logout(bool disconnect)
@@ -161,49 +185,90 @@ namespace IronSmarkets.Sessions
             }
         }
 
-        public ulong Send(Seto.Payload payload)
+        public IEnumerable<ulong> Send(Seto.Payload payload)
         {
-            if (disposed)
+            return Send(payload, true);
+        }
+
+        public IEnumerable<ulong> Send(Seto.Payload payload, bool flush)
+        {
+            if (IsDisposed)
                 throw new ObjectDisposedException(
                     "SeqSession",
                     "Called Send on disposed object");
 
-            payload.EtoPayload.Seq = _outSequence;
-            _socket.Write(payload);
-            return _outSequence++;
+            Console.WriteLine("Enqueueing payload {0}", payload);
+            _sendBuffer.Enqueue(payload);
+            if (flush)
+            {
+                return Flush();
+            }
+            else
+            {
+                Console.WriteLine("Didn't flush... weird");
+            }
+
+            return Enumerable.Empty<ulong>();
+        }
+
+        public IEnumerable<ulong> Flush()
+        {
+            if (IsDisposed)
+                throw new ObjectDisposedException(
+                    "SeqSession",
+                    "Called Send on disposed object");
+
+            Console.WriteLine("Flushing!");
+            Seto.Payload outPayload;
+            List<ulong> seqs = new List<ulong>(_sendBuffer.Count);
+            while (_sendBuffer.TryDequeue(out outPayload))
+            {
+                Console.WriteLine("Flushing payload {0}", outPayload);
+                lock (_writer)
+                {
+                    outPayload.EtoPayload.Seq = _outSequence;
+                    Console.WriteLine("Writing payload to socket {0}", outPayload);
+                    _socket.Write(outPayload);
+                    seqs.Add(_outSequence++);
+                }
+            }
+            return seqs;
         }
 
         public Seto.Payload Receive()
         {
-            if (disposed)
+            if (IsDisposed)
                 throw new ObjectDisposedException(
                     "SeqSession",
                     "Called Receive on disposed object");
 
-            var payload = _socket.Read();
-            if (payload.EtoPayload.Seq == _inSequence)
+            lock (_reader)
             {
-                _inSequence++;
-                return payload;
-            }
-            else if (payload.EtoPayload.Type == Eto.PayloadType.PAYLOADREPLAY)
-            {
-                // Replay message
-                return null;
-            }
-            else if (payload.EtoPayload.Seq > _inSequence)
-            {
-                var replayPayload = new Seto.Payload {
-                    Type = Seto.PayloadType.PAYLOADETO,
-                    EtoPayload = new Eto.Payload {
-                        Type = Eto.PayloadType.PAYLOADREPLAY,
-                        Replay = new Eto.Replay {
-                            Seq = _inSequence
+                var payload = _socket.Read();
+                if (payload.EtoPayload.Seq == _inSequence)
+                {
+                    _inSequence++;
+                    return payload;
+                }
+                else if (payload.EtoPayload.Type == Eto.PayloadType.PAYLOADREPLAY)
+                {
+                    // Replay message
+                    return null;
+                }
+                else if (payload.EtoPayload.Seq > _inSequence)
+                {
+                    var replayPayload = new Seto.Payload {
+                        Type = Seto.PayloadType.PAYLOADETO,
+                        EtoPayload = new Eto.Payload {
+                            Type = Eto.PayloadType.PAYLOADREPLAY,
+                            Replay = new Eto.Replay {
+                                Seq = _inSequence
+                            }
                         }
-                    }
-                };
+                    };
 
-                Send(replayPayload);
+                    Send(replayPayload, false);
+                }
             }
 
             return null;
@@ -216,21 +281,14 @@ namespace IronSmarkets.Sessions
                 disp.Dispose();
         }
 
-        protected virtual void Dispose(bool disposing)
+        public void Dispose(bool disposing)
         {
-            if (this.disposed)
-                return;
-
-            try
+            if (Interlocked.CompareExchange(ref this._disposed, 1, 0) == 0)
             {
                 if (disposing)
                 {
-                    Logout();
+                    Disconnect();
                 }
-            }
-            finally
-            {
-                this.disposed = true;
             }
         }
 

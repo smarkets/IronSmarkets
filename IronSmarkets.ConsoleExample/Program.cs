@@ -39,7 +39,8 @@ namespace IronSmarkets.ConsoleExample
             {
                 Console.WriteLine("Connecting...");
                 session.Login();
-                Console.WriteLine("Connected!");
+                Console.WriteLine("Connected, logging out...");
+                session.Logout();
             }
         }
     }

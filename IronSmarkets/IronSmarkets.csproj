@@ -64,8 +64,11 @@
     <Compile Include="Proto\Seto.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Exceptions\ConnectionException.cs" />
+    <Compile Include="Exceptions\LoginFailedException.cs" />
     <Compile Include="Sockets\Settings.cs" />
     <Compile Include="Sockets\SessionSocket.cs" />
+    <Compile Include="Sessions\Settings.cs" />
+    <Compile Include="Sessions\SeqSession.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\Metadata\IronSmarkets.snk">

@@ -45,6 +45,14 @@ namespace IronSmarkets.Sockets
 
         public Stream TcpStream { get { return _tcpStream; } }
 
+        public bool IsConnected
+        {
+            get
+            {
+                return _client.Connected;
+            }
+        }
+
         public SessionSocket(ISocketSettings settings)
         {
             _settings = settings;
@@ -64,7 +72,12 @@ namespace IronSmarkets.Sockets
                     "SessionSocket",
                     "Called Connect on disposed object");
 
+            if (IsConnected)
+                throw new ConnectionException(
+                    "Socket already connected");
+
             _client.Connect(_settings.Host, _settings.Port);
+            _client.Client.NoDelay = true;
 
             if (_settings.Ssl)
             {
@@ -87,8 +100,11 @@ namespace IronSmarkets.Sockets
                     "SessionSocket",
                     "Called Disconnect on disposed object");
 
-            _tcpStream.Close();
-            _client.Close();
+            if (!IsConnected)
+            {
+                _tcpStream.Close();
+                _client.Close();
+            }
         }
 
         public void Write(Payload payload)
@@ -97,6 +113,10 @@ namespace IronSmarkets.Sockets
                 throw new ObjectDisposedException(
                     "SessionSocket",
                     "Called Write on disposed object");
+
+            if (!IsConnected)
+                throw new ConnectionException(
+                    "Socket not connected");
 
             Serializer.SerializeWithLengthPrefix(
                 TcpStream, payload, PrefixStyle.Base128);
@@ -108,6 +128,10 @@ namespace IronSmarkets.Sockets
                 throw new ObjectDisposedException(
                     "SessionSocket",
                     "Called Read on disposed object");
+
+            if (!IsConnected)
+                throw new ConnectionException(
+                    "Socket not connected");
 
             return Serializer.DeserializeWithLengthPrefix<Payload>(
                 TcpStream, PrefixStyle.Base128);

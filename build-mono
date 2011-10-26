@@ -2,4 +2,4 @@
 
 # Mono, why u no support Client profile?
 xbuild /p:TargetFrameworkProfile="" IronSmarkets/IronSmarkets.csproj
-xbuild /p:TargetFrameworkProfile="" IronSmarkets.ConsoleTest/IronSmarkets.ConsoleTest.csproj
+xbuild /p:TargetFrameworkProfile="" IronSmarkets.ConsoleExample/IronSmarkets.ConsoleExample.csproj

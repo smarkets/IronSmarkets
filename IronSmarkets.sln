@@ -3,6 +3,8 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IronSmarkets", "IronSmarkets\IronSmarkets.csproj", "{077CDC78-FA2C-4E1B-954B-693A7BDC3353}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IronSmarkets.ConsoleExample", "IronSmarkets.ConsoleExample\IronSmarkets.ConsoleExample.csproj", "{17117DC1-19F3-4E91-A89B-0351162D4BD1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -10,9 +12,9 @@ Global
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{077CDC78-FA2C-4E1B-954B-693A7BDC3353}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{077CDC78-FA2C-4E1B-954B-693A7BDC3353}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{077CDC78-FA2C-4E1B-954B-693A7BDC3353}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{077CDC78-FA2C-4E1B-954B-693A7BDC3353}.Release|Any CPU.Build.0 = Release|Any CPU
+		{17117DC1-19F3-4E91-A89B-0351162D4BD1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{17117DC1-19F3-4E91-A89B-0351162D4BD1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

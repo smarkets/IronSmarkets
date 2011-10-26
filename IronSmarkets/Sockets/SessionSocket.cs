@@ -35,7 +35,7 @@ using IronSmarkets.Proto.Seto;
 
 namespace IronSmarkets.Sockets
 {
-    public class SessionSocket : IDisposable
+    internal sealed class SessionSocket : IDisposable
     {
         private readonly ISocketSettings _settings;
         private readonly TcpClient _client = new TcpClient();
@@ -137,7 +137,7 @@ namespace IronSmarkets.Sockets
                 TcpStream, PrefixStyle.Base128);
         }
 
-        protected virtual void Dispose(bool disposing)
+        public void Dispose(bool disposing)
         {
             if (_disposed)
                 return;

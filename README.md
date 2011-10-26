@@ -8,7 +8,7 @@
 
 ## Requirements
 
-* .NET 3.5
+* .NET 4.0 (please contact support@smarkets.com if you need < 4.0 support)
 
 ## Getting Started
 

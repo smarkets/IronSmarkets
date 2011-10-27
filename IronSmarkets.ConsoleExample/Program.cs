@@ -22,12 +22,20 @@ namespace IronSmarkets.ConsoleExample
 
         static void Main(string[] args)
         {
+            if (args.Length != 4)
+            {
+                Console.WriteLine("Usage: IronSmarkets.ConsoleExample.exe <host> <port> <username> <password>");
+                return;
+            }
+
+            string host = args[0];
+            int port = int.Parse(args[1]);
+            string username = args[2];
+            string password = args[3];
             ISocketSettings sockSettings = new SocketSettings(
-                "api-sandbox.smarkets.com", "api-sandbox.smarkets.com",
-                3701, true, new RemoteCertificateValidationCallback(
-                    ValidateServerCertificate));
+                host, host, port, true, ValidateServerCertificate);
             ISessionSettings sessSettings = new SessionSettings(
-                "username@domain.invalid", "password");
+                username, password);
             using (var session = new SeqSession(sockSettings, sessSettings))
             {
                 Console.WriteLine("Connecting...");

@@ -36,7 +36,7 @@ using Eto = IronSmarkets.Proto.Eto;
 
 namespace IronSmarkets.Sessions
 {
-    public sealed class SeqSession : IDisposable, ISession<Seto.Payload>
+    internal sealed class SeqSession : IDisposable, ISession<Seto.Payload>
     {
         private const ushort MaxLogoutWaitMsgs = 10;
 

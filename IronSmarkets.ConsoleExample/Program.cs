@@ -4,6 +4,7 @@ using System.Security.Cryptography.X509Certificates;
 
 using log4net;
 
+using IronSmarkets.Clients;
 using IronSmarkets.Sessions;
 using IronSmarkets.Sockets;
 
@@ -45,13 +46,11 @@ namespace IronSmarkets.ConsoleExample
                 host, host, port, true, ValidateServerCertificate);
             ISessionSettings sessSettings = new SessionSettings(
                 username, password);
-            Log.Info("Creating SeqSession");
-            using (var session = new SeqSession(sockSettings, sessSettings))
+            Log.Info("Logging in...");
+            using (var client = SmarketsClient.Create(sockSettings, sessSettings))
             {
-                Log.Info("Logging in...");
-                session.Login();
                 Log.Info("Connected, logging out...");
-                session.Logout();
+                client.Logout();
                 Log.Info("Logout returned, cleaning up...");
             }
 

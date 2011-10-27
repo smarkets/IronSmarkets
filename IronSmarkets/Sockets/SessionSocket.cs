@@ -21,11 +21,8 @@
 // SOFTWARE.
 
 using System;
-using System.Collections;
-using System.Net;
 using System.Net.Security;
 using System.Net.Sockets;
-using System.Text;
 using System.IO;
 
 using ProtoBuf;
@@ -40,7 +37,7 @@ namespace IronSmarkets.Sockets
         private readonly ISocketSettings _settings;
         private readonly TcpClient _client = new TcpClient();
 
-        private bool _disposed = false;
+        private bool _disposed;
         private Stream _tcpStream;
 
         public Stream TcpStream { get { return _tcpStream; } }
@@ -61,8 +58,7 @@ namespace IronSmarkets.Sockets
         ~SessionSocket()
         {
             var disp = this as IDisposable;
-            if (disp != null)
-                disp.Dispose();
+            disp.Dispose();
         }
 
         public void Connect()
@@ -85,7 +81,7 @@ namespace IronSmarkets.Sockets
                     _client.GetStream(), false,
                     _settings.RemoteSslCallback, null);
                 sslStream.AuthenticateAsClient(_settings.Hostname);
-                _tcpStream = sslStream as Stream;
+                _tcpStream = sslStream;
             }
             else
             {
@@ -157,7 +153,7 @@ namespace IronSmarkets.Sockets
 
         void IDisposable.Dispose()
         {
-            this.Dispose(true);
+            Dispose(true);
             GC.SuppressFinalize(this);
         }
     }

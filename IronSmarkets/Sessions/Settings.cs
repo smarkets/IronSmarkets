@@ -35,18 +35,18 @@ namespace IronSmarkets.Sessions
 
     public struct SessionSettings : ISessionSettings
     {
-        private readonly string username;
-        private readonly string password;
-        private readonly string sessionId;
+        private readonly string _username;
+        private readonly string _password;
+        private readonly string _sessionId;
 
-        private readonly ulong inSequence;
-        private readonly ulong outSequence;
+        private readonly ulong _inSequence;
+        private readonly ulong _outSequence;
 
-        public string Username { get { return username; } }
-        public string Password { get { return password; } }
-        public ulong InSequence { get { return inSequence; } }
-        public ulong OutSequence { get { return outSequence; } }
-        public string SessionId { get { return sessionId; } }
+        public string Username { get { return _username; } }
+        public string Password { get { return _password; } }
+        public ulong InSequence { get { return _inSequence; } }
+        public ulong OutSequence { get { return _outSequence; } }
+        public string SessionId { get { return _sessionId; } }
 
         public SessionSettings(string username, string password) : this(
             username, password, 1, 1, null)
@@ -58,11 +58,11 @@ namespace IronSmarkets.Sessions
             ulong inSequence, ulong outSequence,
             string sessionId)
         {
-            this.username = username;
-            this.password = password;
-            this.inSequence = inSequence;
-            this.outSequence = outSequence;
-            this.sessionId = sessionId;
+            _username = username;
+            _password = password;
+            _inSequence = inSequence;
+            _outSequence = outSequence;
+            _sessionId = sessionId;
         }
     }
 }

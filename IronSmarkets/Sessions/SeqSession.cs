@@ -24,12 +24,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
 using System.Linq;
-using System.Net.Security;
-using System.Text;
 using System.Threading;
-using System.IO;
-
-using ProtoBuf;
 
 using IronSmarkets.Sockets;
 using IronSmarkets.Exceptions;
@@ -49,12 +44,12 @@ namespace IronSmarkets.Sessions
         private readonly object _reader = new object();
         private readonly object _writer = new object();
 
-        private int _disposed = 0;
+        private int _disposed;
 
         private ulong _inSequence;
         private ulong _outSequence;
-        private string _sessionId = null;
-        private bool _loginSent = false;
+        private string _sessionId;
+        private bool _loginSent;
 
         public ulong InSequence { get { return _inSequence; } }
         public ulong OutSequence { get { return _outSequence; } }
@@ -74,15 +69,14 @@ namespace IronSmarkets.Sessions
         {
             get
             {
-                return Thread.VolatileRead(ref this._disposed) == 1;
+                return Thread.VolatileRead(ref _disposed) == 1;
             }
         }
 
         ~SeqSession()
         {
             var disp = this as IDisposable;
-            if (disp != null)
-                disp.Dispose();
+            disp.Dispose();
         }
 
         public void Login()
@@ -145,7 +139,8 @@ namespace IronSmarkets.Sessions
 
                 throw new LoginFailedException(message, response.EtoPayload.Logout.Reason);
             }
-            else if (response.EtoPayload.Type == Eto.PayloadType.PAYLOADLOGINRESPONSE)
+            
+            if (response.EtoPayload.Type == Eto.PayloadType.PAYLOADLOGINRESPONSE)
             {
                 _sessionId = response.EtoPayload.LoginResponse.Session;
                 _outSequence = response.EtoPayload.LoginResponse.Reset;
@@ -203,10 +198,6 @@ namespace IronSmarkets.Sessions
             {
                 return Flush();
             }
-            else
-            {
-                Console.WriteLine("Didn't flush... weird");
-            }
 
             return Enumerable.Empty<ulong>();
         }
@@ -220,7 +211,7 @@ namespace IronSmarkets.Sessions
 
             Console.WriteLine("Flushing!");
             Seto.Payload outPayload;
-            List<ulong> seqs = new List<ulong>(_sendBuffer.Count);
+            var seqs = new List<ulong>(_sendBuffer.Count);
             while (_sendBuffer.TryDequeue(out outPayload))
             {
                 Console.WriteLine("Flushing payload {0}", outPayload);
@@ -250,12 +241,14 @@ namespace IronSmarkets.Sessions
                     _inSequence++;
                     return payload;
                 }
-                else if (payload.EtoPayload.Type == Eto.PayloadType.PAYLOADREPLAY)
+                
+                if (payload.EtoPayload.Type == Eto.PayloadType.PAYLOADREPLAY)
                 {
                     // Replay message
                     return null;
                 }
-                else if (payload.EtoPayload.Seq > _inSequence)
+                
+                if (payload.EtoPayload.Seq > _inSequence)
                 {
                     var replayPayload = new Seto.Payload {
                         Type = Seto.PayloadType.PAYLOADETO,
@@ -283,7 +276,7 @@ namespace IronSmarkets.Sessions
 
         public void Dispose(bool disposing)
         {
-            if (Interlocked.CompareExchange(ref this._disposed, 1, 0) == 0)
+            if (Interlocked.CompareExchange(ref _disposed, 1, 0) == 0)
             {
                 if (disposing)
                 {
@@ -294,7 +287,7 @@ namespace IronSmarkets.Sessions
 
         void IDisposable.Dispose()
         {
-            this.Dispose(true);
+            Dispose(true);
             GC.SuppressFinalize(this);
         }
     }

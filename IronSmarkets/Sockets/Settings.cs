@@ -20,9 +20,7 @@
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-using System;
 using System.Net.Security;
-using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 
 namespace IronSmarkets.Sockets
@@ -44,17 +42,17 @@ namespace IronSmarkets.Sockets
 
     public struct SocketSettings : ISocketSettings
     {
-        private readonly string host;
-        private readonly string hostname;
-        private readonly int port;
-        private readonly bool ssl;
-        private readonly RemoteCertificateValidationCallback remoteSslCallback;
+        private readonly string _host;
+        private readonly string _hostname;
+        private readonly int _port;
+        private readonly bool _ssl;
+        private readonly RemoteCertificateValidationCallback _remoteSslCallback;
 
-        public string Host { get { return host; } }
-        public string Hostname { get { return hostname; } }
-        public int Port { get { return port; } }
-        public bool Ssl { get { return ssl; } }
-        public RemoteCertificateValidationCallback RemoteSslCallback { get { return remoteSslCallback; } }
+        public string Host { get { return _host; } }
+        public string Hostname { get { return _hostname; } }
+        public int Port { get { return _port; } }
+        public bool Ssl { get { return _ssl; } }
+        public RemoteCertificateValidationCallback RemoteSslCallback { get { return _remoteSslCallback; } }
 
         public SocketSettings(string host, int port) : this(
             host, host, port, false, null)
@@ -65,11 +63,11 @@ namespace IronSmarkets.Sockets
             string host, string hostname, int port,
             bool ssl, RemoteCertificateValidationCallback remoteSslCallback)
         {
-            this.host = host;
-            this.hostname = hostname;
-            this.port = port;
-            this.ssl = ssl;
-            this.remoteSslCallback = remoteSslCallback;
+            _host = host;
+            _hostname = hostname;
+            _port = port;
+            _ssl = ssl;
+            _remoteSslCallback = remoteSslCallback;
         }
         
         internal static bool ValidateServerCertificate(

@@ -2,6 +2,8 @@
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
 
+using log4net;
+
 using IronSmarkets.Sessions;
 using IronSmarkets.Sockets;
 
@@ -9,6 +11,9 @@ namespace IronSmarkets.ConsoleExample
 {
     class Program
     {
+        private static readonly ILog log = LogManager.GetLogger(
+            System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+
         static bool ValidateServerCertificate(
             object sender,
             X509Certificate certficiate,
@@ -24,9 +29,13 @@ namespace IronSmarkets.ConsoleExample
         {
             if (args.Length != 4)
             {
-                Console.WriteLine("Usage: IronSmarkets.ConsoleExample.exe <host> <port> <username> <password>");
+                Console.WriteLine(
+                    "Usage: IronSmarkets.ConsoleExample.exe " +
+                    "<host> <port> <username> <password>");
                 return;
             }
+
+            log.Info("Application start");
 
             string host = args[0];
             int port = int.Parse(args[1]);
@@ -36,13 +45,18 @@ namespace IronSmarkets.ConsoleExample
                 host, host, port, true, ValidateServerCertificate);
             ISessionSettings sessSettings = new SessionSettings(
                 username, password);
+            log.Info("Creating SeqSession");
             using (var session = new SeqSession(sockSettings, sessSettings))
             {
-                Console.WriteLine("Connecting...");
+                log.Info("Logging in...");
                 session.Login();
-                Console.WriteLine("Connected, logging out...");
+                log.Info("Connected, logging out...");
                 session.Logout();
+                log.Info("Logout returned, cleaning up...");
             }
+
+            Console.WriteLine("Press <Enter> to exit...");
+            Console.ReadLine();
         }
     }
 }

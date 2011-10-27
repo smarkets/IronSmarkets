@@ -243,6 +243,9 @@ namespace IronSmarkets.Sessions
                     "SeqSession",
                     "Called Send on disposed object");
 
+            if (payload.EtoPayload == null)
+                payload.EtoPayload = new Eto.Payload();
+
             if (Log.IsDebugEnabled) Log.Debug(
                 string.Format(
                     "Buffering payload {0} / {1}",

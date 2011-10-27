@@ -36,7 +36,7 @@ using Eto = IronSmarkets.Proto.Eto;
 
 namespace IronSmarkets.Sessions
 {
-    public sealed class SeqSession : IDisposable
+    public sealed class SeqSession : IDisposable, ISession<Seto.Payload>
     {
         private const ushort MaxLogoutWaitMsgs = 10;
 
@@ -265,7 +265,6 @@ namespace IronSmarkets.Sessions
                     "SeqSession",
                     "Called Send on disposed object");
 
-            Seto.Payload outPayload;
             var seqs = new List<ulong>(_sendBuffer.Count);
             if (Log.IsDebugEnabled) Log.Debug(
                 string.Format(
@@ -273,6 +272,7 @@ namespace IronSmarkets.Sessions
                     _sendBuffer.Count));
             lock (_writer)
             {
+                Seto.Payload outPayload;
                 while (_sendBuffer.TryDequeue(out outPayload))
                 {
                     outPayload.EtoPayload.Seq = _outSequence;
@@ -360,7 +360,7 @@ namespace IronSmarkets.Sessions
                 disp.Dispose();
         }
 
-        public void Dispose(bool disposing)
+        private void Dispose(bool disposing)
         {
             if (Interlocked.CompareExchange(ref _disposed, 1, 0) == 0)
             {

@@ -176,7 +176,7 @@ namespace IronSmarkets.Sessions
         {
             if (_loginSent)
             {
-                return Logout(true, true);
+                return Logout(MaxLogoutWaitMsgs);
             }
 
             if (Log.IsDebugEnabled) Log.Debug(
@@ -185,65 +185,51 @@ namespace IronSmarkets.Sessions
             return Enumerable.Empty<Seto.Payload>();
         }
 
-        public IEnumerable<Seto.Payload> Logout(bool disconnect, bool waitForResponse)
+        public IEnumerable<Seto.Payload> Logout(ushort maxMessagesToConsume)
         {
-            try
-            {
-                var logoutPayload = new Seto.Payload {
-                    Type = Seto.PayloadType.PAYLOADETO,
-                    EtoPayload = new Eto.Payload {
-                        Type = Eto.PayloadType.PAYLOADLOGOUT,
-                        Logout = new Eto.Logout {
-                            Reason = Eto.LogoutReason.LOGOUTNONE
-                        }
+            var logoutPayload = new Seto.Payload {
+                Type = Seto.PayloadType.PAYLOADETO,
+                EtoPayload = new Eto.Payload {
+                    Type = Eto.PayloadType.PAYLOADLOGOUT,
+                    Logout = new Eto.Logout {
+                        Reason = Eto.LogoutReason.LOGOUTNONE
                     }
-                };
+                }
 
+            };
+            if (Log.IsDebugEnabled) Log.Debug(
+                "Sending logout payload with 'none' reason");
+
+            Send(logoutPayload);
+
+            if (maxMessagesToConsume > 0)
+            {
                 if (Log.IsDebugEnabled) Log.Debug(
-                    "Sending logout payload with 'none' reason");
-
-                Send(logoutPayload);
-
-                if (waitForResponse)
+                    "Waiting for logout response...");
+                var received = new List<Seto.Payload>();
+                while (received.Count < maxMessagesToConsume)
                 {
-                    if (Log.IsDebugEnabled) Log.Debug(
-                        "Waiting for logout response...");
-
-                    var received = new List<Seto.Payload>();
-                    // TODO: Introduce a configurable maximum number of messages here
-                    while (received.Count < MaxLogoutWaitMsgs)
+                    var recvPayload = Receive();
+                    if (recvPayload == null)
                     {
-                        var recvPayload = Receive();
-                        if (recvPayload == null)
-                        {
-                            throw new MessageStreamException(
-                                "Received null payload while waiting for logout response");
-                        }
-                        
-                        received.Add(recvPayload);
-                        
-                        if (recvPayload.EtoPayload.Type == Eto.PayloadType.PAYLOADLOGOUT)
-                        {
-                            // TODO: Check Reason -- should be 'confirmation'
-                            return received;
-                        }
+                        throw new MessageStreamException(
+                            "Received null payload while waiting for logout response");
+                    }
+                    
+                    received.Add(recvPayload);
+                    
+                    if (recvPayload.EtoPayload.Type == Eto.PayloadType.PAYLOADLOGOUT)
+                    {
+                        // TODO: Check Reason -- should be 'confirmation'
+                        break;
                     }
                 }
-                else
-                {
-                    if (Log.IsDebugEnabled) Log.Debug(
-                        "Not waiting for logout response");
-                }
+                return received;
+            }
 
-                return Enumerable.Empty<Seto.Payload>();
-            }
-            finally
-            {
-                if (disconnect)
-                {
-                    Disconnect();
-                }
-            }
+            if (Log.IsDebugEnabled) Log.Debug(
+                "Not waiting for logout response");
+            return Enumerable.Empty<Seto.Payload>();
         }
 
         public IEnumerable<ulong> Send(Seto.Payload payload)

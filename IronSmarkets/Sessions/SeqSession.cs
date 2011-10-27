@@ -43,7 +43,7 @@ namespace IronSmarkets.Sessions
         private static readonly ILog Log = LogManager.GetLogger(
             System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-        private readonly SessionSocket _socket;
+        private readonly ISocket<Seto.Payload> _socket;
         private readonly ISessionSettings _settings;
         private readonly ConcurrentQueue<Seto.Payload> _sendBuffer =
             new ConcurrentQueue<Seto.Payload>();

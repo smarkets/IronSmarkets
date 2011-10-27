@@ -33,7 +33,7 @@ using IronSmarkets.Proto.Seto;
 
 namespace IronSmarkets.Sockets
 {
-    internal sealed class SessionSocket : IDisposable
+    internal sealed class SessionSocket : IDisposable, ISocket<Payload>
     {
         private static readonly ILog Log = LogManager.GetLogger(
             System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
@@ -193,7 +193,7 @@ namespace IronSmarkets.Sockets
             return payload;
         }
 
-        public void Dispose(bool disposing)
+        private void Dispose(bool disposing)
         {
             if (_disposed)
                 return;

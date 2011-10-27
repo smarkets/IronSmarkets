@@ -22,6 +22,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 
 using log4net;
@@ -29,6 +30,7 @@ using log4net;
 using IronSmarkets.Sessions;
 using IronSmarkets.Sockets;
 
+using Eto = IronSmarkets.Proto.Eto;
 using Seto = IronSmarkets.Proto.Seto;
 
 namespace IronSmarkets.Clients
@@ -38,6 +40,8 @@ namespace IronSmarkets.Clients
         bool IsDisposed { get; }
 
         IEnumerable<Seto.Payload> Logout();
+
+        ulong Ping();
     }
 
     public sealed class SmarketsClient : ISmarketsClient
@@ -85,6 +89,23 @@ namespace IronSmarkets.Clients
                     "Called Logout on disposed object");
 
             return _session.Logout();
+        }
+
+        public ulong Ping()
+        {
+            if (IsDisposed)
+                throw new ObjectDisposedException(
+                    "SmarketsClient",
+                    "Called Ping on disposed object");
+
+            var payload = new Seto.Payload {
+                Type = Seto.PayloadType.PAYLOADETO,
+                EtoPayload = new Eto.Payload {
+                    Type = Eto.PayloadType.PAYLOADPING
+                }
+            };
+
+            return Enumerable.Last(_session.Send(payload));
         }
 
         private void Dispose(bool disposing)

@@ -27,6 +27,7 @@ using System.Threading;
 
 using log4net;
 
+using IronSmarkets.Data;
 using IronSmarkets.Sessions;
 using IronSmarkets.Sockets;
 
@@ -42,6 +43,7 @@ namespace IronSmarkets.Clients
         IEnumerable<Seto.Payload> Logout();
 
         ulong Ping();
+        ulong SubscribeMarket(Uuid market);
     }
 
     public sealed class SmarketsClient : ISmarketsClient
@@ -102,6 +104,23 @@ namespace IronSmarkets.Clients
                 Type = Seto.PayloadType.PAYLOADETO,
                 EtoPayload = new Eto.Payload {
                     Type = Eto.PayloadType.PAYLOADPING
+                }
+            };
+
+            return Enumerable.Last(_session.Send(payload));
+        }
+
+        public ulong SubscribeMarket(Uuid market)
+        {
+            if (IsDisposed)
+                throw new ObjectDisposedException(
+                    "SmarketsClient",
+                    "Called SubscribeMarket on disposed object");
+
+            var payload = new Seto.Payload {
+                Type = Seto.PayloadType.PAYLOADMARKETSUBSCRIBE,
+                MarketSubscribe = new Seto.MarketSubscribe {
+                    Market = market.ToUuid128()
                 }
             };
 

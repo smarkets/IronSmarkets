@@ -151,11 +151,11 @@ namespace IronSmarkets.Sessions
         {
             if (_loginSent)
             {
-                Logout(true);
+                Logout(true, true);
             }
         }
 
-        public void Logout(bool disconnect)
+        public IEnumerable<Seto.Payload> Logout(bool disconnect, bool waitForResponse)
         {
             try
             {
@@ -170,6 +170,25 @@ namespace IronSmarkets.Sessions
                 };
 
                 Send(logoutPayload);
+                var received = new List<Seto.Payload>();
+                // TODO: Introduce a maximum number of messages here
+                while (true)
+                {
+                    var recvPayload = Receive();
+                    if (recvPayload == null)
+                    {
+                        throw new MessageStreamException(
+                            "Received null payload while waiting for logout response");
+                    }
+
+                    received.Add(recvPayload);
+
+                    if (recvPayload.EtoPayload.Type == Eto.PayloadType.PAYLOADLOGOUT)
+                    {
+                        // TODO: Check Reason -- should be 'confirmation'
+                        return received;
+                    }
+                }
             }
             finally
             {
@@ -192,7 +211,6 @@ namespace IronSmarkets.Sessions
                     "SeqSession",
                     "Called Send on disposed object");
 
-            Console.WriteLine("Enqueueing payload {0}", payload);
             _sendBuffer.Enqueue(payload);
             if (flush)
             {
@@ -209,19 +227,17 @@ namespace IronSmarkets.Sessions
                     "SeqSession",
                     "Called Send on disposed object");
 
-            Console.WriteLine("Flushing!");
             Seto.Payload outPayload;
             var seqs = new List<ulong>(_sendBuffer.Count);
-            while (_sendBuffer.TryDequeue(out outPayload))
+            lock (_writer)
             {
-                Console.WriteLine("Flushing payload {0}", outPayload);
-                lock (_writer)
+                while (_sendBuffer.TryDequeue(out outPayload))
                 {
                     outPayload.EtoPayload.Seq = _outSequence;
-                    Console.WriteLine("Writing payload to socket {0}", outPayload);
                     _socket.Write(outPayload);
                     seqs.Add(_outSequence++);
                 }
+                _socket.Flush();
             }
             return seqs;
         }
@@ -236,6 +252,12 @@ namespace IronSmarkets.Sessions
             lock (_reader)
             {
                 var payload = _socket.Read();
+                if (payload == null)
+                {
+                    throw new MessageStreamException(
+                        "Empty payload was received. " +
+                        "Socket was probably closed prematurely");
+                }
                 if (payload.EtoPayload.Seq == _inSequence)
                 {
                     _inSequence++;

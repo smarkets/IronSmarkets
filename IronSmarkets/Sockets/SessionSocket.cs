@@ -118,6 +118,25 @@ namespace IronSmarkets.Sockets
                 TcpStream, payload, PrefixStyle.Base128);
         }
 
+        public void Flush()
+        {
+            if (_disposed)
+                throw new ObjectDisposedException(
+                    "SessionSocket",
+                    "Called Flush on disposed object");
+
+            if (!IsConnected)
+                throw new ConnectionException(
+                    "Socket not connected");
+
+            // This may be a useless. From MSDN:
+            // The Flush method implements the Stream.Flush method;
+            // however, because NetworkStream is not buffered, it has
+            // no affect on network streams. Calling the Flush method
+            // does not throw an exception.
+            TcpStream.Flush();
+        }
+
         public Payload Read()
         {
             if (_disposed)

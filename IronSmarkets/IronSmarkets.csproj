@@ -67,6 +67,7 @@
     <Compile Include="Proto\Seto\Messages.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Exceptions\ConnectionException.cs" />
+    <Compile Include="Exceptions\MessageStreamException.cs" />
     <Compile Include="Exceptions\LoginFailedException.cs" />
     <Compile Include="Sockets\Settings.cs" />
     <Compile Include="Sockets\SessionSocket.cs" />

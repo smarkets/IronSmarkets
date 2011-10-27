@@ -48,7 +48,7 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="protobuf-net, Version=1.0.0.280, Culture=neutral, PublicKeyToken=257b51d87d2e4d67">
+    <Reference Include="protobuf-net, Version=1.0.0.282, Culture=neutral, PublicKeyToken=257b51d87d2e4d67">
       <HintPath>..\lib\protobuf-net.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=4.0.2.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed">

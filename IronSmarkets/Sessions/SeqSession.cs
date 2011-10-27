@@ -159,7 +159,7 @@ namespace IronSmarkets.Sessions
 
                 throw new LoginFailedException(message, response.EtoPayload.Logout.Reason);
             }
-            
+
             if (response.EtoPayload.Type == Eto.PayloadType.PAYLOADLOGINRESPONSE)
             {
                 _sessionId = response.EtoPayload.LoginResponse.Session;
@@ -214,9 +214,9 @@ namespace IronSmarkets.Sessions
                         throw new MessageStreamException(
                             "Received null payload while waiting for logout response");
                     }
-                    
+
                     received.Add(recvPayload);
-                    
+
                     if (recvPayload.EtoPayload.Type == Eto.PayloadType.PAYLOADLOGOUT)
                     {
                         // TODO: Check Reason -- should be 'confirmation'
@@ -319,13 +319,13 @@ namespace IronSmarkets.Sessions
                     _inSequence++;
                     return payload;
                 }
-                
+
                 if (payload.EtoPayload.Type == Eto.PayloadType.PAYLOADREPLAY)
                 {
                     // Replay message
                     return payload;
                 }
-                
+
                 if (payload.EtoPayload.Seq > _inSequence)
                 {
                     var replayPayload = new Seto.Payload {

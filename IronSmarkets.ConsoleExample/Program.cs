@@ -9,9 +9,9 @@ using IronSmarkets.Sockets;
 
 namespace IronSmarkets.ConsoleExample
 {
-    class Program
+    public static class Program
     {
-        private static readonly ILog log = LogManager.GetLogger(
+        private static readonly ILog Log = LogManager.GetLogger(
             System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         static bool ValidateServerCertificate(
@@ -35,7 +35,7 @@ namespace IronSmarkets.ConsoleExample
                 return;
             }
 
-            log.Info("Application start");
+            Log.Info("Application start");
 
             string host = args[0];
             int port = int.Parse(args[1]);
@@ -45,14 +45,14 @@ namespace IronSmarkets.ConsoleExample
                 host, host, port, true, ValidateServerCertificate);
             ISessionSettings sessSettings = new SessionSettings(
                 username, password);
-            log.Info("Creating SeqSession");
+            Log.Info("Creating SeqSession");
             using (var session = new SeqSession(sockSettings, sessSettings))
             {
-                log.Info("Logging in...");
+                Log.Info("Logging in...");
                 session.Login();
-                log.Info("Connected, logging out...");
+                Log.Info("Connected, logging out...");
                 session.Logout();
-                log.Info("Logout returned, cleaning up...");
+                Log.Info("Logout returned, cleaning up...");
             }
 
             Console.WriteLine("Press <Enter> to exit...");

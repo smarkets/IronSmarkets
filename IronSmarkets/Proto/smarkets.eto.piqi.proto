@@ -1,0 +1,53 @@
+package smarkets.eto;
+
+
+message Payload {
+    required uint64 seq = 1;
+    optional PayloadType type = 2;
+    optional bool is_replay = 3 [default = false];
+    optional Replay replay = 4;
+    optional Login login = 5;
+    optional LoginResponse login_response = 6;
+    optional Logout logout = 7;
+}
+
+enum PayloadType {
+    PAYLOAD_NONE = 1;
+    PAYLOAD_PING = 2;
+    PAYLOAD_PONG = 3;
+    PAYLOAD_GAPFILL = 4;
+    PAYLOAD_HEARTBEAT = 5;
+    PAYLOAD_REPLAY = 6;
+    PAYLOAD_LOGIN = 7;
+    PAYLOAD_LOGIN_RESPONSE = 8;
+    PAYLOAD_LOGOUT = 9;
+}
+
+message Replay {
+    required uint64 seq = 1;
+}
+
+message Login {
+    required string session = 1;
+}
+
+message LoginResponse {
+    required string session = 1;
+    optional uint64 reset = 2;
+}
+
+message Logout {
+    optional LogoutReason reason = 1;
+}
+
+enum LogoutReason {
+    LOGOUT_NONE = 1;
+    LOGOUT_HEARTBEAT_TIMEOUT = 2;
+    LOGOUT_CONFIRMATION = 3;
+    LOGOUT_LOGIN_TIMEOUT = 4;
+    LOGOUT_LOGIN_NOT_FIRST_SEQ = 5;
+    LOGOUT_UNKNOWN_SESSION = 6;
+    LOGOUT_UNAUTHORISED = 7;
+    LOGOUT_SERVICE_TEMPORARILY_UNAVAILABLE = 8;
+}
+

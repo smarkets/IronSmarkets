@@ -1,0 +1,423 @@
+package smarkets.seto;
+
+import "smarkets.eto.piqi.proto" ;
+
+message event {
+    required uint64 low = 1;
+    optional uint64 high = 2 [default = 0];
+}
+
+message market {
+    required uint64 low = 1;
+    optional uint64 high = 2 [default = 0];
+}
+
+message contract {
+    required uint64 low = 1;
+    optional uint64 high = 2 [default = 0];
+}
+
+message order {
+    required uint64 low = 1;
+    optional uint64 high = 2 [default = 0];
+}
+
+message entity {
+    required uint64 low = 1;
+    optional uint64 high = 2 [default = 0];
+}
+
+message Payload {
+    required PayloadType type = 1;
+    required .smarkets.eto.Payload eto_payload = 2;
+    optional Login login = 3;
+    optional OrderCreate order_create = 4;
+    optional OrderRejected order_rejected = 5;
+    optional OrderAccepted order_accepted = 6;
+    optional OrderExecuted order_executed = 7;
+    optional OrderCancel order_cancel = 8;
+    optional OrderCancelled order_cancelled = 9;
+    optional OrderInvalid order_invalid = 10;
+    optional MarketSubscribe market_subscribe = 11;
+    optional MarketUnsubscribe market_unsubscribe = 12;
+    optional MarketQuotesRequest market_quotes_request = 13;
+    optional MarketQuotes market_quotes = 14;
+    optional ContractQuotes contract_quotes = 15;
+    optional EventsRequest events_request = 16;
+    optional HttpFound http_found = 17;
+    optional InvalidRequest invalid_request = 18;
+    optional OrderCancelRejected order_cancel_rejected = 19;
+    optional orders_for_account_request orders_for_account_request = 20;
+    optional orders_for_account orders_for_account = 21;
+    optional orders_for_market_request orders_for_market_request = 22;
+    optional orders_for_market orders_for_market = 23;
+}
+
+enum PayloadType {
+    PAYLOAD_ETO = 1;
+    PAYLOAD_LOGIN = 2;
+    PAYLOAD_ORDER_CREATE = 3;
+    PAYLOAD_ORDER_REJECTED = 4;
+    PAYLOAD_ORDER_ACCEPTED = 5;
+    PAYLOAD_ORDER_EXECUTED = 6;
+    PAYLOAD_ORDER_CANCEL = 7;
+    PAYLOAD_ORDER_CANCELLED = 8;
+    PAYLOAD_ORDER_INVALID = 9;
+    PAYLOAD_MARKET_SUBSCRIBE = 10;
+    PAYLOAD_MARKET_UNSUBSCRIBE = 11;
+    PAYLOAD_MARKET_QUOTES_REQUEST = 12;
+    PAYLOAD_MARKET_QUOTES = 13;
+    PAYLOAD_CONTRACT_QUOTES = 14;
+    PAYLOAD_EVENTS_REQUEST = 15;
+    PAYLOAD_HTTP_FOUND = 16;
+    PAYLOAD_INVALID_REQUEST = 17;
+    PAYLOAD_ORDER_CANCEL_REJECTED = 18;
+    PAYLOAD_ORDERS_FOR_ACCOUNT_REQUEST = 19;
+    PAYLOAD_ORDERS_FOR_ACCOUNT = 20;
+    PAYLOAD_ORDERS_FOR_MARKET_REQUEST = 21;
+    PAYLOAD_ORDERS_FOR_MARKET = 22;
+}
+
+message Uuid128 {
+    required uint64 low = 1;
+    optional uint64 high = 2 [default = 0];
+}
+
+message Login {
+    optional string username = 1;
+    optional string password = 2;
+    optional bytes cookie = 3;
+}
+
+message OrderCreate {
+    required OrderCreateType type = 1;
+    required Uuid128 market = 2;
+    required Uuid128 contract = 3;
+    required Side side = 4;
+    required QuantityType quantity_type = 5;
+    required uint32 quantity = 6;
+    optional PriceType price_type = 7;
+    optional uint32 price = 8;
+}
+
+enum OrderCreateType {
+    ORDER_CREATE_LIMIT = 1;
+}
+
+message OrderRejected {
+    required uint64 seq = 1;
+    required OrderRejectedReason reason = 2;
+}
+
+message OrderCancelRejected {
+    required uint64 seq = 1;
+    required OrderCancelRejectedReason reason = 2;
+}
+
+enum OrderRejectedReason {
+    ORDER_REJECTED_INSUFFICIENT_FUNDS = 1;
+    ORDER_REJECTED_LIMIT_EXCEEDED = 2;
+    ORDER_REJECTED_MARKET_NOT_OPEN = 3;
+    ORDER_REJECTED_MARKET_SETTLED = 4;
+    ORDER_REJECTED_MARKET_HALTED = 5;
+    ORDER_REJECTED_CROSSED_SELF = 6;
+    ORDER_REJECTED_MARKET_NOT_FOUND = 7;
+}
+
+enum OrderCancelRejectedReason {
+    ORDER_CANCEL_REJECTED_NOT_FOUND = 1;
+    ORDER_CANCEL_REJECTED_NOT_LIVE = 2;
+}
+
+message OrderAccepted {
+    required uint64 seq = 1;
+    required Uuid128 order = 2;
+}
+
+message OrderExecuted {
+    required Uuid128 order = 1;
+    required uint32 price = 2;
+    required QuantityType quantity_type = 3;
+    required uint32 quantity = 4;
+}
+
+message OrderCancel {
+    required Uuid128 order = 1;
+}
+
+message OrderCancelled {
+    required Uuid128 order = 1;
+    required OrderCancelledReason reason = 2;
+}
+
+enum OrderCancelledReason {
+    ORDER_CANCELLED_MEMBER_REQUESTED = 1;
+    ORDER_CANCELLED_MARKET_HALTED = 2;
+    ORDER_CANCELLED_INSUFFICIENT_LIQUIDITY = 3;
+}
+
+message OrderInvalid {
+    required uint64 seq = 1;
+    repeated OrderInvalidReason reasons = 2;
+}
+
+enum OrderInvalidReason {
+    ORDER_INVALID_INVALID_PRICE = 1;
+    ORDER_INVALID_INVALID_QUANTITY = 2;
+}
+
+message MarketSubscribe {
+    required Uuid128 market = 1;
+}
+
+message MarketUnsubscribe {
+    required Uuid128 market = 1;
+}
+
+message MarketQuotesRequest {
+    required Uuid128 market = 1;
+}
+
+message MarketQuotes {
+    required Uuid128 market = 1;
+    repeated ContractQuotes contract_quotes = 2;
+    required PriceType price_type = 3;
+    required QuantityType quantity_type = 4;
+}
+
+message ContractQuotes {
+    required Uuid128 contract = 1;
+    repeated Quote bids = 2;
+    repeated Quote offers = 3;
+    repeated Execution executions = 4;
+    optional Execution last_execution = 5;
+}
+
+message Quote {
+    required uint32 price = 1;
+    required uint32 quantity = 2;
+}
+
+enum QuantityType {
+    QUANTITY_PAYOFF_CURRENCY = 1;
+}
+
+enum PriceType {
+    PRICE_PERCENT_ODDS = 1;
+}
+
+enum Side {
+    SIDE_BUY = 1;
+    SIDE_SELL = 2;
+}
+
+message Execution {
+    required uint32 price = 1;
+    required uint32 quantity = 2;
+    required Side liquidity = 3;
+    required uint64 microseconds = 4;
+}
+
+message EventsRequest {
+    required EventsRequestType type = 1;
+    required ContentType content_type = 2;
+    optional SportByDate sport_by_date = 3;
+}
+
+enum ContentType {
+    CONTENT_TYPE_PROTOBUF = 1;
+}
+
+enum EventsRequestType {
+    EVENTS_REQUEST_POLITICS = 1;
+    EVENTS_REQUEST_CURRENT_AFFAIRS = 2;
+    EVENTS_REQUEST_TV_AND_ENTERTAINMENT = 3;
+    EVENTS_REQUEST_SPORT_BY_DATE = 4;
+    EVENTS_REQUEST_SPORT_OTHER = 5;
+}
+
+message SportByDate {
+    required SportByDateType type = 1;
+    required Date date = 2;
+}
+
+enum SportByDateType {
+    SPORT_BY_DATE_FOOTBALL = 1;
+    SPORT_BY_DATE_HORSE_RACING = 2;
+    SPORT_BY_DATE_TENNIS = 3;
+}
+
+message Events {
+    repeated EventInfo with_markets = 1;
+    repeated EventInfo parents = 2;
+}
+
+message EventInfo {
+    required Uuid128 event = 1;
+    required EventType type = 2;
+    required EventCategory category = 3;
+    required string slug = 4;
+    required string name = 5;
+    optional Uuid128 parent = 6;
+    optional Date start_date = 7;
+    optional Time start_time = 8;
+    optional Date end_date = 9;
+    optional Time end_time = 10;
+    repeated EntityRelationship entities = 11;
+    repeated MarketInfo markets = 12;
+    optional string description = 13;
+}
+
+message MarketInfo {
+    required Uuid128 market = 1;
+    repeated ContractInfo contracts = 2;
+    required string slug = 3;
+    required string name = 4;
+    optional Date start_date = 5;
+    optional Time start_time = 6;
+    optional Date end_date = 7;
+    optional Time end_time = 8;
+    repeated EntityRelationship entities = 9;
+    optional string shortname = 10;
+}
+
+message ContractInfo {
+    required Uuid128 contract = 1;
+    required ContractType type = 2;
+    required string slug = 3;
+    required string name = 4;
+    repeated EntityRelationship entities = 5;
+    optional string shortname = 6;
+}
+
+enum ContractType {
+    CONTRACT_HALF_TIME_FULL_TIME = 1;
+    CONTRACT_CORRECT_SCORE = 2;
+    CONTRACT_GENERIC = 3;
+    CONTRACT_WINNER = 4;
+    CONTRACT_BINARY = 5;
+    CONTRACT_OVER_UNDER = 6;
+}
+
+enum EventType {
+    EVENT_FOOTBALL_MATCH = 1;
+    EVENT_FOOTBALL_SEASON = 2;
+    EVENT_FOOTBALL = 3;
+    EVENT_GENERIC = 4;
+    EVENT_FOOTBALL_GENERIC = 5;
+    EVENT_GOLF_SEASON = 6;
+    EVENT_BOXING_SEASON = 7;
+    EVENT_FORMULA_1_RACE = 8;
+    EVENT_FORMULA_1_SEASON = 9;
+    EVENT_HORSE_RACING_RACE = 10;
+    EVENT_HORSE_RACING_COURSE = 11;
+    EVENT_HORSE_RACING = 12;
+    EVENT_GOLF_GENERIC = 13;
+    EVENT_EUROVISION_SEASON = 14;
+    EVENT_TENNIS_MATCH = 15;
+    EVENT_TENNIS_SEASON = 16;
+    EVENT_CYCLING_SEASON = 17;
+    EVENT_CYCLING_RACE = 18;
+    EVENT_MOTOGP_SEASON = 19;
+}
+
+enum EntityRelationshipType {
+    ENTITY_RELATIONSHIP_FOOTBALL_HOME_TEAM = 1;
+    ENTITY_RELATIONSHIP_FOOTBALL_AWAY_TEAM = 2;
+    ENTITY_RELATIONSHIP_FOOTBALL_COMPETITION = 3;
+    ENTITY_RELATIONSHIP_HORSE_RACING_COURSE = 4;
+    ENTITY_RELATIONSHIP_HORSE_RACING_HORSE = 5;
+    ENTITY_RELATIONSHIP_HORSE_RACING_JOCKEY = 6;
+    ENTITY_RELATIONSHIP_CONTRACT_ASSOCIATED = 7;
+    ENTITY_RELATIONSHIP_GENERIC = 8;
+    ENTITY_RELATIONSHIP_TENNIS_PLAYER_A = 9;
+    ENTITY_RELATIONSHIP_TENNIS_PLAYER_B = 10;
+    ENTITY_RELATIONSHIP_HOME_TEAM = 11;
+    ENTITY_RELATIONSHIP_AWAY_TEAM = 12;
+}
+
+message EntityRelationship {
+    required Uuid128 entity = 1;
+    required EntityRelationshipType relationship = 2;
+}
+
+message HttpFound {
+    required uint64 seq = 1;
+    required string url = 2;
+}
+
+message InvalidRequest {
+    required uint64 seq = 1;
+    required InvalidRequestType type = 2;
+}
+
+enum InvalidRequestType {
+    INVALID_REQUEST_DATE_OUT_OF_RANGE = 1;
+}
+
+message Date {
+    required uint32 year = 1;
+    required uint32 month = 2;
+    required uint32 day = 3;
+}
+
+message Time {
+    required uint32 hour = 1;
+    required uint32 minute = 2;
+}
+
+enum EventCategory {
+    EVENT_CATEGORY_SPORT = 1;
+    EVENT_CATEGORY_POLITICS = 2;
+    EVENT_CATEGORY_CURRENT_AFFAIRS = 3;
+    EVENT_CATEGORY_TV_AND_ENTERTAINMENT = 4;
+    EVENT_CATEGORY_GENERIC = 5;
+}
+
+message orders_for_account_request {
+    
+}
+
+message orders_for_account {
+    repeated orders_for_market markets = 1;
+}
+
+message orders_for_market_request {
+    required Uuid128 market = 1;
+}
+
+message orders_for_market {
+    required Uuid128 market = 1;
+    required PriceType price_type = 2;
+    repeated orders_for_contract contracts = 3;
+}
+
+message orders_for_contract {
+    required Uuid128 contract = 1;
+    repeated orders_for_price bids = 2;
+    repeated orders_for_price offers = 3;
+}
+
+message orders_for_price {
+    required uint32 price = 1;
+    repeated OrderState orders = 2;
+}
+
+message OrderState {
+    required Uuid128 order = 1;
+    required OrderCreateType type = 2;
+    required order_status status = 3;
+    required QuantityType quantity_type = 4;
+    required uint32 quantity = 5;
+    required uint64 created_microseconds = 6;
+    optional uint32 quantity_filled = 7 [default = 0];
+}
+
+enum order_status {
+    ORDER_STATUS_LIVE = 1;
+    ORDER_STATUS_PARTIALLY_FILLED = 2;
+    ORDER_STATUS_FILLED = 3;
+    ORDER_STATUS_PARTIALLY_CANCELLED = 4;
+    ORDER_STATUS_CANCELLED = 5;
+}
+

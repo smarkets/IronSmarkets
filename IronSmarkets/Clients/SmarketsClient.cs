@@ -74,8 +74,7 @@ namespace IronSmarkets.Clients
 
         ~SmarketsClient()
         {
-            var disp = this as IDisposable;
-            disp.Dispose();
+            Dispose(false);
         }
 
         public IEnumerable<Seto.Payload> Logout()

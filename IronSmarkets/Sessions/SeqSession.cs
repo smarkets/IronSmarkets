@@ -82,8 +82,7 @@ namespace IronSmarkets.Sessions
 
         ~SeqSession()
         {
-            var disp = this as IDisposable;
-            disp.Dispose();
+            Dispose(false);
         }
 
         public void Login()

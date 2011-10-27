@@ -61,8 +61,7 @@ namespace IronSmarkets.Sockets
 
         ~SessionSocket()
         {
-            var disp = this as IDisposable;
-            disp.Dispose();
+            Dispose(false);
         }
 
         public void Connect()

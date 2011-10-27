@@ -63,8 +63,8 @@
     <Compile Include="..\Metadata\VersionInfo.cs">
       <Link>Properties\VersionInfo.cs</Link>
     </Compile>
-    <Compile Include="Proto\Eto.cs" />
-    <Compile Include="Proto\Seto.cs" />
+    <Compile Include="Proto\Eto\Messages.cs" />
+    <Compile Include="Proto\Seto\Messages.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Exceptions\ConnectionException.cs" />
     <Compile Include="Exceptions\LoginFailedException.cs" />

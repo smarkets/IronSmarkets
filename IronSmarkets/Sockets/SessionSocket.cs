@@ -25,6 +25,7 @@ using System.Net.Security;
 using System.Net.Sockets;
 using System.IO;
 
+using log4net;
 using ProtoBuf;
 
 using IronSmarkets.Exceptions;
@@ -34,6 +35,9 @@ namespace IronSmarkets.Sockets
 {
     internal sealed class SessionSocket : IDisposable
     {
+        private static readonly ILog Log = LogManager.GetLogger(
+            System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+
         private readonly ISocketSettings _settings;
         private readonly TcpClient _client = new TcpClient();
 
@@ -72,14 +76,23 @@ namespace IronSmarkets.Sockets
                 throw new ConnectionException(
                     "Socket already connected");
 
+            if (Log.IsDebugEnabled) Log.Debug(
+                string.Format(
+                    "Connecting to host {0} on port {1}",
+                    _settings.Host, _settings.Port));
             _client.Connect(_settings.Host, _settings.Port);
             _client.Client.NoDelay = true;
 
             if (_settings.Ssl)
             {
+                if (Log.IsDebugEnabled) Log.Debug(
+                    "Wrapping stream with SSL");
                 var sslStream = new SslStream(
                     _client.GetStream(), false,
                     _settings.RemoteSslCallback, null);
+                if (Log.IsDebugEnabled) Log.Debug(
+                    string.Format(
+                        "Validating hostname {0}", _settings.Hostname));
                 sslStream.AuthenticateAsClient(_settings.Hostname);
                 _tcpStream = sslStream;
             }
@@ -87,6 +100,9 @@ namespace IronSmarkets.Sockets
             {
                 _tcpStream = _client.GetStream();
             }
+
+            if (Log.IsDebugEnabled) Log.Debug(
+                "Connection established; stream is ready");
         }
 
         public void Disconnect()
@@ -96,9 +112,11 @@ namespace IronSmarkets.Sockets
                     "SessionSocket",
                     "Called Disconnect on disposed object");
 
-            if (!IsConnected)
+            if (IsConnected)
             {
+                if (Log.IsDebugEnabled) Log.Debug("Closing TCP stream");
                 _tcpStream.Close();
+                if (Log.IsDebugEnabled) Log.Debug("Closing TCP client");
                 _client.Close();
             }
         }
@@ -113,6 +131,12 @@ namespace IronSmarkets.Sockets
             if (!IsConnected)
                 throw new ConnectionException(
                     "Socket not connected");
+
+            if (Log.IsDebugEnabled) Log.Debug(
+                string.Format(
+                    "Serializing payload [out:{0}] {1} / {2} with length prefix",
+                    payload.EtoPayload.Seq, payload.Type,
+                    payload.EtoPayload.Type));
 
             Serializer.SerializeWithLengthPrefix(
                 TcpStream, payload, PrefixStyle.Base128);
@@ -134,6 +158,7 @@ namespace IronSmarkets.Sockets
             // however, because NetworkStream is not buffered, it has
             // no affect on network streams. Calling the Flush method
             // does not throw an exception.
+            if (Log.IsDebugEnabled) Log.Debug("Flushing network stream");
             TcpStream.Flush();
         }
 
@@ -148,8 +173,24 @@ namespace IronSmarkets.Sockets
                 throw new ConnectionException(
                     "Socket not connected");
 
-            return Serializer.DeserializeWithLengthPrefix<Payload>(
+            var payload = Serializer.DeserializeWithLengthPrefix<Payload>(
                 TcpStream, PrefixStyle.Base128);
+            if (Log.IsDebugEnabled)
+            {
+                if (payload != null)
+                {
+                    Log.Debug(
+                        string.Format(
+                            "Deserialized payload [in:{0}] {1} / {2}",
+                            payload.EtoPayload.Seq, payload.Type,
+                            payload.EtoPayload.Type));
+                }
+                else
+                {
+                    Log.Debug("Deserialized null payload");
+                }
+            }
+            return payload;
         }
 
         public void Dispose(bool disposing)

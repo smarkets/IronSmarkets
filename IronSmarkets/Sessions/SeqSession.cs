@@ -292,7 +292,7 @@ namespace IronSmarkets.Sessions
                     outPayload.EtoPayload.Seq = _outSequence;
                     if (Log.IsDebugEnabled) Log.Debug(
                         string.Format(
-                            "Writing payload to socket with sequence {0}",
+                            "Writing payload out:{0}",
                             _outSequence));
                     _socket.Write(outPayload);
                     seqs.Add(_outSequence++);

@@ -21,6 +21,7 @@
 // SOFTWARE.
 
 using System;
+using System.Linq;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
 
@@ -72,12 +73,13 @@ namespace IronSmarkets.ConsoleExample
             using (var client = SmarketsClient.Create(sockSettings, sessSettings))
             {
                 Log.Info("Connected");
-                Log.Debug(
-                    string.Format(
-                        "Sent ping with sequence {0}", client.Ping()));
-                Log.Debug(
-                    string.Format(
-                        "Sent ping with sequence {0}", client.Ping()));
+                foreach (var ping in Enumerable.Range(1, 5))
+                {
+                    Log.Debug(
+                        string.Format(
+                            "[{0}] Sent ping with sequence {1}",
+                            ping, client.Ping()));
+                }
                 foreach (var payload in client.Logout())
                 {
                     Log.Debug(

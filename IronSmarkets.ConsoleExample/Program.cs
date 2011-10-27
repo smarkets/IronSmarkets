@@ -49,8 +49,20 @@ namespace IronSmarkets.ConsoleExample
             Log.Info("Logging in...");
             using (var client = SmarketsClient.Create(sockSettings, sessSettings))
             {
-                Log.Info("Connected, logging out...");
-                client.Logout();
+                Log.Info("Connected");
+                Log.Debug(
+                    string.Format(
+                        "Sent ping with sequence {0}", client.Ping()));
+                Log.Debug(
+                    string.Format(
+                        "Sent ping with sequence {0}", client.Ping()));
+                foreach (var payload in client.Logout())
+                {
+                    Log.Debug(
+                        string.Format(
+                            "Got a payload {0} / {1} when logging out",
+                            payload.Type, payload.EtoPayload.Type));
+                }
                 Log.Info("Logout returned, cleaning up...");
             }
 

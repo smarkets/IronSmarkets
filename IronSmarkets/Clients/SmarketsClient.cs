@@ -229,13 +229,17 @@ namespace IronSmarkets.Clients
                        payload));
         }
 
-        private static Payload FetchHttpFound(Payload payload)
+        private static T FetchHttpFound<T>(Payload payload)
         {
-            var req = (HttpWebRequest)WebRequest.Create(payload.HttpFound.Url);
+            var url = payload.HttpFound.Url;
+            if (Log.IsDebugEnabled) Log.Debug(
+                string.Format("Fetching payload from URL {0}", url));
+            var req = (HttpWebRequest)WebRequest.Create(url);
             using (var resp = (HttpWebResponse)req.GetResponse())
             {
+                if (Log.IsDebugEnabled) Log.Debug("Received a response, deserializing");
                 Stream receiveStream = resp.GetResponseStream();
-                return Serializer.Deserialize<Payload>(receiveStream);
+                return Serializer.Deserialize<T>(receiveStream);
             }
         }
 

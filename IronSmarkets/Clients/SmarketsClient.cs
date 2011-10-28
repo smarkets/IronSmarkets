@@ -21,10 +21,12 @@
 // SOFTWARE.
 
 using System;
+using System.Net;
 using System.IO;
 using System.Threading;
 
 using log4net;
+using ProtoBuf;
 
 using IronSmarkets.Data;
 using IronSmarkets.Events;
@@ -225,6 +227,16 @@ namespace IronSmarkets.Clients
                 ev(this, new PayloadReceivedEventArgs<Payload>(
                        payload.EtoPayload.Seq,
                        payload));
+        }
+
+        private static Payload FetchHttpFound(Payload payload)
+        {
+            var req = (HttpWebRequest)WebRequest.Create(payload.HttpFound.Url);
+            using (var resp = (HttpWebResponse)req.GetResponse())
+            {
+                Stream receiveStream = resp.GetResponseStream();
+                return Serializer.Deserialize<Payload>(receiveStream);
+            }
         }
 
         private void Dispose(bool disposing)

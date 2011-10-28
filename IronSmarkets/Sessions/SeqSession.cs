@@ -311,11 +311,9 @@ namespace IronSmarkets.Sessions
                 if (payload.EtoPayload.Seq == _inSequence)
                 {
                     _inSequence++;
-                    if (payload.EtoPayload.Type == Eto.PayloadType.PAYLOADLOGOUT
-                        && payload.EtoPayload.Logout.Reason == Eto.LogoutReason.LOGOUTCONFIRMATION)
-                    {
+                    if (MessageTranslator<Payload>.IsLogoutConfirmation(
+                            payload))
                         _logoutReceived.Set();
-                    }
                     return payload;
                 }
 

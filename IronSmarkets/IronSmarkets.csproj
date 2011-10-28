@@ -79,6 +79,7 @@
     <Compile Include="Sockets\Settings.cs" />
     <Compile Include="Sockets\SessionSocket.cs" />
     <Compile Include="Sessions\ISession.cs" />
+    <Compile Include="Sessions\MessageTranslator.cs" />
     <Compile Include="Sessions\Settings.cs" />
     <Compile Include="Sessions\SeqSession.cs" />
   </ItemGroup>

@@ -21,9 +21,11 @@
 // SOFTWARE.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
+using System.Threading;
 
 using log4net;
 
@@ -51,6 +53,7 @@ namespace IronSmarkets.ConsoleExample
 
         static void Main(string[] args)
         {
+            Thread.CurrentThread.Name = "main";
             if (args.Length != 4)
             {
                 Console.WriteLine(
@@ -81,6 +84,19 @@ namespace IronSmarkets.ConsoleExample
                 client.AddPayloadHandler(payload => true);
                 client.Login();
                 Log.Info("Connected");
+                List<Thread> threads = new List<Thread>(10);
+                foreach (var sleeper in Enumerable.Range(1, 10))
+                {
+                    Thread t1 = new Thread(() =>
+                            {
+                                Thread.Sleep(sleeper * 50);
+                                var pingSeq = client.Ping();
+                                Log.Debug(string.Format("Sent ping {0}", pingSeq));
+                            });
+                    t1.Name = string.Format("pinger{0}", sleeper);
+                    t1.Start();
+                    threads.Add(t1);
+                }
                 foreach (var ping in Enumerable.Range(1, 5))
                 {
                     Log.Debug(
@@ -88,13 +104,14 @@ namespace IronSmarkets.ConsoleExample
                             "[{0}] Sent ping with sequence {1}",
                             ping, client.Ping()));
                 }
-                foreach (var payload in client.Logout())
+                foreach (var thread in threads)
                 {
-                    Log.Debug(
-                        string.Format(
-                            "Got a payload {0} / {1} when logging out",
-                            payload.Type, payload.EtoPayload.Type));
+                    Log.Debug(string.Format("Joining {0}", thread.Name));
+                    thread.Join();
                 }
+                Log.Debug("Calling client.Logout()");
+                var logoutSeq = client.Logout();
+                Log.Debug(string.Format("Logout seq was {0}", logoutSeq));
                 Log.Info("Logout returned, cleaning up...");
             }
 

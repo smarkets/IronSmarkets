@@ -39,8 +39,6 @@ namespace IronSmarkets.Sessions
 {
     internal sealed class SeqSession : IDisposable, ISession<Payload>
     {
-        private const ushort MaxLogoutWaitMsgs = 10;
-
         private static readonly ILog Log = LogManager.GetLogger(
             System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
@@ -48,6 +46,8 @@ namespace IronSmarkets.Sessions
         private readonly ISessionSettings _settings;
         private readonly ConcurrentQueue<Payload> _sendBuffer =
             new ConcurrentQueue<Payload>();
+        private readonly ManualResetEvent _logoutReceived =
+            new ManualResetEvent(false);
 
         private readonly object _reader = new object();
         private readonly object _writer = new object();
@@ -133,6 +133,7 @@ namespace IronSmarkets.Sessions
             if (Log.IsDebugEnabled) Log.Debug("Receiving login response payload");
             var response = Receive();
             _loginSent = true;
+            _logoutReceived.Reset();
             if (response.EtoPayload.Type == Eto.PayloadType.PAYLOADLOGOUT)
             {
                 string message;
@@ -174,21 +175,11 @@ namespace IronSmarkets.Sessions
             return loginSeq;
         }
 
-        public IEnumerable<Payload> Logout()
+        public ulong Logout()
         {
-            if (_loginSent)
-            {
-                return Logout(MaxLogoutWaitMsgs);
-            }
+            if (!_loginSent)
+                throw new NotLoggedInException();
 
-            if (Log.IsDebugEnabled) Log.Debug(
-                "Ignoring Logout() call because login has not been sent");
-
-            return Enumerable.Empty<Payload>();
-        }
-
-        public IEnumerable<Payload> Logout(ushort maxMessagesToConsume)
-        {
             var logoutPayload = new Payload {
                 Type = PayloadType.PAYLOADETO,
                 EtoPayload = new Eto.Payload {
@@ -197,41 +188,16 @@ namespace IronSmarkets.Sessions
                         Reason = Eto.LogoutReason.LOGOUTNONE
                     }
                 }
-
             };
             if (Log.IsDebugEnabled) Log.Debug(
                 "Sending logout payload with 'none' reason");
 
             Send(logoutPayload);
 
-            if (maxMessagesToConsume > 0)
-            {
-                if (Log.IsDebugEnabled) Log.Debug(
-                    "Waiting for logout response...");
-                var received = new List<Payload>();
-                while (received.Count < maxMessagesToConsume)
-                {
-                    var recvPayload = Receive();
-                    if (recvPayload == null)
-                    {
-                        throw new MessageStreamException(
-                            "Received null payload while waiting for logout response");
-                    }
+            // Block
+            _logoutReceived.WaitOne();
 
-                    received.Add(recvPayload);
-
-                    if (recvPayload.EtoPayload.Type == Eto.PayloadType.PAYLOADLOGOUT)
-                    {
-                        // TODO: Check Reason -- should be 'confirmation'
-                        break;
-                    }
-                }
-                return received;
-            }
-
-            if (Log.IsDebugEnabled) Log.Debug(
-                "Not waiting for logout response");
-            return Enumerable.Empty<Payload>();
+            return logoutPayload.EtoPayload.Seq;
         }
 
         public IEnumerable<ulong> Send(Payload payload)
@@ -257,6 +223,8 @@ namespace IronSmarkets.Sessions
 
             if (flush)
             {
+                if (Log.IsDebugEnabled) Log.Debug(
+                    "Flushing payloads after buffering");
                 return Flush();
             }
 
@@ -270,13 +238,18 @@ namespace IronSmarkets.Sessions
                     "SeqSession",
                     "Called Send on disposed object");
 
-            var seqs = new List<ulong>(_sendBuffer.Count);
-            if (Log.IsDebugEnabled) Log.Debug(
-                string.Format(
-                    "Flushing send buffer of size {0}",
-                    _sendBuffer.Count));
-            lock (_writer)
+            bool writerAcquired = false;
+            try
             {
+                if (Log.IsDebugEnabled) Log.Debug("Acquiring writer lock");
+                Monitor.Enter(_writer, ref writerAcquired);
+                if (Log.IsDebugEnabled) Log.Debug("Writer lock acquired");
+                var seqs = new List<ulong>(_sendBuffer.Count);
+                if (Log.IsDebugEnabled) Log.Debug(
+                    string.Format(
+                        "Flushing send buffer of size {0}",
+                        _sendBuffer.Count));
+
                 Payload outPayload;
                 while (_sendBuffer.TryDequeue(out outPayload))
                 {
@@ -289,8 +262,17 @@ namespace IronSmarkets.Sessions
                     seqs.Add(_outSequence++);
                 }
                 _socket.Flush();
+                return seqs;
             }
-            return seqs;
+            finally
+            {
+                if (writerAcquired)
+                {
+                    if (Log.IsDebugEnabled) Log.Debug(
+                        "Releasing writer lock");
+                    Monitor.Exit(_writer);
+                }
+            }
         }
 
         public Payload Receive()
@@ -300,8 +282,11 @@ namespace IronSmarkets.Sessions
                     "SeqSession",
                     "Called Receive on disposed object");
 
-            lock (_reader)
+            bool readerAcquired = false;
+            try
             {
+                if (Log.IsDebugEnabled) Log.Debug("Acquiring reader lock");
+                Monitor.Enter(_reader, ref readerAcquired);
                 if (Log.IsDebugEnabled) Log.Debug(
                     "Reading next payload from socket...");
                 var payload = _socket.Read();
@@ -326,6 +311,11 @@ namespace IronSmarkets.Sessions
                 if (payload.EtoPayload.Seq == _inSequence)
                 {
                     _inSequence++;
+                    if (payload.EtoPayload.Type == Eto.PayloadType.PAYLOADLOGOUT
+                        && payload.EtoPayload.Logout.Reason == Eto.LogoutReason.LOGOUTCONFIRMATION)
+                    {
+                        _logoutReceived.Set();
+                    }
                     return payload;
                 }
 
@@ -355,6 +345,15 @@ namespace IronSmarkets.Sessions
                             "buffering a replay payload",
                             payload.EtoPayload.Seq, _inSequence));
                     Send(replayPayload, false);
+                }
+            }
+            finally
+            {
+                if (readerAcquired)
+                {
+                    if (Log.IsDebugEnabled) Log.Debug(
+                        "Releasing reader lock");
+                    Monitor.Exit(_reader);
                 }
             }
 

@@ -46,7 +46,7 @@ namespace IronSmarkets.Clients
         bool IsDisposed { get; }
 
         ulong Login();
-        IEnumerable<Payload> Logout();
+        ulong Logout();
 
         ulong Ping();
         ulong SubscribeMarket(Uuid market);
@@ -88,7 +88,6 @@ namespace IronSmarkets.Clients
 
         public event EventHandler<PayloadReceivedEventArgs<Payload>> PayloadReceived;
 
-
         ~SmarketsClient()
         {
             Dispose(false);
@@ -116,15 +115,16 @@ namespace IronSmarkets.Clients
             return seq;
         }
 
-        public IEnumerable<Payload> Logout()
+        public ulong Logout()
         {
             if (IsDisposed)
                 throw new ObjectDisposedException(
                     "SmarketsClient",
                     "Called Logout on disposed object");
 
+            ulong seq = _session.Logout();
             _receiver.Stop();
-            return _session.Logout();
+            return seq;
         }
 
         public ulong Ping()
@@ -141,7 +141,8 @@ namespace IronSmarkets.Clients
                 }
             };
 
-            return Enumerable.Last(_session.Send(payload));
+            _session.Send(payload);
+            return payload.EtoPayload.Seq;
         }
 
         public ulong SubscribeMarket(Uuid market)
@@ -158,7 +159,8 @@ namespace IronSmarkets.Clients
                 }
             };
 
-            return _session.Send(payload).Last();
+            _session.Send(payload);
+            return payload.EtoPayload.Seq;
         }
 
         private void OnPayloadReceived(Payload payload)

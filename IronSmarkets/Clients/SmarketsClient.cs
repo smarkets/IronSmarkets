@@ -21,6 +21,7 @@
 // SOFTWARE.
 
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.IO;
 using System.Threading;
@@ -55,6 +56,29 @@ namespace IronSmarkets.Clients
 
         ulong RequestOrdersForAccount();
         ulong RequestOrdersForMarket(Uuid market);
+
+        Proto.Seto.Events RequestEvents(EventsRequest request);
+    }
+
+    internal sealed class SyncRequest<T>
+    {
+        private readonly ManualResetEvent _replied =
+            new ManualResetEvent(false);
+
+        private T _response;
+
+        public T Response {
+            get
+            {
+                _replied.WaitOne();
+                return _response;
+            }
+            set
+            {
+                _response = value;
+                _replied.Set();
+            }
+        }
     }
 
     public sealed class SmarketsClient : ISmarketsClient
@@ -66,6 +90,9 @@ namespace IronSmarkets.Clients
 
         private int _disposed;
         private readonly Receiver<Payload> _receiver;
+
+        private readonly IDictionary<ulong, SyncRequest<Proto.Seto.Events>> _eventsRequests =
+            new Dictionary<ulong, SyncRequest<Proto.Seto.Events>>();
 
         private SmarketsClient(
             ISocketSettings socketSettings,
@@ -220,6 +247,25 @@ namespace IronSmarkets.Clients
             return payload.EtoPayload.Seq;
         }
 
+        public Proto.Seto.Events RequestEvents(EventsRequest request)
+        {
+            if (IsDisposed)
+                throw new ObjectDisposedException(
+                    "SmarketsClient",
+                    "Called RequestEvents on disposed object");
+
+            var payload = new Payload {
+                Type = PayloadType.PAYLOADEVENTSREQUEST,
+                EventsRequest = request
+            };
+
+            _session.Send(payload);
+            var seq = payload.EtoPayload.Seq;
+            var req = new SyncRequest<Proto.Seto.Events>();
+            _eventsRequests[seq] = req;
+            return req.Response;
+        }
+
         private void OnPayloadReceived(Payload payload)
         {
             EventHandler<PayloadReceivedEventArgs<Payload>> ev = PayloadReceived;
@@ -227,6 +273,16 @@ namespace IronSmarkets.Clients
                 ev(this, new PayloadReceivedEventArgs<Payload>(
                        payload.EtoPayload.Seq,
                        payload));
+            if (payload.Type == PayloadType.PAYLOADHTTPFOUND)
+            {
+                SyncRequest<Proto.Seto.Events> req;
+                if (_eventsRequests.TryGetValue(
+                        payload.EtoPayload.Seq,
+                        out req)) {
+                    // TODO: This should be dispatched to some worker thread
+                    req.Response = FetchHttpFound<Proto.Seto.Events>(payload);
+                }
+            }
         }
 
         private static T FetchHttpFound<T>(Payload payload)

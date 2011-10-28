@@ -93,7 +93,7 @@ namespace IronSmarkets.Sockets
                     string.Format(
                         "Validating hostname {0}", _settings.Hostname));
                 sslStream.AuthenticateAsClient(_settings.Hostname);
-                _tcpStream = sslStream;
+                _tcpStream = new SafeStream(sslStream);
             }
             else
             {

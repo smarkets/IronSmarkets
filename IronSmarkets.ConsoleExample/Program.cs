@@ -75,7 +75,8 @@ namespace IronSmarkets.ConsoleExample
                 client.PayloadReceived += (sender, eargs) =>
                     {
                         Console.WriteLine(
-                            "Event fired for payload {0} / {1}",
+                            "Event fired for payload [{0}] {1} / {2}",
+                            eargs.Sequence,
                             eargs.Payload.EtoPayload.Type,
                             eargs.Payload.Type);
                     };

@@ -311,8 +311,7 @@ namespace IronSmarkets.Sessions
                 if (payload.EtoPayload.Seq == _inSequence)
                 {
                     _inSequence++;
-                    if (MessageTranslator<Payload>.IsLogoutConfirmation(
-                            payload))
+                    if (payload.IsLogoutConfirmation())
                         _logoutReceived.Set();
                     return payload;
                 }

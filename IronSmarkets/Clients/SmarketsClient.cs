@@ -21,9 +21,7 @@
 // SOFTWARE.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading;
 
 using log4net;
@@ -60,7 +58,7 @@ namespace IronSmarkets.Clients
         private readonly ISession<Payload> _session;
 
         private int _disposed;
-        private Receiver<Payload> _receiver;
+        private readonly Receiver<Payload> _receiver;
 
         private SmarketsClient(
             ISocketSettings socketSettings,
@@ -192,7 +190,7 @@ namespace IronSmarkets.Clients
         }
     }
 
-    internal sealed class Receiver<T>
+    internal sealed class Receiver<T> where T : IPayload
     {
         private static readonly ILog Log = LogManager.GetLogger(
             System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
@@ -200,13 +198,14 @@ namespace IronSmarkets.Clients
         private readonly Thread _loop;
         private readonly ISession<T> _session;
 
-        private volatile bool _complete = false;
+        private volatile bool _complete;
 
         public Receiver(ISession<T> session)
         {
             _session = session;
-            _loop = new Thread(Loop);
-            _loop.Name = "receiver";
+            _loop = new Thread(Loop) {
+                Name = "receiver"
+            };
         }
 
         public void Start()
@@ -228,7 +227,7 @@ namespace IronSmarkets.Clients
                 try
                 {
                     var payload = _session.Receive();
-                    if (MessageTranslator<T>.IsLogoutConfirmation(payload))
+                    if (payload.IsLogoutConfirmation())
                     {
                         Log.Info(
                             "Received a logout confirmation; " +

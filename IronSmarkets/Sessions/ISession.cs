@@ -23,10 +23,11 @@
 using System.Collections.Generic;
 
 using IronSmarkets.Events;
+using IronSmarkets.Proto.Seto;
 
 namespace IronSmarkets.Sessions
 {
-    public interface ISession<T> : IPayloadEvents<T>, IPayloadEndpoint<T>
+    public interface ISession<T> : IPayloadEvents<T>, IPayloadEndpoint<T> where T : IPayload
     {
         ulong InSequence { get; }
         ulong OutSequence { get; }

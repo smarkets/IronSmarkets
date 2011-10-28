@@ -20,21 +20,20 @@
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-using IronSmarkets.Proto.Seto;
-
-using Eto = IronSmarkets.Proto.Eto;
-
-namespace IronSmarkets.Sessions
+namespace IronSmarkets.Proto.Seto
 {
-    internal static class MessageTranslator<T>
+    public interface IPayload
     {
-        public static bool IsLogoutConfirmation(T tpayload)
+        bool IsLogoutConfirmation();
+    }
+
+    partial class Payload : IPayload
+    {
+        public bool IsLogoutConfirmation()
         {
-            var payload = tpayload as Payload;
-            return payload != null
-                && payload.EtoPayload.Type ==
+            return EtoPayload.Type ==
                 Eto.PayloadType.PAYLOADLOGOUT
-                && payload.EtoPayload.Logout.Reason ==
+                && EtoPayload.Logout.Reason ==
                 Eto.LogoutReason.LOGOUTCONFIRMATION;
         }
     }

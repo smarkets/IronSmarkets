@@ -65,6 +65,7 @@
     </Compile>
     <Compile Include="Proto\Eto\Messages.cs" />
     <Compile Include="Proto\Seto\Messages.cs" />
+    <Compile Include="Proto\Seto\Payload.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Data\Uuid.cs" />
     <Compile Include="Exceptions\ConnectionException.cs" />
@@ -79,7 +80,6 @@
     <Compile Include="Sockets\Settings.cs" />
     <Compile Include="Sockets\SessionSocket.cs" />
     <Compile Include="Sessions\ISession.cs" />
-    <Compile Include="Sessions\MessageTranslator.cs" />
     <Compile Include="Sessions\Settings.cs" />
     <Compile Include="Sessions\SeqSession.cs" />
   </ItemGroup>

@@ -22,6 +22,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 
@@ -59,6 +60,7 @@ namespace IronSmarkets.Clients
         private readonly ISession<Payload> _session;
 
         private int _disposed;
+        private Receiver<Payload> _receiver;
 
         private SmarketsClient(
             ISocketSettings socketSettings,
@@ -66,6 +68,7 @@ namespace IronSmarkets.Clients
         {
             _session = new SeqSession(socketSettings, sessionSettings);
             _session.PayloadReceived += (sender, args) => OnPayloadReceived(args.Payload);
+            _receiver = new Receiver<Payload>(_session);
         }
 
         public static ISmarketsClient Create(
@@ -108,7 +111,9 @@ namespace IronSmarkets.Clients
                     "SmarketsClient",
                     "Called Logout on disposed object");
 
-            return _session.Login();
+            ulong seq = _session.Login();
+            _receiver.Start();
+            return seq;
         }
 
         public IEnumerable<Payload> Logout()
@@ -118,6 +123,7 @@ namespace IronSmarkets.Clients
                     "SmarketsClient",
                     "Called Logout on disposed object");
 
+            _receiver.Stop();
             return _session.Logout();
         }
 
@@ -181,6 +187,51 @@ namespace IronSmarkets.Clients
         {
             Dispose(true);
             GC.SuppressFinalize(this);
+        }
+    }
+
+    internal sealed class Receiver<T>
+    {
+        private static readonly ILog Log = LogManager.GetLogger(
+            System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+
+        private readonly Thread _loop;
+        private readonly ISession<T> _session;
+
+        private volatile bool _complete = false;
+
+        public Receiver(ISession<T> session)
+        {
+            _session = session;
+            _loop = new Thread(Loop);
+            _loop.Name = "receiver";
+        }
+
+        public void Start()
+        {
+            _complete = false;
+            _loop.Start();
+        }
+
+        public void Stop()
+        {
+            _complete = true;
+            _loop.Join();
+        }
+
+        private void Loop()
+        {
+            while (!_complete)
+            {
+                try
+                {
+                    _session.Receive();
+                }
+                catch (IOException ex)
+                {
+                    Log.Warn("Receiving socket timed out", ex);
+                }
+            }
         }
     }
 }

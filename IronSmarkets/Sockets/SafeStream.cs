@@ -88,7 +88,7 @@ namespace IronSmarkets.Sockets
 
         public override int Read(byte[] buffer, int offset, int count)
         {
-            StateObject state = new StateObject();
+            var state = new StateObject();
             _stream.BeginRead(buffer, offset, count, ReadCallback, state);
             state.Done.WaitOne();
             return state.BytesRead;
@@ -96,21 +96,21 @@ namespace IronSmarkets.Sockets
 
         public override void Write(byte[] buffer, int offset, int count)
         {
-            StateObject state = new StateObject();
+            var state = new StateObject();
             _stream.BeginWrite(buffer, offset, count, WriteCallback, state);
             state.Done.WaitOne();
         }
 
         private void ReadCallback(IAsyncResult ar)
         {
-            StateObject state = (StateObject)ar.AsyncState;
+            var state = (StateObject)ar.AsyncState;
             state.BytesRead = _stream.EndRead(ar);
             state.Done.Set();
         }
 
         private void WriteCallback(IAsyncResult ar)
         {
-            StateObject state = (StateObject)ar.AsyncState;
+            var state = (StateObject)ar.AsyncState;
             _stream.EndWrite(ar);
             state.Done.Set();
         }

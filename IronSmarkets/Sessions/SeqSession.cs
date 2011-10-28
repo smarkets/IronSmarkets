@@ -28,8 +28,9 @@ using System.Threading;
 
 using log4net;
 
-using IronSmarkets.Sockets;
+using IronSmarkets.Events;
 using IronSmarkets.Exceptions;
+using IronSmarkets.Sockets;
 
 using Seto = IronSmarkets.Proto.Seto;
 using Eto = IronSmarkets.Proto.Eto;
@@ -61,6 +62,8 @@ namespace IronSmarkets.Sessions
         public ulong InSequence { get { return _inSequence; } }
         public ulong OutSequence { get { return _outSequence; } }
         public string SessionId { get { return _sessionId; } }
+
+        public event EventHandler<PayloadReceivedEventArgs<Seto.Payload>> PayloadReceived;
 
         public SeqSession(
             ISocketSettings socketSettings,
@@ -308,6 +311,8 @@ namespace IronSmarkets.Sessions
                         "Socket was probably closed prematurely");
                 }
 
+                OnPayloadReceived(payload);
+
                 if (Log.IsDebugEnabled) Log.Debug(
                     string.Format(
                         "Received payload {0} / {1}", payload.Type,
@@ -359,6 +364,15 @@ namespace IronSmarkets.Sessions
             var disp = _socket as IDisposable;
             if (disp != null)
                 disp.Dispose();
+        }
+
+        private void OnPayloadReceived(Seto.Payload payload)
+        {
+            EventHandler<PayloadReceivedEventArgs<Seto.Payload>> ev = PayloadReceived;
+            if (ev != null)
+                ev(this, new PayloadReceivedEventArgs<Seto.Payload>(
+                       payload.EtoPayload.Seq,
+                       payload));
         }
 
         private void Dispose(bool disposing)

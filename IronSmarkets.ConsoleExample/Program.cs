@@ -72,6 +72,13 @@ namespace IronSmarkets.ConsoleExample
             Log.Info("Logging in...");
             using (var client = SmarketsClient.Create(sockSettings, sessSettings))
             {
+                client.PayloadReceived += (sender, eargs) =>
+                    {
+                        Console.WriteLine(
+                            "Event fired for payload {0} / {1}",
+                            eargs.Payload.EtoPayload.Type,
+                            eargs.Payload.Type);
+                    };
                 client.Login();
                 Log.Info("Connected");
                 foreach (var ping in Enumerable.Range(1, 5))

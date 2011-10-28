@@ -28,6 +28,7 @@ using System.Threading;
 using log4net;
 
 using IronSmarkets.Data;
+using IronSmarkets.Events;
 using IronSmarkets.Sessions;
 using IronSmarkets.Sockets;
 
@@ -36,12 +37,12 @@ using Seto = IronSmarkets.Proto.Seto;
 
 namespace IronSmarkets.Clients
 {
-    public interface ISmarketsClient : IDisposable
+    public interface ISmarketsClient : IDisposable, IPayloadEvents<Seto.Payload>
     {
         bool IsDisposed { get; }
 
-        IEnumerable<Seto.Payload> Logout();
         ulong Login();
+        IEnumerable<Seto.Payload> Logout();
 
         ulong Ping();
         ulong SubscribeMarket(Uuid market);
@@ -61,6 +62,7 @@ namespace IronSmarkets.Clients
             ISessionSettings sessionSettings)
         {
             _session = new SeqSession(socketSettings, sessionSettings);
+            _session.PayloadReceived += (sender, args) => OnPayloadReceived(args.Payload);
         }
 
         public static ISmarketsClient Create(
@@ -77,6 +79,9 @@ namespace IronSmarkets.Clients
                 return Thread.VolatileRead(ref _disposed) == 1;
             }
         }
+
+        public event EventHandler<PayloadReceivedEventArgs<Seto.Payload>> PayloadReceived;
+
 
         ~SmarketsClient()
         {
@@ -134,7 +139,16 @@ namespace IronSmarkets.Clients
                 }
             };
 
-            return Enumerable.Last(_session.Send(payload));
+            return _session.Send(payload).Last();
+        }
+
+        private void OnPayloadReceived(Seto.Payload payload)
+        {
+            EventHandler<PayloadReceivedEventArgs<Seto.Payload>> ev = PayloadReceived;
+            if (ev != null)
+                ev(this, new PayloadReceivedEventArgs<Seto.Payload>(
+                       payload.EtoPayload.Seq,
+                       payload));
         }
 
         private void Dispose(bool disposing)

@@ -20,26 +20,24 @@
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-using System.Collections.Generic;
+using System;
 
-using IronSmarkets.Events;
-
-namespace IronSmarkets.Sessions
+namespace IronSmarkets.Events
 {
-    public interface ISession<T> : IPayloadEvents<T>
+    public class PayloadReceivedEventArgs<T> : EventArgs
     {
-        ulong InSequence { get; }
-        ulong OutSequence { get; }
-        string SessionId { get; }
-        bool IsDisposed { get; }
+        public ulong Sequence { get; private set; }
+        public T Payload { get; private set; }
 
-        ulong Login();
-        IEnumerable<T> Logout();
-        IEnumerable<T> Logout(ushort maxMessagesToConsume);
-        IEnumerable<ulong> Send(T payload);
-        IEnumerable<ulong> Send(T payload, bool flush);
-        IEnumerable<ulong> Flush();
-        T Receive();
-        void Disconnect();
+        internal PayloadReceivedEventArgs(ulong sequence, T payload)
+        {
+            Sequence = sequence;
+            Payload = payload;
+        }
+    }
+
+    public interface IPayloadEvents<T>
+    {
+        event EventHandler<PayloadReceivedEventArgs<T>> PayloadReceived;
     }
 }

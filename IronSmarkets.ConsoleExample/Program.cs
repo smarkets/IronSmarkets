@@ -84,16 +84,18 @@ namespace IronSmarkets.ConsoleExample
                 client.AddPayloadHandler(payload => true);
                 client.Login();
                 Log.Info("Connected");
-                List<Thread> threads = new List<Thread>(10);
+                var threads = new List<Thread>(10);
                 foreach (var sleeper in Enumerable.Range(1, 10))
                 {
-                    Thread t1 = new Thread(() =>
-                            {
-                                Thread.Sleep(sleeper * 50);
-                                var pingSeq = client.Ping();
-                                Log.Debug(string.Format("Sent ping {0}", pingSeq));
-                            });
-                    t1.Name = string.Format("pinger{0}", sleeper);
+                    int sleeper1 = sleeper;
+                    var t1 = new Thread(
+                        () => {
+                            Thread.Sleep(sleeper1 * 50);
+                            var pingSeq = client.Ping();
+                            Log.Debug(string.Format("Sent ping {0}", pingSeq));
+                        }) {
+                        Name = string.Format("pinger{0}", sleeper)
+                    };
                     t1.Start();
                     threads.Add(t1);
                 }

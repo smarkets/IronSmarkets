@@ -34,17 +34,14 @@ namespace IronSmarkets.Data
         public ulong High { get { return _high; } }
         public ulong Low { get { return _low; } }
 
-        public Uuid(ulong low) : this(0, low)
-        {
-        }
-
-        public Uuid(ulong high, ulong low)
+        private Uuid(ulong low) : this(0, low) {}
+        private Uuid(ulong high, ulong low)
         {
             _high = high;
             _low = low;
         }
 
-        public string ToString()
+        public override string ToString()
         {
             if (_high > 0)
             {

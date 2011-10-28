@@ -227,7 +227,14 @@ namespace IronSmarkets.Clients
             {
                 try
                 {
-                    _session.Receive();
+                    var payload = _session.Receive();
+                    if (MessageTranslator<T>.IsLogoutConfirmation(payload))
+                    {
+                        Log.Info(
+                            "Received a logout confirmation; " +
+                            "assuming socket will close");
+                        _complete = true;
+                    }
                 }
                 catch (IOException ex)
                 {

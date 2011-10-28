@@ -29,20 +29,23 @@ using log4net;
 
 using IronSmarkets.Data;
 using IronSmarkets.Events;
+using IronSmarkets.Proto.Seto;
 using IronSmarkets.Sessions;
 using IronSmarkets.Sockets;
 
 using Eto = IronSmarkets.Proto.Eto;
-using Seto = IronSmarkets.Proto.Seto;
 
 namespace IronSmarkets.Clients
 {
-    public interface ISmarketsClient : IDisposable, IPayloadEvents<Seto.Payload>
+    public interface ISmarketsClient :
+        IDisposable,
+        IPayloadEvents<Payload>,
+        IPayloadEndpoint<Payload>
     {
         bool IsDisposed { get; }
 
         ulong Login();
-        IEnumerable<Seto.Payload> Logout();
+        IEnumerable<Payload> Logout();
 
         ulong Ping();
         ulong SubscribeMarket(Uuid market);
@@ -53,7 +56,7 @@ namespace IronSmarkets.Clients
         private static readonly ILog Log = LogManager.GetLogger(
             System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-        private readonly ISession<Seto.Payload> _session;
+        private readonly ISession<Payload> _session;
 
         private int _disposed;
 
@@ -80,12 +83,22 @@ namespace IronSmarkets.Clients
             }
         }
 
-        public event EventHandler<PayloadReceivedEventArgs<Seto.Payload>> PayloadReceived;
+        public event EventHandler<PayloadReceivedEventArgs<Payload>> PayloadReceived;
 
 
         ~SmarketsClient()
         {
             Dispose(false);
+        }
+
+        public void AddPayloadHandler(Predicate<Payload> predicate)
+        {
+            _session.AddPayloadHandler(predicate);
+        }
+
+        public void RemovePayloadHandler(Predicate<Payload> predicate)
+        {
+            _session.RemovePayloadHandler(predicate);
         }
 
         public ulong Login()
@@ -98,7 +111,7 @@ namespace IronSmarkets.Clients
             return _session.Login();
         }
 
-        public IEnumerable<Seto.Payload> Logout()
+        public IEnumerable<Payload> Logout()
         {
             if (IsDisposed)
                 throw new ObjectDisposedException(
@@ -115,8 +128,8 @@ namespace IronSmarkets.Clients
                     "SmarketsClient",
                     "Called Ping on disposed object");
 
-            var payload = new Seto.Payload {
-                Type = Seto.PayloadType.PAYLOADETO,
+            var payload = new Payload {
+                Type = PayloadType.PAYLOADETO,
                 EtoPayload = new Eto.Payload {
                     Type = Eto.PayloadType.PAYLOADPING
                 }
@@ -132,9 +145,9 @@ namespace IronSmarkets.Clients
                     "SmarketsClient",
                     "Called SubscribeMarket on disposed object");
 
-            var payload = new Seto.Payload {
-                Type = Seto.PayloadType.PAYLOADMARKETSUBSCRIBE,
-                MarketSubscribe = new Seto.MarketSubscribe {
+            var payload = new Payload {
+                Type = PayloadType.PAYLOADMARKETSUBSCRIBE,
+                MarketSubscribe = new MarketSubscribe {
                     Market = market.ToUuid128()
                 }
             };
@@ -142,11 +155,11 @@ namespace IronSmarkets.Clients
             return _session.Send(payload).Last();
         }
 
-        private void OnPayloadReceived(Seto.Payload payload)
+        private void OnPayloadReceived(Payload payload)
         {
-            EventHandler<PayloadReceivedEventArgs<Seto.Payload>> ev = PayloadReceived;
+            EventHandler<PayloadReceivedEventArgs<Payload>> ev = PayloadReceived;
             if (ev != null)
-                ev(this, new PayloadReceivedEventArgs<Seto.Payload>(
+                ev(this, new PayloadReceivedEventArgs<Payload>(
                        payload.EtoPayload.Seq,
                        payload));
         }

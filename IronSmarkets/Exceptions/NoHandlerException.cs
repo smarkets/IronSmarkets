@@ -22,28 +22,13 @@
 
 using System;
 
-namespace IronSmarkets.Events
+namespace IronSmarkets.Exceptions
 {
-    public class PayloadReceivedEventArgs<T> : EventArgs
+    public class NoHandlerException : Exception
     {
-        public ulong Sequence { get; private set; }
-        public T Payload { get; private set; }
+        private const string DefaultMessage =
+            "No payload handler was registered; aborting";
 
-        internal PayloadReceivedEventArgs(ulong sequence, T payload)
-        {
-            Sequence = sequence;
-            Payload = payload;
-        }
-    }
-
-    public interface IPayloadEvents<T>
-    {
-        event EventHandler<PayloadReceivedEventArgs<T>> PayloadReceived;
-    }
-
-    public interface IPayloadEndpoint<T>
-    {
-        void AddPayloadHandler(Predicate<T> handler);
-        void RemovePayloadHandler(Predicate<T> handler);
+        public override string Message { get { return DefaultMessage; } }
     }
 }

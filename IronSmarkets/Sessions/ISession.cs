@@ -26,7 +26,7 @@ using IronSmarkets.Events;
 
 namespace IronSmarkets.Sessions
 {
-    public interface ISession<T> : IPayloadEvents<T>
+    public interface ISession<T> : IPayloadEvents<T>, IPayloadEndpoint<T>
     {
         ulong InSequence { get; }
         ulong OutSequence { get; }

@@ -70,6 +70,7 @@
     <Compile Include="Exceptions\ConnectionException.cs" />
     <Compile Include="Exceptions\MessageStreamException.cs" />
     <Compile Include="Exceptions\LoginFailedException.cs" />
+    <Compile Include="Exceptions\NoHandlerException.cs" />
     <Compile Include="Events\IPayloadEvents.cs" />
     <Compile Include="Clients\SmarketsClient.cs" />
     <Compile Include="Sockets\ISocket.cs" />

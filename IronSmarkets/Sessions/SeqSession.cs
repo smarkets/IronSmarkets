@@ -30,24 +30,24 @@ using log4net;
 
 using IronSmarkets.Events;
 using IronSmarkets.Exceptions;
+using IronSmarkets.Proto.Seto;
 using IronSmarkets.Sockets;
 
-using Seto = IronSmarkets.Proto.Seto;
 using Eto = IronSmarkets.Proto.Eto;
 
 namespace IronSmarkets.Sessions
 {
-    internal sealed class SeqSession : IDisposable, ISession<Seto.Payload>
+    internal sealed class SeqSession : IDisposable, ISession<Payload>
     {
         private const ushort MaxLogoutWaitMsgs = 10;
 
         private static readonly ILog Log = LogManager.GetLogger(
             System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-        private readonly ISocket<Seto.Payload> _socket;
+        private readonly ISocket<Payload> _socket;
         private readonly ISessionSettings _settings;
-        private readonly ConcurrentQueue<Seto.Payload> _sendBuffer =
-            new ConcurrentQueue<Seto.Payload>();
+        private readonly ConcurrentQueue<Payload> _sendBuffer =
+            new ConcurrentQueue<Payload>();
 
         private readonly object _reader = new object();
         private readonly object _writer = new object();
@@ -58,12 +58,13 @@ namespace IronSmarkets.Sessions
         private ulong _outSequence;
         private string _sessionId;
         private bool _loginSent;
+        private Predicate<Payload> _payloadHandler;
 
         public ulong InSequence { get { return _inSequence; } }
         public ulong OutSequence { get { return _outSequence; } }
         public string SessionId { get { return _sessionId; } }
 
-        public event EventHandler<PayloadReceivedEventArgs<Seto.Payload>> PayloadReceived;
+        public event EventHandler<PayloadReceivedEventArgs<Payload>> PayloadReceived;
 
         public SeqSession(
             ISocketSettings socketSettings,
@@ -107,12 +108,12 @@ namespace IronSmarkets.Sessions
 
             // Construct the login payload protobfuinter
             // TODO: Create some message factories so this is less ugly
-            var loginPayload = new Seto.Payload {
-                Type = Seto.PayloadType.PAYLOADLOGIN,
+            var loginPayload = new Payload {
+                Type = PayloadType.PAYLOADLOGIN,
                 EtoPayload = new Eto.Payload {
                     Type = Eto.PayloadType.PAYLOADLOGIN
                 },
-                Login = new Seto.Login {
+                Login = new Login {
                     Username = _settings.Username,
                     Password = _settings.Password
                 }
@@ -128,7 +129,7 @@ namespace IronSmarkets.Sessions
             }
 
             if (Log.IsDebugEnabled) Log.Debug("Sending login payload");
-            ulong loginSeq = Enumerable.Last<ulong>(Send(loginPayload));
+            var loginSeq = Send(loginPayload).Last();
             if (Log.IsDebugEnabled) Log.Debug("Receiving login response payload");
             var response = Receive();
             _loginSent = true;
@@ -173,7 +174,7 @@ namespace IronSmarkets.Sessions
             return loginSeq;
         }
 
-        public IEnumerable<Seto.Payload> Logout()
+        public IEnumerable<Payload> Logout()
         {
             if (_loginSent)
             {
@@ -183,13 +184,13 @@ namespace IronSmarkets.Sessions
             if (Log.IsDebugEnabled) Log.Debug(
                 "Ignoring Logout() call because login has not been sent");
 
-            return Enumerable.Empty<Seto.Payload>();
+            return Enumerable.Empty<Payload>();
         }
 
-        public IEnumerable<Seto.Payload> Logout(ushort maxMessagesToConsume)
+        public IEnumerable<Payload> Logout(ushort maxMessagesToConsume)
         {
-            var logoutPayload = new Seto.Payload {
-                Type = Seto.PayloadType.PAYLOADETO,
+            var logoutPayload = new Payload {
+                Type = PayloadType.PAYLOADETO,
                 EtoPayload = new Eto.Payload {
                     Type = Eto.PayloadType.PAYLOADLOGOUT,
                     Logout = new Eto.Logout {
@@ -207,7 +208,7 @@ namespace IronSmarkets.Sessions
             {
                 if (Log.IsDebugEnabled) Log.Debug(
                     "Waiting for logout response...");
-                var received = new List<Seto.Payload>();
+                var received = new List<Payload>();
                 while (received.Count < maxMessagesToConsume)
                 {
                     var recvPayload = Receive();
@@ -230,15 +231,15 @@ namespace IronSmarkets.Sessions
 
             if (Log.IsDebugEnabled) Log.Debug(
                 "Not waiting for logout response");
-            return Enumerable.Empty<Seto.Payload>();
+            return Enumerable.Empty<Payload>();
         }
 
-        public IEnumerable<ulong> Send(Seto.Payload payload)
+        public IEnumerable<ulong> Send(Payload payload)
         {
             return Send(payload, true);
         }
 
-        public IEnumerable<ulong> Send(Seto.Payload payload, bool flush)
+        public IEnumerable<ulong> Send(Payload payload, bool flush)
         {
             if (IsDisposed)
                 throw new ObjectDisposedException(
@@ -276,7 +277,7 @@ namespace IronSmarkets.Sessions
                     _sendBuffer.Count));
             lock (_writer)
             {
-                Seto.Payload outPayload;
+                Payload outPayload;
                 while (_sendBuffer.TryDequeue(out outPayload))
                 {
                     outPayload.EtoPayload.Seq = _outSequence;
@@ -292,7 +293,7 @@ namespace IronSmarkets.Sessions
             return seqs;
         }
 
-        public Seto.Payload Receive()
+        public Payload Receive()
         {
             if (IsDisposed)
                 throw new ObjectDisposedException(
@@ -311,7 +312,11 @@ namespace IronSmarkets.Sessions
                         "Socket was probably closed prematurely");
                 }
 
-                OnPayloadReceived(payload);
+                if (!OnPayloadReceived(payload))
+                {
+                    throw new MessageStreamException(
+                        "Payload pipeline aborted by handler");
+                }
 
                 if (Log.IsDebugEnabled) Log.Debug(
                     string.Format(
@@ -332,8 +337,8 @@ namespace IronSmarkets.Sessions
 
                 if (payload.EtoPayload.Seq > _inSequence)
                 {
-                    var replayPayload = new Seto.Payload {
-                        Type = Seto.PayloadType.PAYLOADETO,
+                    var replayPayload = new Payload {
+                        Type = PayloadType.PAYLOADETO,
                         EtoPayload = new Eto.Payload {
                             Type = Eto.PayloadType.PAYLOADREPLAY,
                             Replay = new Eto.Replay {
@@ -366,13 +371,35 @@ namespace IronSmarkets.Sessions
                 disp.Dispose();
         }
 
-        private void OnPayloadReceived(Seto.Payload payload)
+        public void AddPayloadHandler(Predicate<Payload> predicate)
         {
-            EventHandler<PayloadReceivedEventArgs<Seto.Payload>> ev = PayloadReceived;
+            if (null == _payloadHandler)
+            {
+                _payloadHandler = predicate;
+            }
+            else
+            {
+                _payloadHandler += predicate;
+            }
+        }
+
+        public void RemovePayloadHandler(Predicate<Payload> predicate)
+        {
+            _payloadHandler -= predicate;
+        }
+
+        private bool OnPayloadReceived(Payload payload)
+        {
+            EventHandler<PayloadReceivedEventArgs<Payload>> ev = PayloadReceived;
             if (ev != null)
-                ev(this, new PayloadReceivedEventArgs<Seto.Payload>(
+                ev(this, new PayloadReceivedEventArgs<Payload>(
                        payload.EtoPayload.Seq,
                        payload));
+
+            if (_payloadHandler == null)
+                throw new NoHandlerException();
+
+            return _payloadHandler.GetInvocationList().Cast<Predicate<Payload>>().All(handler => handler(payload));
         }
 
         private void Dispose(bool disposing)

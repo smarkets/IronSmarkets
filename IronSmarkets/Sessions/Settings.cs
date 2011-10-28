@@ -48,15 +48,10 @@ namespace IronSmarkets.Sessions
         public ulong OutSequence { get { return _outSequence; } }
         public string SessionId { get { return _sessionId; } }
 
-        public SessionSettings(string username, string password) : this(
-            username, password, 1, 1, null)
-        {
-        }
-
         public SessionSettings(
             string username, string password,
-            ulong inSequence, ulong outSequence,
-            string sessionId)
+            ulong inSequence = 1, ulong outSequence = 1,
+            string sessionId = null)
         {
             _username = username;
             _password = password;

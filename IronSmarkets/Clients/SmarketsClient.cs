@@ -47,7 +47,12 @@ namespace IronSmarkets.Clients
         ulong Logout();
 
         ulong Ping();
+
         ulong SubscribeMarket(Uuid market);
+        ulong UnsubscribeMarket(Uuid market);
+
+        ulong RequestOrdersForAccount();
+        ulong RequestOrdersForMarket(Uuid market);
     }
 
     public sealed class SmarketsClient : ISmarketsClient
@@ -155,6 +160,58 @@ namespace IronSmarkets.Clients
                 MarketSubscribe = new MarketSubscribe {
                     Market = market.ToUuid128()
                 }
+            };
+
+            _session.Send(payload);
+            return payload.EtoPayload.Seq;
+        }
+
+        public ulong UnsubscribeMarket(Uuid market)
+        {
+            if (IsDisposed)
+                throw new ObjectDisposedException(
+                    "SmarketsClient",
+                    "Called UnsubscribeMarket on disposed object");
+
+            var payload = new Payload {
+                Type = PayloadType.PAYLOADMARKETUNSUBSCRIBE,
+                MarketUnsubscribe = new MarketUnsubscribe {
+                    Market = market.ToUuid128()
+                }
+            };
+
+            _session.Send(payload);
+            return payload.EtoPayload.Seq;
+        }
+
+        public ulong RequestOrdersForMarket(Uuid market)
+        {
+            if (IsDisposed)
+                throw new ObjectDisposedException(
+                    "SmarketsClient",
+                    "Called RequestOrdersForMarket on disposed object");
+
+            var payload = new Payload {
+                Type = PayloadType.PAYLOADORDERSFORMARKETREQUEST,
+                OrdersForMarketRequest = new OrdersForMarketRequest {
+                    Market = market.ToUuid128()
+                }
+            };
+
+            _session.Send(payload);
+            return payload.EtoPayload.Seq;
+        }
+
+        public ulong RequestOrdersForAccount()
+        {
+            if (IsDisposed)
+                throw new ObjectDisposedException(
+                    "SmarketsClient",
+                    "Called RequestOrdersForAccount on disposed object");
+
+            var payload = new Payload {
+                Type = PayloadType.PAYLOADORDERSFORACCOUNTREQUEST,
+                OrdersForAccountRequest = new OrdersForAccountRequest()
             };
 
             _session.Send(payload);

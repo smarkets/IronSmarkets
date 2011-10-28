@@ -85,20 +85,18 @@ namespace IronSmarkets.Sessions
             Dispose(false);
         }
 
-        public void Login()
+        public ulong Login()
         {
             if (IsDisposed)
                 throw new ObjectDisposedException(
                     "SeqSession",
                     "Called Login on disposed object");
 
-            // TODO: Should we throw an exception here?
             if (_loginSent)
             {
-                Log.Warn(
+                throw new InvalidOperationException(
                     "Login payload has already been sent, " +
                     "ignoring Login() call.");
-                return;
             }
 
             if (Log.IsDebugEnabled) Log.Debug("Opening socket connection");
@@ -127,7 +125,7 @@ namespace IronSmarkets.Sessions
             }
 
             if (Log.IsDebugEnabled) Log.Debug("Sending login payload");
-            Send(loginPayload);
+            ulong loginSeq = Enumerable.Last<ulong>(Send(loginPayload));
             if (Log.IsDebugEnabled) Log.Debug("Receiving login response payload");
             var response = Receive();
             _loginSent = true;
@@ -169,6 +167,7 @@ namespace IronSmarkets.Sessions
                         "Login response received with session {0}, reset {1}",
                         _sessionId, _outSequence));
             }
+            return loginSeq;
         }
 
         public IEnumerable<Seto.Payload> Logout()

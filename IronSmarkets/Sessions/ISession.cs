@@ -31,7 +31,7 @@ namespace IronSmarkets.Sessions
         string SessionId { get; }
         bool IsDisposed { get; }
 
-        void Login();
+        ulong Login();
         IEnumerable<T> Logout();
         IEnumerable<T> Logout(ushort maxMessagesToConsume);
         IEnumerable<ulong> Send(T payload);

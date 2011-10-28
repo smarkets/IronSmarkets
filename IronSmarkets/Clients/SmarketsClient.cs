@@ -41,6 +41,7 @@ namespace IronSmarkets.Clients
         bool IsDisposed { get; }
 
         IEnumerable<Seto.Payload> Logout();
+        ulong Login();
 
         ulong Ping();
         ulong SubscribeMarket(Uuid market);
@@ -60,7 +61,6 @@ namespace IronSmarkets.Clients
             ISessionSettings sessionSettings)
         {
             _session = new SeqSession(socketSettings, sessionSettings);
-            _session.Login();
         }
 
         public static ISmarketsClient Create(
@@ -81,6 +81,16 @@ namespace IronSmarkets.Clients
         ~SmarketsClient()
         {
             Dispose(false);
+        }
+
+        public ulong Login()
+        {
+            if (IsDisposed)
+                throw new ObjectDisposedException(
+                    "SmarketsClient",
+                    "Called Logout on disposed object");
+
+            return _session.Login();
         }
 
         public IEnumerable<Seto.Payload> Logout()

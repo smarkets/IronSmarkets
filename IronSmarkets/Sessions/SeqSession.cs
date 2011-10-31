@@ -65,6 +65,7 @@ namespace IronSmarkets.Sessions
         public string SessionId { get { return _sessionId; } }
 
         public event EventHandler<PayloadReceivedEventArgs<Payload>> PayloadReceived;
+        public event EventHandler<PayloadReceivedEventArgs<Payload>> PayloadSent;
 
         public SeqSession(
             ISocketSettings socketSettings,
@@ -259,6 +260,7 @@ namespace IronSmarkets.Sessions
                             "Writing payload out:{0}",
                             _outSequence));
                     _socket.Write(outPayload);
+                    OnPayloadSent(outPayload);
                     seqs.Add(_outSequence++);
                 }
                 _socket.Flush();
@@ -396,6 +398,15 @@ namespace IronSmarkets.Sessions
                 throw new NoHandlerException();
 
             return _payloadHandler.GetInvocationList().Cast<Predicate<Payload>>().All(handler => handler(payload));
+        }
+
+        private void OnPayloadSent(Payload payload)
+        {
+            EventHandler<PayloadReceivedEventArgs<Payload>> ev = PayloadSent;
+            if (ev != null)
+                ev(this, new PayloadReceivedEventArgs<Payload>(
+                       payload.EtoPayload.Seq,
+                       payload));
         }
 
         private void Dispose(bool disposing)

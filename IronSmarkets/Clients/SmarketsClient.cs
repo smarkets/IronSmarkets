@@ -114,6 +114,8 @@ namespace IronSmarkets.Clients
                 _settings.SessionSettings);
             _session.PayloadReceived += (sender, args) =>
                 OnPayloadReceived(args.Payload);
+            _session.PayloadSent += (sender, args) =>
+                OnPayloadSent(args.Payload);
             _receiver = new Receiver<Payload>(_session);
         }
 
@@ -131,6 +133,7 @@ namespace IronSmarkets.Clients
         }
 
         public event EventHandler<PayloadReceivedEventArgs<Payload>> PayloadReceived;
+        public event EventHandler<PayloadReceivedEventArgs<Payload>> PayloadSent;
 
         ~SmarketsClient()
         {
@@ -289,6 +292,15 @@ namespace IronSmarkets.Clients
             {
                 HandleEventsHttpFound(payload);
             }
+        }
+
+        private void OnPayloadSent(Payload payload)
+        {
+            EventHandler<PayloadReceivedEventArgs<Payload>> ev = PayloadSent;
+            if (ev != null)
+                ev(this, new PayloadReceivedEventArgs<Payload>(
+                       payload.EtoPayload.Seq,
+                       payload));
         }
 
         private void HandleEventsHttpFound(Payload payload)

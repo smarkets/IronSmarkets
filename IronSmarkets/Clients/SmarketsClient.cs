@@ -57,7 +57,7 @@ namespace IronSmarkets.Clients
         ulong RequestOrdersForAccount();
         ulong RequestOrdersForMarket(Uuid market);
 
-        Proto.Seto.Events RequestEvents(EventsRequest request);
+        IEventMap RequestEvents(EventQuery query);
     }
 
     internal sealed class SyncRequest<T>
@@ -262,7 +262,7 @@ namespace IronSmarkets.Clients
             return payload.EtoPayload.Seq;
         }
 
-        public Proto.Seto.Events RequestEvents(EventsRequest request)
+        public IEventMap RequestEvents(EventQuery query)
         {
             if (IsDisposed)
                 throw new ObjectDisposedException(
@@ -271,14 +271,14 @@ namespace IronSmarkets.Clients
 
             var payload = new Payload {
                 Type = PayloadType.PAYLOADEVENTSREQUEST,
-                EventsRequest = request
+                EventsRequest = query.ToEventsRequest()
             };
 
             _session.Send(payload);
             var seq = payload.EtoPayload.Seq;
             var req = new SyncRequest<Proto.Seto.Events>();
             _eventsRequests[seq] = req;
-            return req.Response;
+            return EventMap.FromSeto(req.Response);
         }
 
         private void OnPayloadReceived(Payload payload)

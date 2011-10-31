@@ -68,6 +68,10 @@
     <Compile Include="Proto\Seto\Payload.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Data\Uuid.cs" />
+    <Compile Include="Data\Event.cs" />
+    <Compile Include="Data\EventQuery.cs" />
+    <Compile Include="Data\EventQueryBuilder.cs" />
+    <Compile Include="Data\EventMap.cs" />
     <Compile Include="Exceptions\ConnectionException.cs" />
     <Compile Include="Exceptions\NotLoggedInException.cs" />
     <Compile Include="Exceptions\MessageStreamException.cs" />

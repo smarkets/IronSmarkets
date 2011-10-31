@@ -30,6 +30,7 @@ using System.Threading;
 using log4net;
 
 using IronSmarkets.Clients;
+using IronSmarkets.Data;
 using IronSmarkets.Proto.Seto;
 using IronSmarkets.Sessions;
 using IronSmarkets.Sockets;
@@ -113,12 +114,14 @@ namespace IronSmarkets.ConsoleExample
                     Log.Debug(string.Format("Joining {0}", thread.Name));
                     thread.Join();
                 }
-                var events = client.RequestEvents(
-                    new EventsRequest {
-                        ContentType = ContentType.CONTENTTYPEPROTOBUF,
-                        Type = EventsRequestType.EVENTSREQUESTPOLITICS
-                    });
-                Log.Debug(string.Format("Got some events {0}", events));
+                var builder = new EventQueryBuilder();
+                builder.SetCategory("politics");
+                var events = client.RequestEvents(builder.GetResult());
+                Log.Debug(string.Format("Got {0} events:", events.Count));
+                foreach (var eventInfo in events)
+                {
+                    Log.Debug(string.Format("\t{0} => {1}", eventInfo.Key, eventInfo.Value.Name));
+                }
                 Log.Debug("Calling client.Logout()");
                 var logoutSeq = client.Logout();
                 Log.Debug(string.Format("Logout seq was {0}", logoutSeq));

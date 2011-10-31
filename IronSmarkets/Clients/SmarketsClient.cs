@@ -31,6 +31,7 @@ using ProtoBuf;
 
 using IronSmarkets.Data;
 using IronSmarkets.Events;
+using IronSmarkets.Exceptions;
 using IronSmarkets.Proto.Seto;
 using IronSmarkets.Sessions;
 
@@ -65,11 +66,16 @@ namespace IronSmarkets.Clients
             new ManualResetEvent(false);
 
         private T _response;
+        private Exception _responseException;
 
         public T Response {
             get
             {
                 _replied.WaitOne();
+                if (_responseException != null)
+                {
+                    throw _responseException;
+                }
                 return _response;
             }
             set
@@ -77,6 +83,12 @@ namespace IronSmarkets.Clients
                 _response = value;
                 _replied.Set();
             }
+        }
+
+        public void SetException(Exception exception)
+        {
+            _responseException = exception;
+            _replied.Set();
         }
     }
 
@@ -275,27 +287,82 @@ namespace IronSmarkets.Clients
                        payload));
             if (payload.Type == PayloadType.PAYLOADHTTPFOUND)
             {
-                SyncRequest<Proto.Seto.Events> req;
-                if (_eventsRequests.TryGetValue(
-                        payload.EtoPayload.Seq,
-                        out req)) {
-                    // TODO: This should be dispatched to some worker thread
-                    req.Response = FetchHttpFound<Proto.Seto.Events>(payload);
-                }
+                HandleEventsHttpFound(payload);
             }
         }
 
-        private static T FetchHttpFound<T>(Payload payload)
+        private void HandleEventsHttpFound(Payload payload)
+        {
+            SyncRequest<Proto.Seto.Events> req;
+            if (_eventsRequests.TryGetValue(
+                    payload.EtoPayload.Seq,
+                    out req)) {
+                BeginFetchHttpFound(req, payload);
+            }
+            else
+            {
+                Log.Warn(
+                    "Received HTTP_FOUND payload " +
+                    "but could find original request");
+            }
+        }
+
+        private IAsyncResult BeginFetchHttpFound<T>(
+            SyncRequest<T> syncRequest, Payload payload)
         {
             var url = payload.HttpFound.Url;
             if (Log.IsDebugEnabled) Log.Debug(
                 string.Format("Fetching payload from URL {0}", url));
             var req = (HttpWebRequest)WebRequest.Create(url);
-            using (var resp = (HttpWebResponse)req.GetResponse())
+            var state = new Tuple<HttpWebRequest, SyncRequest<T>>(
+                req, syncRequest);
+            var result = req.BeginGetResponse(
+                FetchHttpFoundCallback<T>, state);
+            ThreadPool.RegisterWaitForSingleObject(
+                result.AsyncWaitHandle,
+                HttpFoundTimeoutCallback<T>,
+                state, _settings.HttpRequestTimeout, true);
+            return result;
+        }
+
+        private void FetchHttpFoundCallback<T>(IAsyncResult result)
+        {
+            var stateTuple = (Tuple<HttpWebRequest, SyncRequest<T>>)result.AsyncState;
+            if (Log.IsDebugEnabled) Log.Debug(
+                string.Format("Web request callback for URL {0}", stateTuple.Item1.RequestUri));
+            try
             {
-                if (Log.IsDebugEnabled) Log.Debug("Received a response, deserializing");
-                Stream receiveStream = resp.GetResponseStream();
-                return Serializer.Deserialize<T>(receiveStream);
+                using (var resp = stateTuple.Item1.EndGetResponse(result))
+                {
+                    if (Log.IsDebugEnabled) Log.Debug("Received a response, deserializing");
+                    Stream receiveStream = resp.GetResponseStream();
+                    stateTuple.Item2.Response = Serializer.Deserialize<T>(receiveStream);
+                }
+            }
+            catch (WebException wex)
+            {
+                if (wex.Message == "Aborted.")
+                {
+                    stateTuple.Item2.SetException(
+                        new RequestTimedOutException(_settings.HttpRequestTimeout));
+                }
+                else
+                {
+                    stateTuple.Item2.SetException(wex);
+                }
+            }
+            catch (Exception ex)
+            {
+                stateTuple.Item2.SetException(ex);
+            }
+        }
+
+        private static void HttpFoundTimeoutCallback<T>(object state, bool timedOut)
+        {
+            if (timedOut)
+            {
+                var stateTuple = (Tuple<HttpWebRequest, SyncRequest<T>>)state;
+                stateTuple.Item1.Abort();
             }
         }
 

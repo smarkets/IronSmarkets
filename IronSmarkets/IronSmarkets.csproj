@@ -73,6 +73,7 @@
     <Compile Include="Exceptions\MessageStreamException.cs" />
     <Compile Include="Exceptions\LoginFailedException.cs" />
     <Compile Include="Exceptions\NoHandlerException.cs" />
+    <Compile Include="Exceptions\RequestTimedOutException.cs" />
     <Compile Include="Events\IPayloadEvents.cs" />
     <Compile Include="Clients\Settings.cs" />
     <Compile Include="Clients\SmarketsClient.cs" />

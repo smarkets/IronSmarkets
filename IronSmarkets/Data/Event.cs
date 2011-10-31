@@ -85,6 +85,8 @@ namespace IronSmarkets.Data
         private readonly Uuid? _parentUuid;
         private readonly DateTime? _startDateTime;
         private readonly DateTime? _endDateTime;
+        private readonly string _description;
+        private readonly IEnumerable<KeyValuePair<Uuid, string>> _entities;
 
         public Uuid Uuid { get { return _uuid; } }
         public string Name { get { return _name; } }
@@ -94,6 +96,8 @@ namespace IronSmarkets.Data
         public Uuid? ParentUuid { get { return _parentUuid; } }
         public DateTime? StartDateTime { get { return _startDateTime; } }
         public DateTime? EndDateTime { get { return _endDateTime; } }
+        public string Description { get { return _description; } }
+        public IEnumerable<KeyValuePair<Uuid, string>> Entities { get { return _entities; } }
 
         private Event(
             Uuid uuid,
@@ -103,7 +107,9 @@ namespace IronSmarkets.Data
             string slug,
             Uuid? parentUuid,
             DateTime? startDateTime,
-            DateTime? endDateTime)
+            DateTime? endDateTime,
+            string description,
+            IEnumerable<KeyValuePair<Uuid, String>> entities)
         {
             _uuid = uuid;
             _name = name;
@@ -113,6 +119,8 @@ namespace IronSmarkets.Data
             _parentUuid = parentUuid;
             _startDateTime = startDateTime;
             _endDateTime = endDateTime;
+            _description = description;
+            _entities = entities;
         }
 
         internal static Event FromSeto(EventInfo info)
@@ -125,7 +133,9 @@ namespace IronSmarkets.Data
                 info.Slug,
                 Uuid.MaybeFromUuid128(info.Parent),
                 FromDateTime(info.StartDate, info.StartTime),
-                FromDateTime(info.EndDate, info.EndTime));
+                FromDateTime(info.EndDate, info.EndTime),
+                info.Description,
+                EntityRelationships.FromEntities(info.Entities));
         }
 
         private static DateTime? FromDateTime(Date date, Time time)

@@ -25,8 +25,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-using IronSmarkets.Proto.Seto;
-
 namespace IronSmarkets.Data
 {
     public interface IEventMap : IDictionary<Uuid, Event>

@@ -91,5 +91,14 @@ namespace IronSmarkets.Data
         {
             return new Uuid(uuid.High, uuid.Low);
         }
+
+        public static Uuid? MaybeFromUuid128(Uuid128 uuid)
+        {
+            if (uuid == null)
+            {
+                return (Uuid?)null;
+            }
+            return FromUuid128(uuid);
+        }
     }
 }

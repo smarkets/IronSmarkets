@@ -20,29 +20,129 @@
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+using System;
+using System.Collections.Generic;
+
 using IronSmarkets.Proto.Seto;
 
 namespace IronSmarkets.Data
 {
     public struct Event
     {
+        internal static readonly IDictionary<EventCategory, string> CategoryStrings =
+            new Dictionary<EventCategory, string> {
+            { EventCategory.EVENTCATEGORYSPORT, "sport" },
+            { EventCategory.EVENTCATEGORYPOLITICS, "politics" },
+            { EventCategory.EVENTCATEGORYCURRENTAFFAIRS, "current-affairs" },
+            { EventCategory.EVENTCATEGORYTVANDENTERTAINMENT, "tv-and-entertainment" },
+            { EventCategory.EVENTCATEGORYGENERIC, "generic" }
+        };
+
+        internal static readonly IDictionary<string, EventCategory> Categories =
+            new Dictionary<string, EventCategory> {
+            { "politics", EventCategory.EVENTCATEGORYPOLITICS },
+            { "current-affairs", EventCategory.EVENTCATEGORYCURRENTAFFAIRS },
+            { "tv-and-entertainment", EventCategory.EVENTCATEGORYTVANDENTERTAINMENT },
+            { "sport", EventCategory.EVENTCATEGORYSPORT },
+            { "generic", EventCategory.EVENTCATEGORYGENERIC }
+        };
+
+        internal static readonly IDictionary<string, SportByDateType> Sports =
+            new Dictionary<string, SportByDateType> {
+            { "football", SportByDateType.SPORTBYDATEFOOTBALL },
+            { "horse-racing", SportByDateType.SPORTBYDATEHORSERACING },
+            { "tennis", SportByDateType.SPORTBYDATETENNIS }
+        };
+
+        internal static readonly IDictionary<EventType, string> TypeStrings =
+            new Dictionary<EventType, string> {
+            { EventType.EVENTFOOTBALLMATCH, "football-match" },
+            { EventType.EVENTFOOTBALLSEASON, "football-season" },
+            { EventType.EVENTFOOTBALL, "football" },
+            { EventType.EVENTGENERIC, "generic" },
+            { EventType.EVENTFOOTBALLGENERIC, "football-generic" },
+            { EventType.EVENTGOLFSEASON, "golf-season" },
+            { EventType.EVENTBOXINGSEASON, "boxing-season" },
+            { EventType.EVENTFORMULA1RACE, "formula-1-race" },
+            { EventType.EVENTFORMULA1SEASON, "formula-1-season" },
+            { EventType.EVENTHORSERACINGRACE, "horse-racing-race" },
+            { EventType.EVENTHORSERACINGCOURSE, "horse-racing-course" },
+            { EventType.EVENTHORSERACING, "horse-racing" },
+            { EventType.EVENTGOLFGENERIC, "golf-generic" },
+            { EventType.EVENTEUROVISIONSEASON, "eurovision-season" },
+            { EventType.EVENTTENNISMATCH, "tennis-match" },
+            { EventType.EVENTTENNISSEASON, "tennis-season" },
+            { EventType.EVENTCYCLINGSEASON, "cycling-season" },
+            { EventType.EVENTCYCLINGRACE, "cycling-race" },
+            { EventType.EVENTMOTOGPSEASON, "motogp-season" }
+        };
+
         private readonly Uuid _uuid;
         private readonly string _name;
+        private readonly string _type;
+        private readonly string _category;
+        private readonly string _slug;
+        private readonly Uuid? _parentUuid;
+        private readonly DateTime? _startDateTime;
+        private readonly DateTime? _endDateTime;
 
         public Uuid Uuid { get { return _uuid; } }
         public string Name { get { return _name; } }
+        public string Type { get { return _type; } }
+        public string Category { get { return _category; } }
+        public string Slug { get { return _slug; } }
+        public Uuid? ParentUuid { get { return _parentUuid; } }
+        public DateTime? StartDateTime { get { return _startDateTime; } }
+        public DateTime? EndDateTime { get { return _endDateTime; } }
 
-        private Event(Uuid uuid, string name)
+        private Event(
+            Uuid uuid,
+            string name,
+            string type,
+            string category,
+            string slug,
+            Uuid? parentUuid,
+            DateTime? startDateTime,
+            DateTime? endDateTime)
         {
             _uuid = uuid;
             _name = name;
+            _type = type;
+            _category = category;
+            _slug = slug;
+            _parentUuid = parentUuid;
+            _startDateTime = startDateTime;
+            _endDateTime = endDateTime;
         }
 
         internal static Event FromSeto(EventInfo info)
         {
             return new Event(
                 Uuid.FromUuid128(info.Event),
-                info.Name);
+                info.Name,
+                TypeStrings[info.Type],
+                CategoryStrings[info.Category],
+                info.Slug,
+                Uuid.MaybeFromUuid128(info.Parent),
+                FromDateTime(info.StartDate, info.StartTime),
+                FromDateTime(info.EndDate, info.EndTime));
+        }
+
+        private static DateTime? FromDateTime(Date date, Time time)
+        {
+            if (date == null)
+            {
+                return null;
+            }
+
+            if (time == null)
+            {
+                return new DateTime((int)date.Year, (int)date.Month, (int)date.Day);
+            }
+
+            return new DateTime(
+                (int)date.Year, (int)date.Month, (int)date.Day,
+                (int)time.Hour, (int)time.Minute, 0);
         }
     }
 }

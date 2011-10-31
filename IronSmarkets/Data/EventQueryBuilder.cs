@@ -29,29 +29,13 @@ namespace IronSmarkets.Data
 {
     public sealed class EventQueryBuilder
     {
-        private static readonly IDictionary<string, EventCategory> Categories =
-            new Dictionary<string, EventCategory> {
-            { "politics", EventCategory.EVENTCATEGORYPOLITICS },
-            { "current-affairs", EventCategory.EVENTCATEGORYCURRENTAFFAIRS },
-            { "tv-and-entertainment", EventCategory.EVENTCATEGORYTVANDENTERTAINMENT },
-            { "sport", EventCategory.EVENTCATEGORYSPORT },
-            { "generic", EventCategory.EVENTCATEGORYGENERIC }
-        };
-
-        private static readonly IDictionary<string, SportByDateType> Sports =
-            new Dictionary<string, SportByDateType> {
-            { "football", SportByDateType.SPORTBYDATEFOOTBALL },
-            { "horse-racing", SportByDateType.SPORTBYDATEHORSERACING },
-            { "tennis", SportByDateType.SPORTBYDATETENNIS }
-        };
-
         private EventCategory _category;
         private SportByDateType _sport;
         private DateTime? _dateTime;
 
         public void SetCategory(string category)
         {
-            if (!Categories.TryGetValue(category, out _category))
+            if (!Event.Categories.TryGetValue(category, out _category))
             {
                 throw new ArgumentException("Invalid category.");
             }
@@ -59,7 +43,7 @@ namespace IronSmarkets.Data
 
         public void SetSport(string sport)
         {
-            if (!Sports.TryGetValue(sport, out _sport))
+            if (!Event.Sports.TryGetValue(sport, out _sport))
             {
                 throw new ArgumentException("Invalid sport.");
             }

@@ -68,6 +68,8 @@
     <Compile Include="Proto\Seto\Payload.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Data\Uuid.cs" />
+    <Compile Include="Data\ContractMap.cs" />
+    <Compile Include="Data\Contract.cs" />
     <Compile Include="Data\EntityRelationships.cs" />
     <Compile Include="Data\Event.cs" />
     <Compile Include="Data\EventQuery.cs" />

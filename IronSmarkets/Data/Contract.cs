@@ -27,57 +27,57 @@ using IronSmarkets.Proto.Seto;
 
 namespace IronSmarkets.Data
 {
-    public class Market
+    public class Contract
     {
+        private static readonly IDictionary<ContractType, string> TypeStrings =
+            new Dictionary<ContractType, string> {
+            { ContractType.CONTRACTHALFTIMEFULLTIME, "half-time-full-time" },
+            { ContractType.CONTRACTCORRECTSCORE, "correct-score" },
+            { ContractType.CONTRACTGENERIC, "generic" },
+            { ContractType.CONTRACTWINNER, "winner" },
+            { ContractType.CONTRACTBINARY, "binary" },
+            { ContractType.CONTRACTOVERUNDER, "over-under" }
+        };
+
         private readonly Uuid _uuid;
+        private readonly string _type;
         private readonly string _slug;
         private readonly string _name;
         private readonly string _shortname;
-        private readonly DateTime? _startDateTime;
-        private readonly DateTime? _endDateTime;
         private readonly IEnumerable<KeyValuePair<Uuid, string>> _entities;
-        private readonly IDictionary<Uuid, Contract> _contracts;
 
         public Uuid Uuid { get { return _uuid; } }
+        public string Type { get { return _type; } }
         public string Slug { get { return _slug; } }
         public string Name { get { return _name; } }
         public string Shortname { get { return _shortname; } }
-        public DateTime? StartDateTime { get { return _startDateTime; } }
-        public DateTime? EndDateTime { get { return _endDateTime; } }
         public IEnumerable<KeyValuePair<Uuid, string>> Entities { get { return _entities; } }
-        public IDictionary<Uuid, Contract> Contracts { get { return _contracts; } }
 
-        private Market(
+        private Contract(
             Uuid uuid,
+            string type,
             string slug,
             string name,
             string shortname,
-            DateTime? startDateTime,
-            DateTime? endDateTime,
-            IEnumerable<KeyValuePair<Uuid, string>> entities,
-            IDictionary<Uuid, Contract> contracts)
+            IEnumerable<KeyValuePair<Uuid, string>> entities)
         {
             _uuid = uuid;
+            _type = type;
             _slug = slug;
             _name = name;
             _shortname = shortname;
-            _startDateTime = startDateTime;
-            _endDateTime = endDateTime;
             _entities = entities;
-            _contracts = contracts;
         }
 
-        internal static Market FromSeto(MarketInfo info)
+        internal static Contract FromSeto(ContractInfo info)
         {
-            return new Market(
-                Uuid.FromUuid128(info.Market),
+            return new Contract(
+                Uuid.FromUuid128(info.Contract),
+                TypeStrings[info.Type],
                 info.Slug,
                 info.Name,
                 info.Shortname,
-                SetoMap.FromDateTime(info.StartDate, info.StartTime),
-                SetoMap.FromDateTime(info.EndDate, info.EndTime),
-                EntityRelationships.FromEntities(info.Entities),
-                ContractMap.FromContracts(info.Contracts));
+                EntityRelationships.FromEntities(info.Entities));
         }
     }
 }

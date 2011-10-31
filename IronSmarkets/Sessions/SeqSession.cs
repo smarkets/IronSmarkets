@@ -201,6 +201,11 @@ namespace IronSmarkets.Sessions
             return logoutPayload.EtoPayload.Seq;
         }
 
+        public void SendPayload(Payload payload)
+        {
+            Send(payload);
+        }
+
         public IEnumerable<ulong> Send(Payload payload)
         {
             return Send(payload, true);

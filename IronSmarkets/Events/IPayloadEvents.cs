@@ -42,9 +42,11 @@ namespace IronSmarkets.Events
         event EventHandler<PayloadReceivedEventArgs<T>> PayloadSent;
     }
 
-    public interface IPayloadEndpoint<out T>
+    public interface IPayloadEndpoint<T>
     {
         void AddPayloadHandler(Predicate<T> handler);
         void RemovePayloadHandler(Predicate<T> handler);
+
+        void SendPayload(T payload);
     }
 }

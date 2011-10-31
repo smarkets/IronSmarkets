@@ -150,6 +150,11 @@ namespace IronSmarkets.Clients
             _session.RemovePayloadHandler(predicate);
         }
 
+        public void SendPayload(Payload payload)
+        {
+            _session.SendPayload(payload);
+        }
+
         public ulong Login()
         {
             if (IsDisposed)
@@ -188,7 +193,7 @@ namespace IronSmarkets.Clients
                 }
             };
 
-            _session.Send(payload);
+            SendPayload(payload);
             return payload.EtoPayload.Seq;
         }
 
@@ -206,7 +211,7 @@ namespace IronSmarkets.Clients
                 }
             };
 
-            _session.Send(payload);
+            SendPayload(payload);
             return payload.EtoPayload.Seq;
         }
 
@@ -224,7 +229,7 @@ namespace IronSmarkets.Clients
                 }
             };
 
-            _session.Send(payload);
+            SendPayload(payload);
             return payload.EtoPayload.Seq;
         }
 
@@ -242,7 +247,7 @@ namespace IronSmarkets.Clients
                 }
             };
 
-            _session.Send(payload);
+            SendPayload(payload);
             return payload.EtoPayload.Seq;
         }
 
@@ -258,7 +263,7 @@ namespace IronSmarkets.Clients
                 OrdersForAccountRequest = new OrdersForAccountRequest()
             };
 
-            _session.Send(payload);
+            SendPayload(payload);
             return payload.EtoPayload.Seq;
         }
 
@@ -274,7 +279,7 @@ namespace IronSmarkets.Clients
                 EventsRequest = query.ToEventsRequest()
             };
 
-            _session.Send(payload);
+            SendPayload(payload);
             var seq = payload.EtoPayload.Seq;
             var req = new SyncRequest<Proto.Seto.Events>();
             _eventsRequests[seq] = req;

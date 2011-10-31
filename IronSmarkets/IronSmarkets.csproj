@@ -75,6 +75,7 @@
     <Compile Include="Data\EventMap.cs" />
     <Compile Include="Data\Market.cs" />
     <Compile Include="Data\MarketMap.cs" />
+    <Compile Include="Data\SetoMap.cs" />
     <Compile Include="Exceptions\ConnectionException.cs" />
     <Compile Include="Exceptions\NotLoggedInException.cs" />
     <Compile Include="Exceptions\MessageStreamException.cs" />

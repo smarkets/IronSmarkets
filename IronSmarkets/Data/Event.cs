@@ -135,28 +135,11 @@ namespace IronSmarkets.Data
                 CategoryStrings[info.Category],
                 info.Slug,
                 Uuid.MaybeFromUuid128(info.Parent),
-                FromDateTime(info.StartDate, info.StartTime),
-                FromDateTime(info.EndDate, info.EndTime),
+                SetoMap.FromDateTime(info.StartDate, info.StartTime),
+                SetoMap.FromDateTime(info.EndDate, info.EndTime),
                 info.Description,
                 EntityRelationships.FromEntities(info.Entities),
                 MarketMap.FromMarkets(info.Markets));
-        }
-
-        private static DateTime? FromDateTime(Date date, Time time)
-        {
-            if (date == null)
-            {
-                return null;
-            }
-
-            if (time == null)
-            {
-                return new DateTime((int)date.Year, (int)date.Month, (int)date.Day);
-            }
-
-            return new DateTime(
-                (int)date.Year, (int)date.Month, (int)date.Day,
-                (int)time.Hour, (int)time.Minute, 0);
         }
     }
 }

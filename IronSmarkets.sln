@@ -5,6 +5,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IronSmarkets", "IronSmarket
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IronSmarkets.ConsoleExample", "IronSmarkets.ConsoleExample\IronSmarkets.ConsoleExample.csproj", "{17117DC1-19F3-4E91-A89B-0351162D4BD1}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IronSmarkets.Tests", "IronSmarkets.Tests\IronSmarkets.Tests.csproj", "{99BE1B06-8880-40C4-A52F-5B69D60DA49B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,8 @@ Global
 		{077CDC78-FA2C-4E1B-954B-693A7BDC3353}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{17117DC1-19F3-4E91-A89B-0351162D4BD1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{17117DC1-19F3-4E91-A89B-0351162D4BD1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{99BE1B06-8880-40C4-A52F-5B69D60DA49B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{99BE1B06-8880-40C4-A52F-5B69D60DA49B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

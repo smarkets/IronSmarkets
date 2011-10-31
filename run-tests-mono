@@ -1,0 +1,3 @@
+#!/bin/sh
+
+mono bin/xunit.console.exe IronSmarkets.Tests/bin/Debug/IronSmarkets.Tests.dll

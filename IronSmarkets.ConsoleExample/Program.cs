@@ -31,7 +31,6 @@ using log4net;
 
 using IronSmarkets.Clients;
 using IronSmarkets.Data;
-using IronSmarkets.Proto.Seto;
 using IronSmarkets.Sessions;
 using IronSmarkets.Sockets;
 
@@ -115,12 +114,19 @@ namespace IronSmarkets.ConsoleExample
                     thread.Join();
                 }
                 var builder = new EventQueryBuilder();
-                builder.SetCategory("politics");
+                builder.SetCategory("sport");
+                builder.SetSport("football");
+                builder.SetDateTime(DateTime.Today);
                 var events = client.RequestEvents(builder.GetResult());
                 Log.Debug(string.Format("Got {0} events:", events.Count));
                 foreach (var eventInfo in events)
                 {
-                    Log.Debug(string.Format("\t{0} => {1}", eventInfo.Key, eventInfo.Value.Name));
+                    Log.Debug(
+                        string.Format(
+                            "\t{0} => {1} ({2})",
+                            eventInfo.Key,
+                            eventInfo.Value.Name,
+                            eventInfo.Value.Category));
                 }
                 Log.Debug("Calling client.Logout()");
                 var logoutSeq = client.Logout();

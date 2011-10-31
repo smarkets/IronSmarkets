@@ -44,13 +44,14 @@ namespace IronSmarkets.Data
 
         public static EventMap FromSeto(Proto.Seto.Events setoEvents)
         {
-            var events = new Dictionary<Uuid, Event>();
-            foreach (var eventInfo in setoEvents.WithMarkets.Concat(setoEvents.Parents))
-            {
-                var ev = Event.FromSeto(eventInfo);
-                events[ev.Uuid] = ev;
-            }
-            return new EventMap(events);
+            return new EventMap(
+                setoEvents.WithMarkets.Concat(setoEvents.Parents).Aggregate(
+                    new Dictionary<Uuid, Event>(),
+                    (dict, eventInfo) => {
+                        var ev = Event.FromSeto(eventInfo);
+                        dict[ev.Uuid] = ev;
+                        return dict;
+                    }));
         }
 
         public IEnumerator<KeyValuePair<Uuid, Event>> GetEnumerator()

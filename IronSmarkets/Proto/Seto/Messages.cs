@@ -349,6 +349,24 @@ namespace IronSmarkets.Proto.Seto
       get { return _ordersForMarket; }
       set { _ordersForMarket = value; }
     }
+
+    private IronSmarkets.Proto.Seto.AccountStateRequest _accountStateRequest = null;
+    [global::ProtoBuf.ProtoMember(24, IsRequired = false, Name=@"account_state_request", DataFormat = global::ProtoBuf.DataFormat.Default)]
+    [global::System.ComponentModel.DefaultValue(null)]
+    public IronSmarkets.Proto.Seto.AccountStateRequest AccountStateRequest
+    {
+      get { return _accountStateRequest; }
+      set { _accountStateRequest = value; }
+    }
+
+    private IronSmarkets.Proto.Seto.AccountState _accountState = null;
+    [global::ProtoBuf.ProtoMember(25, IsRequired = false, Name=@"account_state", DataFormat = global::ProtoBuf.DataFormat.Default)]
+    [global::System.ComponentModel.DefaultValue(null)]
+    public IronSmarkets.Proto.Seto.AccountState AccountState
+    {
+      get { return _accountState; }
+      set { _accountState = value; }
+    }
     private global::ProtoBuf.IExtension extensionObject;
     global::ProtoBuf.IExtension global::ProtoBuf.IExtensible.GetExtensionObject(bool createIfMissing)
       { return global::ProtoBuf.Extensible.GetExtensionObject(ref extensionObject, createIfMissing); }
@@ -1516,6 +1534,122 @@ namespace IronSmarkets.Proto.Seto
       { return global::ProtoBuf.Extensible.GetExtensionObject(ref extensionObject, createIfMissing); }
   }
   
+  [global::System.Serializable, global::ProtoBuf.ProtoContract(Name=@"AccountStateRequest")]
+  public partial class AccountStateRequest : global::ProtoBuf.IExtensible
+  {
+    public AccountStateRequest() {}
+    
+
+    private IronSmarkets.Proto.Seto.Uuid128 _account = null;
+    [global::ProtoBuf.ProtoMember(1, IsRequired = false, Name=@"account", DataFormat = global::ProtoBuf.DataFormat.Default)]
+    [global::System.ComponentModel.DefaultValue(null)]
+    public IronSmarkets.Proto.Seto.Uuid128 Account
+    {
+      get { return _account; }
+      set { _account = value; }
+    }
+    private global::ProtoBuf.IExtension extensionObject;
+    global::ProtoBuf.IExtension global::ProtoBuf.IExtensible.GetExtensionObject(bool createIfMissing)
+      { return global::ProtoBuf.Extensible.GetExtensionObject(ref extensionObject, createIfMissing); }
+  }
+  
+  [global::System.Serializable, global::ProtoBuf.ProtoContract(Name=@"AccountState")]
+  public partial class AccountState : global::ProtoBuf.IExtensible
+  {
+    public AccountState() {}
+    
+    private IronSmarkets.Proto.Seto.Uuid128 _account;
+    [global::ProtoBuf.ProtoMember(1, IsRequired = true, Name=@"account", DataFormat = global::ProtoBuf.DataFormat.Default)]
+    public IronSmarkets.Proto.Seto.Uuid128 Account
+    {
+      get { return _account; }
+      set { _account = value; }
+    }
+    private IronSmarkets.Proto.Seto.Currency _currency;
+    [global::ProtoBuf.ProtoMember(2, IsRequired = true, Name=@"currency", DataFormat = global::ProtoBuf.DataFormat.TwosComplement)]
+    public IronSmarkets.Proto.Seto.Currency Currency
+    {
+      get { return _currency; }
+      set { _currency = value; }
+    }
+    private IronSmarkets.Proto.Seto.Decimal _cash;
+    [global::ProtoBuf.ProtoMember(3, IsRequired = true, Name=@"cash", DataFormat = global::ProtoBuf.DataFormat.Default)]
+    public IronSmarkets.Proto.Seto.Decimal Cash
+    {
+      get { return _cash; }
+      set { _cash = value; }
+    }
+    private IronSmarkets.Proto.Seto.Decimal _bonus;
+    [global::ProtoBuf.ProtoMember(4, IsRequired = true, Name=@"bonus", DataFormat = global::ProtoBuf.DataFormat.Default)]
+    public IronSmarkets.Proto.Seto.Decimal Bonus
+    {
+      get { return _bonus; }
+      set { _bonus = value; }
+    }
+    private IronSmarkets.Proto.Seto.Decimal _exposure;
+    [global::ProtoBuf.ProtoMember(5, IsRequired = true, Name=@"exposure", DataFormat = global::ProtoBuf.DataFormat.Default)]
+    public IronSmarkets.Proto.Seto.Decimal Exposure
+    {
+      get { return _exposure; }
+      set { _exposure = value; }
+    }
+    private global::ProtoBuf.IExtension extensionObject;
+    global::ProtoBuf.IExtension global::ProtoBuf.IExtensible.GetExtensionObject(bool createIfMissing)
+      { return global::ProtoBuf.Extensible.GetExtensionObject(ref extensionObject, createIfMissing); }
+  }
+  
+  [global::System.Serializable, global::ProtoBuf.ProtoContract(Name=@"account")]
+  public partial class Account : global::ProtoBuf.IExtensible
+  {
+    public Account() {}
+    
+    private ulong _low;
+    [global::ProtoBuf.ProtoMember(1, IsRequired = true, Name=@"low", DataFormat = global::ProtoBuf.DataFormat.TwosComplement)]
+    public ulong Low
+    {
+      get { return _low; }
+      set { _low = value; }
+    }
+
+    private ulong _high = (ulong)0;
+    [global::ProtoBuf.ProtoMember(2, IsRequired = false, Name=@"high", DataFormat = global::ProtoBuf.DataFormat.TwosComplement)]
+    [global::System.ComponentModel.DefaultValue((ulong)0)]
+    public ulong High
+    {
+      get { return _high; }
+      set { _high = value; }
+    }
+    private global::ProtoBuf.IExtension extensionObject;
+    global::ProtoBuf.IExtension global::ProtoBuf.IExtensible.GetExtensionObject(bool createIfMissing)
+      { return global::ProtoBuf.Extensible.GetExtensionObject(ref extensionObject, createIfMissing); }
+  }
+  
+  [global::System.Serializable, global::ProtoBuf.ProtoContract(Name=@"Decimal")]
+  public partial class Decimal : global::ProtoBuf.IExtensible
+  {
+    public Decimal() {}
+    
+    private long _value;
+    [global::ProtoBuf.ProtoMember(1, IsRequired = true, Name=@"value", DataFormat = global::ProtoBuf.DataFormat.ZigZag)]
+    public long Value
+    {
+      get { return _value; }
+      set { _value = value; }
+    }
+
+    private uint _exponent = (uint)2;
+    [global::ProtoBuf.ProtoMember(2, IsRequired = false, Name=@"exponent", DataFormat = global::ProtoBuf.DataFormat.TwosComplement)]
+    [global::System.ComponentModel.DefaultValue((uint)2)]
+    public uint Exponent
+    {
+      get { return _exponent; }
+      set { _exponent = value; }
+    }
+    private global::ProtoBuf.IExtension extensionObject;
+    global::ProtoBuf.IExtension global::ProtoBuf.IExtensible.GetExtensionObject(bool createIfMissing)
+      { return global::ProtoBuf.Extensible.GetExtensionObject(ref extensionObject, createIfMissing); }
+  }
+  
     [global::ProtoBuf.ProtoContract(Name=@"PayloadType")]
     public enum PayloadType
     {
@@ -1584,7 +1718,13 @@ namespace IronSmarkets.Proto.Seto
       PAYLOADORDERSFORMARKETREQUEST = 21,
             
       [global::ProtoBuf.ProtoEnum(Name=@"PAYLOAD_ORDERS_FOR_MARKET", Value=22)]
-      PAYLOADORDERSFORMARKET = 22
+      PAYLOADORDERSFORMARKET = 22,
+            
+      [global::ProtoBuf.ProtoEnum(Name=@"PAYLOAD_ACCOUNT_STATE_REQUEST", Value=23)]
+      PAYLOADACCOUNTSTATEREQUEST = 23,
+            
+      [global::ProtoBuf.ProtoEnum(Name=@"PAYLOAD_ACCOUNT_STATE", Value=24)]
+      PAYLOADACCOUNTSTATE = 24
     }
   
     [global::ProtoBuf.ProtoContract(Name=@"OrderCreateType")]
@@ -1618,7 +1758,10 @@ namespace IronSmarkets.Proto.Seto
       ORDERREJECTEDCROSSEDSELF = 6,
             
       [global::ProtoBuf.ProtoEnum(Name=@"ORDER_REJECTED_MARKET_NOT_FOUND", Value=7)]
-      ORDERREJECTEDMARKETNOTFOUND = 7
+      ORDERREJECTEDMARKETNOTFOUND = 7,
+            
+      [global::ProtoBuf.ProtoEnum(Name=@"ORDER_REJECTED_SERVICE_TEMPORARILY_UNAVAILABLE", Value=8)]
+      ORDERREJECTEDSERVICETEMPORARILYUNAVAILABLE = 8
     }
   
     [global::ProtoBuf.ProtoContract(Name=@"OrderCancelRejectedReason")]
@@ -1795,20 +1938,32 @@ namespace IronSmarkets.Proto.Seto
       [global::ProtoBuf.ProtoEnum(Name=@"EVENT_EUROVISION_SEASON", Value=14)]
       EVENTEUROVISIONSEASON = 14,
             
-      [global::ProtoBuf.ProtoEnum(Name=@"EVENT_TENNIS_MATCH", Value=15)]
-      EVENTTENNISMATCH = 15,
+      [global::ProtoBuf.ProtoEnum(Name=@"EVENT_TENNIS_ROUND", Value=15)]
+      EVENTTENNISROUND = 15,
             
-      [global::ProtoBuf.ProtoEnum(Name=@"EVENT_TENNIS_SEASON", Value=16)]
-      EVENTTENNISSEASON = 16,
+      [global::ProtoBuf.ProtoEnum(Name=@"EVENT_TENNIS_FORMAT", Value=16)]
+      EVENTTENNISFORMAT = 16,
             
-      [global::ProtoBuf.ProtoEnum(Name=@"EVENT_CYCLING_SEASON", Value=17)]
-      EVENTCYCLINGSEASON = 17,
+      [global::ProtoBuf.ProtoEnum(Name=@"EVENT_TENNIS_TOURNAMENT", Value=17)]
+      EVENTTENNISTOURNAMENT = 17,
             
-      [global::ProtoBuf.ProtoEnum(Name=@"EVENT_CYCLING_RACE", Value=18)]
-      EVENTCYCLINGRACE = 18,
+      [global::ProtoBuf.ProtoEnum(Name=@"EVENT_CYCLING_SEASON", Value=18)]
+      EVENTCYCLINGSEASON = 18,
             
-      [global::ProtoBuf.ProtoEnum(Name=@"EVENT_MOTOGP_SEASON", Value=19)]
-      EVENTMOTOGPSEASON = 19
+      [global::ProtoBuf.ProtoEnum(Name=@"EVENT_CYCLING_RACE", Value=19)]
+      EVENTCYCLINGRACE = 19,
+            
+      [global::ProtoBuf.ProtoEnum(Name=@"EVENT_MOTOGP_SEASON", Value=20)]
+      EVENTMOTOGPSEASON = 20,
+            
+      [global::ProtoBuf.ProtoEnum(Name=@"EVENT_BOXING_MATCH", Value=21)]
+      EVENTBOXINGMATCH = 21,
+            
+      [global::ProtoBuf.ProtoEnum(Name=@"EVENT_AMERICAN_FOOTBALL_MATCH", Value=22)]
+      EVENTAMERICANFOOTBALLMATCH = 22,
+            
+      [global::ProtoBuf.ProtoEnum(Name=@"EVENT_RUGBY_UNION_MATCH", Value=23)]
+      EVENTRUGBYUNIONMATCH = 23
     }
   
     [global::ProtoBuf.ProtoContract(Name=@"EntityRelationshipType")]
@@ -1877,10 +2032,25 @@ namespace IronSmarkets.Proto.Seto
       EVENTCATEGORYTVANDENTERTAINMENT = 4,
             
       [global::ProtoBuf.ProtoEnum(Name=@"EVENT_CATEGORY_GENERIC", Value=5)]
-      EVENTCATEGORYGENERIC = 5
+      EVENTCATEGORYGENERIC = 5,
+            
+      [global::ProtoBuf.ProtoEnum(Name=@"EVENT_CATEGORY_FOOTBALL", Value=6)]
+      EVENTCATEGORYFOOTBALL = 6,
+            
+      [global::ProtoBuf.ProtoEnum(Name=@"EVENT_CATEGORY_TENNIS", Value=7)]
+      EVENTCATEGORYTENNIS = 7,
+            
+      [global::ProtoBuf.ProtoEnum(Name=@"EVENT_CATEGORY_HORSE_RACING", Value=8)]
+      EVENTCATEGORYHORSERACING = 8,
+            
+      [global::ProtoBuf.ProtoEnum(Name=@"EVENT_CATEGORY_AMERICAN_FOOTBALL", Value=9)]
+      EVENTCATEGORYAMERICANFOOTBALL = 9,
+            
+      [global::ProtoBuf.ProtoEnum(Name=@"EVENT_CATEGORY_RUGBY", Value=10)]
+      EVENTCATEGORYRUGBY = 10
     }
   
-    [global::ProtoBuf.ProtoContract(Name=@"order_status")]
+    [global::ProtoBuf.ProtoContract(Name=@"OrderStatus")]
     public enum OrderStatus
     {
             
@@ -1898,6 +2068,17 @@ namespace IronSmarkets.Proto.Seto
             
       [global::ProtoBuf.ProtoEnum(Name=@"ORDER_STATUS_CANCELLED", Value=5)]
       ORDERSTATUSCANCELLED = 5
+    }
+  
+    [global::ProtoBuf.ProtoContract(Name=@"Currency")]
+    public enum Currency
+    {
+            
+      [global::ProtoBuf.ProtoEnum(Name=@"CURRENCY_GBP", Value=1)]
+      CURRENCYGBP = 1,
+            
+      [global::ProtoBuf.ProtoEnum(Name=@"CURRENCY_EUR", Value=2)]
+      CURRENCYEUR = 2
     }
   
 }

@@ -35,7 +35,12 @@ namespace IronSmarkets.Data
             { EventCategory.EVENTCATEGORYPOLITICS, "politics" },
             { EventCategory.EVENTCATEGORYCURRENTAFFAIRS, "current-affairs" },
             { EventCategory.EVENTCATEGORYTVANDENTERTAINMENT, "tv-and-entertainment" },
-            { EventCategory.EVENTCATEGORYGENERIC, "generic" }
+            { EventCategory.EVENTCATEGORYGENERIC, "generic" },
+            { EventCategory.EVENTCATEGORYFOOTBALL, "football" },
+            { EventCategory.EVENTCATEGORYTENNIS, "tennis" },
+            { EventCategory.EVENTCATEGORYHORSERACING, "horse-racing" },
+            { EventCategory.EVENTCATEGORYAMERICANFOOTBALL, "american-football" },
+            { EventCategory.EVENTCATEGORYRUGBY, "rugby" }
         };
 
         internal static readonly IDictionary<string, EventCategory> Categories =
@@ -44,7 +49,12 @@ namespace IronSmarkets.Data
             { "current-affairs", EventCategory.EVENTCATEGORYCURRENTAFFAIRS },
             { "tv-and-entertainment", EventCategory.EVENTCATEGORYTVANDENTERTAINMENT },
             { "sport", EventCategory.EVENTCATEGORYSPORT },
-            { "generic", EventCategory.EVENTCATEGORYGENERIC }
+            { "generic", EventCategory.EVENTCATEGORYGENERIC },
+            { "football", EventCategory.EVENTCATEGORYFOOTBALL },
+            { "tennis", EventCategory.EVENTCATEGORYTENNIS },
+            { "horse-racing", EventCategory.EVENTCATEGORYHORSERACING },
+            { "american-football", EventCategory.EVENTCATEGORYAMERICANFOOTBALL },
+            { "rugby", EventCategory.EVENTCATEGORYRUGBY }
         };
 
         internal static readonly IDictionary<string, SportByDateType> Sports =
@@ -70,11 +80,15 @@ namespace IronSmarkets.Data
             { EventType.EVENTHORSERACING, "horse-racing" },
             { EventType.EVENTGOLFGENERIC, "golf-generic" },
             { EventType.EVENTEUROVISIONSEASON, "eurovision-season" },
-            { EventType.EVENTTENNISMATCH, "tennis-match" },
-            { EventType.EVENTTENNISSEASON, "tennis-season" },
+            { EventType.EVENTTENNISROUND, "tennis-round" },
+            { EventType.EVENTTENNISFORMAT, "tennis-format" },
+            { EventType.EVENTTENNISTOURNAMENT, "tennis-tournament" },
             { EventType.EVENTCYCLINGSEASON, "cycling-season" },
             { EventType.EVENTCYCLINGRACE, "cycling-race" },
-            { EventType.EVENTMOTOGPSEASON, "motogp-season" }
+            { EventType.EVENTMOTOGPSEASON, "motogp-season" },
+            { EventType.EVENTBOXINGMATCH, "boxing-match" },
+            { EventType.EVENTAMERICANFOOTBALLMATCH, "american-football-match" },
+            { EventType.EVENTRUGBYUNIONMATCH, "rugby-union-match" }
         };
 
         private readonly Uuid _uuid;

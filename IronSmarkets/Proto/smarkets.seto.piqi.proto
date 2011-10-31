@@ -51,6 +51,8 @@ message Payload {
     optional orders_for_account orders_for_account = 21;
     optional orders_for_market_request orders_for_market_request = 22;
     optional orders_for_market orders_for_market = 23;
+    optional AccountStateRequest account_state_request = 24;
+    optional AccountState account_state = 25;
 }
 
 enum PayloadType {
@@ -76,6 +78,8 @@ enum PayloadType {
     PAYLOAD_ORDERS_FOR_ACCOUNT = 20;
     PAYLOAD_ORDERS_FOR_MARKET_REQUEST = 21;
     PAYLOAD_ORDERS_FOR_MARKET = 22;
+    PAYLOAD_ACCOUNT_STATE_REQUEST = 23;
+    PAYLOAD_ACCOUNT_STATE = 24;
 }
 
 message Uuid128 {
@@ -122,6 +126,7 @@ enum OrderRejectedReason {
     ORDER_REJECTED_MARKET_HALTED = 5;
     ORDER_REJECTED_CROSSED_SELF = 6;
     ORDER_REJECTED_MARKET_NOT_FOUND = 7;
+    ORDER_REJECTED_SERVICE_TEMPORARILY_UNAVAILABLE = 8;
 }
 
 enum OrderCancelRejectedReason {
@@ -314,11 +319,15 @@ enum EventType {
     EVENT_HORSE_RACING = 12;
     EVENT_GOLF_GENERIC = 13;
     EVENT_EUROVISION_SEASON = 14;
-    EVENT_TENNIS_MATCH = 15;
-    EVENT_TENNIS_SEASON = 16;
-    EVENT_CYCLING_SEASON = 17;
-    EVENT_CYCLING_RACE = 18;
-    EVENT_MOTOGP_SEASON = 19;
+    EVENT_TENNIS_ROUND = 15;
+    EVENT_TENNIS_FORMAT = 16;
+    EVENT_TENNIS_TOURNAMENT = 17;
+    EVENT_CYCLING_SEASON = 18;
+    EVENT_CYCLING_RACE = 19;
+    EVENT_MOTOGP_SEASON = 20;
+    EVENT_BOXING_MATCH = 21;
+    EVENT_AMERICAN_FOOTBALL_MATCH = 22;
+    EVENT_RUGBY_UNION_MATCH = 23;
 }
 
 enum EntityRelationshipType {
@@ -372,6 +381,11 @@ enum EventCategory {
     EVENT_CATEGORY_CURRENT_AFFAIRS = 3;
     EVENT_CATEGORY_TV_AND_ENTERTAINMENT = 4;
     EVENT_CATEGORY_GENERIC = 5;
+    EVENT_CATEGORY_FOOTBALL = 6;
+    EVENT_CATEGORY_TENNIS = 7;
+    EVENT_CATEGORY_HORSE_RACING = 8;
+    EVENT_CATEGORY_AMERICAN_FOOTBALL = 9;
+    EVENT_CATEGORY_RUGBY = 10;
 }
 
 message orders_for_account_request {
@@ -406,18 +420,45 @@ message orders_for_price {
 message OrderState {
     required Uuid128 order = 1;
     required OrderCreateType type = 2;
-    required order_status status = 3;
+    required OrderStatus status = 3;
     required QuantityType quantity_type = 4;
     required uint32 quantity = 5;
     required uint64 created_microseconds = 6;
     optional uint32 quantity_filled = 7 [default = 0];
 }
 
-enum order_status {
+enum OrderStatus {
     ORDER_STATUS_LIVE = 1;
     ORDER_STATUS_PARTIALLY_FILLED = 2;
     ORDER_STATUS_FILLED = 3;
     ORDER_STATUS_PARTIALLY_CANCELLED = 4;
     ORDER_STATUS_CANCELLED = 5;
+}
+
+message AccountStateRequest {
+    optional Uuid128 account = 1;
+}
+
+message AccountState {
+    required Uuid128 account = 1;
+    required Currency currency = 2;
+    required Decimal cash = 3;
+    required Decimal bonus = 4;
+    required Decimal exposure = 5;
+}
+
+message account {
+    required uint64 low = 1;
+    optional uint64 high = 2 [default = 0];
+}
+
+enum Currency {
+    CURRENCY_GBP = 1;
+    CURRENCY_EUR = 2;
+}
+
+message Decimal {
+    required sint64 value = 1;
+    optional uint32 exponent = 2 [default = 2];
 }
 

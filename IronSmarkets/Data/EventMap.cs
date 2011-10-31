@@ -31,7 +31,7 @@ namespace IronSmarkets.Data
     {
     }
 
-    internal struct EventMap : IEventMap
+    internal class EventMap : IEventMap
     {
         private readonly IDictionary<Uuid, Event> _events;
 

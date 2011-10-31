@@ -27,7 +27,7 @@ using IronSmarkets.Proto.Seto;
 
 namespace IronSmarkets.Data
 {
-    public struct Event
+    public class Event
     {
         internal static readonly IDictionary<EventCategory, string> CategoryStrings =
             new Dictionary<EventCategory, string> {

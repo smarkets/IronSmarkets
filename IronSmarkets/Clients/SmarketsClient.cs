@@ -33,7 +33,6 @@ using IronSmarkets.Data;
 using IronSmarkets.Events;
 using IronSmarkets.Proto.Seto;
 using IronSmarkets.Sessions;
-using IronSmarkets.Sockets;
 
 using Eto = IronSmarkets.Proto.Eto;
 
@@ -86,6 +85,7 @@ namespace IronSmarkets.Clients
         private static readonly ILog Log = LogManager.GetLogger(
             System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
+        private readonly IClientSettings _settings;
         private readonly ISession<Payload> _session;
 
         private int _disposed;
@@ -94,20 +94,20 @@ namespace IronSmarkets.Clients
         private readonly IDictionary<ulong, SyncRequest<Proto.Seto.Events>> _eventsRequests =
             new Dictionary<ulong, SyncRequest<Proto.Seto.Events>>();
 
-        private SmarketsClient(
-            ISocketSettings socketSettings,
-            ISessionSettings sessionSettings)
+        private SmarketsClient(IClientSettings settings)
         {
-            _session = new SeqSession(socketSettings, sessionSettings);
-            _session.PayloadReceived += (sender, args) => OnPayloadReceived(args.Payload);
+            _settings = settings;
+            _session = new SeqSession(
+                _settings.SocketSettings,
+                _settings.SessionSettings);
+            _session.PayloadReceived += (sender, args) =>
+                OnPayloadReceived(args.Payload);
             _receiver = new Receiver<Payload>(_session);
         }
 
-        public static ISmarketsClient Create(
-            ISocketSettings socketSettings,
-            ISessionSettings sessionSettings)
+        public static ISmarketsClient Create(IClientSettings settings)
         {
-            return new SmarketsClient(socketSettings, sessionSettings);
+            return new SmarketsClient(settings);
         }
 
         public bool IsDisposed

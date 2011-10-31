@@ -74,7 +74,8 @@ namespace IronSmarkets.ConsoleExample
             ISessionSettings sessSettings = new SessionSettings(
                 username, password);
             Log.Info("Logging in...");
-            using (var client = SmarketsClient.Create(sockSettings, sessSettings))
+            IClientSettings settings = new ClientSettings(sockSettings, sessSettings);
+            using (var client = SmarketsClient.Create(settings))
             {
                 client.PayloadReceived += (sender, eargs) => Log.Info(
                     string.Format(

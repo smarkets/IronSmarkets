@@ -68,7 +68,7 @@ namespace IronSmarkets.Data
             if (_high > 0)
             {
                 return _high.ToString("X").ToLower() +
-                    _low.ToString("X").ToLower();
+                    _low.ToString("X").ToLower().PadLeft(16, '0');
             }
 
             return _low.ToString("X").ToLower();
@@ -94,10 +94,10 @@ namespace IronSmarkets.Data
         /// </summary>
         public static Uuid Parse(string str)
         {
-            if (str.Length > 8)
+            if (str.Length > 16)
             {
-                string highStr = str.Substring(0, str.Length - 8);
-                string lowStr = str.Substring(str.Length - 8);
+                string highStr = str.Substring(0, str.Length - 16);
+                string lowStr = str.Substring(str.Length - 16);
                 return new Uuid(
                     ulong.Parse(highStr, NumberStyles.HexNumber),
                     ulong.Parse(lowStr, NumberStyles.HexNumber));

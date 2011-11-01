@@ -20,7 +20,7 @@
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-using System;
+using System.Collections.Generic;
 
 using Xunit;
 
@@ -41,6 +41,31 @@ namespace IronSmarkets.Tests
             Assert.Equal(
                 new Uuid(93).GetHashCode(),
                 new Uuid(0, 93).GetHashCode());
+        }
+
+        [Fact]
+        public void ParseTest()
+        {
+            Assert.Equal(new Uuid(1), Uuid.Parse("1"));
+            Assert.Equal(new Uuid(9238109283), Uuid.Parse("226a25c63"));
+            Assert.Equal(
+                new Uuid(18446744073709551615, 18446744073709551615),
+                Uuid.Parse("ffffffffffffffffffffffffffffffff"));
+            Assert.Equal(
+                new Uuid(18446744073709551615, 0),
+                Uuid.Parse("ffffffffffffffff0000000000000000"));
+        }
+
+        [Fact]
+        public void ParseRoundtripTest()
+        {
+            var tests = new List<string>{
+                "1",
+                "226a25c63",
+                "ffffffffffffffffffffffffffffffff",
+                "ffffffffffffffff0000000000000000"
+            };
+            tests.ForAll(x => Assert.Equal(Uuid.Parse(x).ToString(), x));
         }
     }
 }

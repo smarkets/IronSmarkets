@@ -28,3 +28,4 @@ test-results/*
 *.nupkg
 test-results
 TestResult.xml
+NUnitTestResult.xml

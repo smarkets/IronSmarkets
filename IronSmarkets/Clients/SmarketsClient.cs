@@ -32,17 +32,14 @@ using ProtoBuf;
 using IronSmarkets.Data;
 using IronSmarkets.Events;
 using IronSmarkets.Exceptions;
-using IronSmarkets.Proto.Seto;
 using IronSmarkets.Sessions;
-
-using Eto = IronSmarkets.Proto.Eto;
 
 namespace IronSmarkets.Clients
 {
     public interface ISmarketsClient :
         IDisposable,
-        IPayloadEvents<Payload>,
-        IPayloadEndpoint<Payload>
+        IPayloadEvents<Proto.Seto.Payload>,
+        IPayloadEndpoint<Proto.Seto.Payload>
     {
         bool IsDisposed { get; }
 
@@ -58,8 +55,8 @@ namespace IronSmarkets.Clients
         ulong RequestOrdersForMarket(Uuid market);
 
         IEventMap RequestEvents(EventQuery query);
-        Data.Account GetAccountState();
-        Data.Account GetAccountState(Uuid account);
+        AccountState GetAccountState();
+        AccountState GetAccountState(Uuid account);
     }
 
     internal sealed class SyncRequest<T>
@@ -100,10 +97,10 @@ namespace IronSmarkets.Clients
             System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         private readonly IClientSettings _settings;
-        private readonly ISession<Payload> _session;
+        private readonly ISession<Proto.Seto.Payload> _session;
 
         private int _disposed;
-        private readonly Receiver<Payload> _receiver;
+        private readonly Receiver<Proto.Seto.Payload> _receiver;
 
         private readonly IDictionary<ulong, SyncRequest<Proto.Seto.Events>> _eventsRequests =
             new Dictionary<ulong, SyncRequest<Proto.Seto.Events>>();
@@ -120,7 +117,7 @@ namespace IronSmarkets.Clients
                 OnPayloadReceived(args.Payload);
             _session.PayloadSent += (sender, args) =>
                 OnPayloadSent(args.Payload);
-            _receiver = new Receiver<Payload>(_session);
+            _receiver = new Receiver<Proto.Seto.Payload>(_session);
         }
 
         public static ISmarketsClient Create(IClientSettings settings)
@@ -136,25 +133,25 @@ namespace IronSmarkets.Clients
             }
         }
 
-        public event EventHandler<PayloadReceivedEventArgs<Payload>> PayloadReceived;
-        public event EventHandler<PayloadReceivedEventArgs<Payload>> PayloadSent;
+        public event EventHandler<PayloadReceivedEventArgs<Proto.Seto.Payload>> PayloadReceived;
+        public event EventHandler<PayloadReceivedEventArgs<Proto.Seto.Payload>> PayloadSent;
 
         ~SmarketsClient()
         {
             Dispose(false);
         }
 
-        public void AddPayloadHandler(Predicate<Payload> predicate)
+        public void AddPayloadHandler(Predicate<Proto.Seto.Payload> predicate)
         {
             _session.AddPayloadHandler(predicate);
         }
 
-        public void RemovePayloadHandler(Predicate<Payload> predicate)
+        public void RemovePayloadHandler(Predicate<Proto.Seto.Payload> predicate)
         {
             _session.RemovePayloadHandler(predicate);
         }
 
-        public void SendPayload(Payload payload)
+        public void SendPayload(Proto.Seto.Payload payload)
         {
             _session.SendPayload(payload);
         }
@@ -190,10 +187,10 @@ namespace IronSmarkets.Clients
                     "SmarketsClient",
                     "Called Ping on disposed object");
 
-            var payload = new Payload {
-                Type = PayloadType.PAYLOADETO,
-                EtoPayload = new Eto.Payload {
-                    Type = Eto.PayloadType.PAYLOADPING
+            var payload = new Proto.Seto.Payload {
+                Type = Proto.Seto.PayloadType.PAYLOADETO,
+                EtoPayload = new Proto.Eto.Payload {
+                    Type = Proto.Eto.PayloadType.PAYLOADPING
                 }
             };
 
@@ -208,9 +205,9 @@ namespace IronSmarkets.Clients
                     "SmarketsClient",
                     "Called SubscribeMarket on disposed object");
 
-            var payload = new Payload {
-                Type = PayloadType.PAYLOADMARKETSUBSCRIBE,
-                MarketSubscribe = new MarketSubscribe {
+            var payload = new Proto.Seto.Payload {
+                Type = Proto.Seto.PayloadType.PAYLOADMARKETSUBSCRIBE,
+                MarketSubscribe = new Proto.Seto.MarketSubscribe {
                     Market = market.ToUuid128()
                 }
             };
@@ -226,9 +223,9 @@ namespace IronSmarkets.Clients
                     "SmarketsClient",
                     "Called UnsubscribeMarket on disposed object");
 
-            var payload = new Payload {
-                Type = PayloadType.PAYLOADMARKETUNSUBSCRIBE,
-                MarketUnsubscribe = new MarketUnsubscribe {
+            var payload = new Proto.Seto.Payload {
+                Type = Proto.Seto.PayloadType.PAYLOADMARKETUNSUBSCRIBE,
+                MarketUnsubscribe = new Proto.Seto.MarketUnsubscribe {
                     Market = market.ToUuid128()
                 }
             };
@@ -244,9 +241,9 @@ namespace IronSmarkets.Clients
                     "SmarketsClient",
                     "Called RequestOrdersForMarket on disposed object");
 
-            var payload = new Payload {
-                Type = PayloadType.PAYLOADORDERSFORMARKETREQUEST,
-                OrdersForMarketRequest = new OrdersForMarketRequest {
+            var payload = new Proto.Seto.Payload {
+                Type = Proto.Seto.PayloadType.PAYLOADORDERSFORMARKETREQUEST,
+                OrdersForMarketRequest = new Proto.Seto.OrdersForMarketRequest {
                     Market = market.ToUuid128()
                 }
             };
@@ -262,9 +259,9 @@ namespace IronSmarkets.Clients
                     "SmarketsClient",
                     "Called RequestOrdersForAccount on disposed object");
 
-            var payload = new Payload {
-                Type = PayloadType.PAYLOADORDERSFORACCOUNTREQUEST,
-                OrdersForAccountRequest = new OrdersForAccountRequest()
+            var payload = new Proto.Seto.Payload {
+                Type = Proto.Seto.PayloadType.PAYLOADORDERSFORACCOUNTREQUEST,
+                OrdersForAccountRequest = new Proto.Seto.OrdersForAccountRequest()
             };
 
             SendPayload(payload);
@@ -278,8 +275,8 @@ namespace IronSmarkets.Clients
                     "SmarketsClient",
                     "Called RequestEvents on disposed object");
 
-            var payload = new Payload {
-                Type = PayloadType.PAYLOADEVENTSREQUEST,
+            var payload = new Proto.Seto.Payload {
+                Type = Proto.Seto.PayloadType.PAYLOADEVENTSREQUEST,
                 EventsRequest = query.ToEventsRequest()
             };
 
@@ -290,17 +287,17 @@ namespace IronSmarkets.Clients
             return EventMap.FromSeto(req.Response);
         }
 
-        public Data.Account GetAccountState()
+        public AccountState GetAccountState()
         {
             if (IsDisposed)
                 throw new ObjectDisposedException(
                     "SmarketsClient",
                     "Called GetAccount on disposed object");
 
-            return GetAccountState(new AccountStateRequest());
+            return GetAccountState(new Proto.Seto.AccountStateRequest());
         }
 
-        public Data.Account GetAccountState(Uuid account)
+        public AccountState GetAccountState(Uuid account)
         {
             if (IsDisposed)
                 throw new ObjectDisposedException(
@@ -308,52 +305,52 @@ namespace IronSmarkets.Clients
                     "Called GetAccount on disposed object");
 
             return GetAccountState(
-                new AccountStateRequest {
+                new Proto.Seto.AccountStateRequest {
                     Account = account.ToUuid128()
                 });
         }
 
-        private Data.Account GetAccountState(AccountStateRequest request)
+        private AccountState GetAccountState(Proto.Seto.AccountStateRequest request)
         {
-            var payload = new Payload {
-                Type = PayloadType.PAYLOADACCOUNTSTATEREQUEST,
+            var payload = new Proto.Seto.Payload {
+                Type = Proto.Seto.PayloadType.PAYLOADACCOUNTSTATEREQUEST,
                 AccountStateRequest = request
             };
             SendPayload(payload);
             var seq = payload.EtoPayload.Seq;
             var req = new SyncRequest<Proto.Seto.AccountState>();
             _accountRequests[seq] = req;
-            return Data.Account.FromSeto(req.Response);
+            return AccountState.FromSeto(req.Response);
         }
 
-        private void OnPayloadReceived(Payload payload)
+        private void OnPayloadReceived(Proto.Seto.Payload payload)
         {
-            EventHandler<PayloadReceivedEventArgs<Payload>> ev = PayloadReceived;
+            EventHandler<PayloadReceivedEventArgs<Proto.Seto.Payload>> ev = PayloadReceived;
             if (ev != null)
-                ev(this, new PayloadReceivedEventArgs<Payload>(
+                ev(this, new PayloadReceivedEventArgs<Proto.Seto.Payload>(
                        payload.EtoPayload.Seq,
                        payload));
-            if (payload.Type == PayloadType.PAYLOADHTTPFOUND)
+            if (payload.Type == Proto.Seto.PayloadType.PAYLOADHTTPFOUND)
             {
                 HandleEventsHttpFound(payload);
             }
 
-            if (payload.Type == PayloadType.PAYLOADACCOUNTSTATE)
+            if (payload.Type == Proto.Seto.PayloadType.PAYLOADACCOUNTSTATE)
             {
                 HandleAccountState(payload);
             }
         }
 
-        private void OnPayloadSent(Payload payload)
+        private void OnPayloadSent(Proto.Seto.Payload payload)
         {
-            EventHandler<PayloadReceivedEventArgs<Payload>> ev = PayloadSent;
+            EventHandler<PayloadReceivedEventArgs<Proto.Seto.Payload>> ev = PayloadSent;
             if (ev != null)
-                ev(this, new PayloadReceivedEventArgs<Payload>(
+                ev(this, new PayloadReceivedEventArgs<Proto.Seto.Payload>(
                        payload.EtoPayload.Seq,
                        payload));
         }
 
-        private void HandleAccountState(Payload payload)
+        private void HandleAccountState(Proto.Seto.Payload payload)
         {
             SyncRequest<Proto.Seto.AccountState> req;
             if (_accountRequests.TryGetValue(
@@ -369,7 +366,7 @@ namespace IronSmarkets.Clients
             }
         }
 
-        private void HandleEventsHttpFound(Payload payload)
+        private void HandleEventsHttpFound(Proto.Seto.Payload payload)
         {
             SyncRequest<Proto.Seto.Events> req;
             if (_eventsRequests.TryGetValue(
@@ -386,7 +383,7 @@ namespace IronSmarkets.Clients
         }
 
         private IAsyncResult BeginFetchHttpFound<T>(
-            SyncRequest<T> syncRequest, Payload payload)
+            SyncRequest<T> syncRequest, Proto.Seto.Payload payload)
         {
             var url = payload.HttpFound.Url;
             if (Log.IsDebugEnabled) Log.Debug(
@@ -464,7 +461,7 @@ namespace IronSmarkets.Clients
         }
     }
 
-    internal sealed class Receiver<T> where T : IPayload
+    internal sealed class Receiver<T> where T : Proto.Seto.IPayload
     {
         private static readonly ILog Log = LogManager.GetLogger(
             System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);

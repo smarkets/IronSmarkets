@@ -65,7 +65,7 @@
     </Compile>
     <Compile Include="Clients\Settings.cs" />
     <Compile Include="Clients\SmarketsClient.cs" />
-    <Compile Include="Data\Account.cs" />
+    <Compile Include="Data\AccountState.cs" />
     <Compile Include="Data\Contract.cs" />
     <Compile Include="Data\ContractMap.cs" />
     <Compile Include="Data\Currency.cs" />

@@ -20,11 +20,9 @@
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-using IronSmarkets.Proto.Seto;
-
 namespace IronSmarkets.Data
 {
-    public class Account
+    public struct AccountState
     {
         private readonly Uuid _uuid;
         private readonly Currency _currency;
@@ -39,7 +37,7 @@ namespace IronSmarkets.Data
         public decimal Exposure { get { return _exposure; } }
         public decimal Available { get { return _cash - _exposure; } }
 
-        private Account(
+        private AccountState(
             Uuid uuid,
             Currency currency,
             decimal cash,
@@ -53,9 +51,9 @@ namespace IronSmarkets.Data
             _exposure = exposure;
         }
 
-        internal static Account FromSeto(AccountState info)
+        internal static AccountState FromSeto(Proto.Seto.AccountState info)
         {
-            return new Account(
+            return new AccountState(
                 Uuid.FromUuid128(info.Account),
                 Currency.FromSeto(info.Currency),
                 SetoMap.FromDecimal(info.Cash),

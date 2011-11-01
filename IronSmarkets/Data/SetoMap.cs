@@ -52,5 +52,11 @@ namespace IronSmarkets.Data
             var divisor = new decimal((long)Math.Pow(10, sDecimal.Exponent));
             return Math.Round(val / divisor, (int)sDecimal.Exponent);
         }
+
+        public static DateTime FromMicroseconds(ulong erlangTicks)
+        {
+            const long sinceGregorian = 621355968000000000;
+            return new DateTime((long)erlangTicks * 10 + sinceGregorian, DateTimeKind.Utc);
+        }
     }
 }

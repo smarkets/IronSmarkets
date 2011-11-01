@@ -35,6 +35,7 @@ namespace IronSmarkets.Data
         public Quantity Quantity { get { return _quantity; } }
         public Side Liquidity { get { return _liquidity; } }
         public ulong Microseconds { get { return _microseconds; } }
+        public DateTime DateTime { get { return SetoMap.FromMicroseconds(_microseconds); } }
 
         private Execution(
             Price price,

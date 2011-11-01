@@ -72,7 +72,7 @@
     <Compile Include="Data\ContractMap.cs" />
     <Compile Include="Data\Currency.cs" />
     <Compile Include="Data\EntityRelationships.cs" />
-    <Compile Include="Data\Event.cs" />
+    <Compile Include="Data\EventInfo.cs" />
     <Compile Include="Data\EventMap.cs" />
     <Compile Include="Data\EventQuery.cs" />
     <Compile Include="Data\EventQueryBuilder.cs" />

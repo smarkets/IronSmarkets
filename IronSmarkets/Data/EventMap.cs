@@ -27,15 +27,15 @@ using System.Linq;
 
 namespace IronSmarkets.Data
 {
-    public interface IEventMap : IDictionary<Uuid, Event>
+    public interface IEventMap : IDictionary<Uuid, EventInfo>
     {
     }
 
     internal class EventMap : IEventMap
     {
-        private readonly IDictionary<Uuid, Event> _events;
+        private readonly IDictionary<Uuid, EventInfo> _events;
 
-        private EventMap(IDictionary<Uuid, Event> events)
+        private EventMap(IDictionary<Uuid, EventInfo> events)
         {
             _events = events;
         }
@@ -44,15 +44,15 @@ namespace IronSmarkets.Data
         {
             return new EventMap(
                 setoEvents.WithMarkets.Concat(setoEvents.Parents).Aggregate(
-                    new Dictionary<Uuid, Event>(),
+                    new Dictionary<Uuid, EventInfo>(),
                     (dict, eventInfo) => {
-                        var ev = Event.FromSeto(eventInfo);
+                        var ev = EventInfo.FromSeto(eventInfo);
                         dict[ev.Uuid] = ev;
                         return dict;
                     }));
         }
 
-        public IEnumerator<KeyValuePair<Uuid, Event>> GetEnumerator()
+        public IEnumerator<KeyValuePair<Uuid, EventInfo>> GetEnumerator()
         {
             return _events.GetEnumerator();
         }
@@ -62,7 +62,7 @@ namespace IronSmarkets.Data
             return GetEnumerator();
         }
 
-        public void Add(KeyValuePair<Uuid, Event> item)
+        public void Add(KeyValuePair<Uuid, EventInfo> item)
         {
             throw new NotSupportedException();
         }
@@ -72,17 +72,17 @@ namespace IronSmarkets.Data
             throw new NotSupportedException();
         }
 
-        public bool Contains(KeyValuePair<Uuid, Event> item)
+        public bool Contains(KeyValuePair<Uuid, EventInfo> item)
         {
             return _events.Contains(item);
         }
 
-        public void CopyTo(KeyValuePair<Uuid, Event>[] array, int arrayIndex)
+        public void CopyTo(KeyValuePair<Uuid, EventInfo>[] array, int arrayIndex)
         {
             _events.CopyTo(array, arrayIndex);
         }
 
-        public bool Remove(KeyValuePair<Uuid, Event> item)
+        public bool Remove(KeyValuePair<Uuid, EventInfo> item)
         {
             throw new NotSupportedException();
         }
@@ -102,7 +102,7 @@ namespace IronSmarkets.Data
             return _events.ContainsKey(key);
         }
 
-        public void Add(Uuid key, Event value)
+        public void Add(Uuid key, EventInfo value)
         {
             throw new NotSupportedException();
         }
@@ -112,12 +112,12 @@ namespace IronSmarkets.Data
             throw new NotSupportedException();
         }
 
-        public bool TryGetValue(Uuid key, out Event value)
+        public bool TryGetValue(Uuid key, out EventInfo value)
         {
             return _events.TryGetValue(key, out value);
         }
 
-        public Event this[Uuid key]
+        public EventInfo this[Uuid key]
         {
             get { return _events[key]; }
             set { throw new NotSupportedException(); }
@@ -128,7 +128,7 @@ namespace IronSmarkets.Data
             get { return _events.Keys; }
         }
 
-        public ICollection<Event> Values
+        public ICollection<EventInfo> Values
         {
             get { return _events.Values; }
         }

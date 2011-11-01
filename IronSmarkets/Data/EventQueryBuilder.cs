@@ -22,19 +22,17 @@
 
 using System;
 
-using IronSmarkets.Proto.Seto;
-
 namespace IronSmarkets.Data
 {
     public sealed class EventQueryBuilder
     {
-        private EventCategory _category;
-        private SportByDateType _sport;
+        private Proto.Seto.EventCategory _category;
+        private Proto.Seto.SportByDateType _sport;
         private DateTime? _dateTime;
 
         public void SetCategory(string category)
         {
-            if (!Event.Categories.TryGetValue(category, out _category))
+            if (!EventInfo.Categories.TryGetValue(category, out _category))
             {
                 throw new ArgumentException("Invalid category.");
             }
@@ -42,7 +40,7 @@ namespace IronSmarkets.Data
 
         public void SetSport(string sport)
         {
-            if (!Event.Sports.TryGetValue(sport, out _sport))
+            if (!EventInfo.Sports.TryGetValue(sport, out _sport))
             {
                 throw new ArgumentException("Invalid sport.");
             }
@@ -55,43 +53,43 @@ namespace IronSmarkets.Data
 
         public EventQuery GetResult()
         {
-            if (_category != EventCategory.EVENTCATEGORYSPORT && _dateTime.HasValue)
+            if (_category != Proto.Seto.EventCategory.EVENTCATEGORYSPORT && _dateTime.HasValue)
             {
                 throw new ArgumentException(
                     "Date can only be specified for football, " +
                     "horse racing, and tennis.");
             }
 
-            var request = new EventsRequest {
-                ContentType = ContentType.CONTENTTYPEPROTOBUF
+            var request = new Proto.Seto.EventsRequest {
+                ContentType = Proto.Seto.ContentType.CONTENTTYPEPROTOBUF
             };
 
             if (!_dateTime.HasValue)
             {
-                if (_category == EventCategory.EVENTCATEGORYPOLITICS)
+                if (_category == Proto.Seto.EventCategory.EVENTCATEGORYPOLITICS)
                 {
-                    request.Type = EventsRequestType.EVENTSREQUESTPOLITICS;
+                    request.Type = Proto.Seto.EventsRequestType.EVENTSREQUESTPOLITICS;
                 }
-                else if (_category == EventCategory.EVENTCATEGORYCURRENTAFFAIRS)
+                else if (_category == Proto.Seto.EventCategory.EVENTCATEGORYCURRENTAFFAIRS)
                 {
-                    request.Type = EventsRequestType.EVENTSREQUESTCURRENTAFFAIRS;
+                    request.Type = Proto.Seto.EventsRequestType.EVENTSREQUESTCURRENTAFFAIRS;
                 }
-                else if (_category == EventCategory.EVENTCATEGORYTVANDENTERTAINMENT)
+                else if (_category == Proto.Seto.EventCategory.EVENTCATEGORYTVANDENTERTAINMENT)
                 {
-                    request.Type = EventsRequestType.EVENTSREQUESTTVANDENTERTAINMENT;
+                    request.Type = Proto.Seto.EventsRequestType.EVENTSREQUESTTVANDENTERTAINMENT;
                 }
                 else
                 {
-                    request.Type = EventsRequestType.EVENTSREQUESTSPORTOTHER;
+                    request.Type = Proto.Seto.EventsRequestType.EVENTSREQUESTSPORTOTHER;
                 }
             }
             else
             {
                 var dateTime = _dateTime.GetValueOrDefault();
-                request.Type = EventsRequestType.EVENTSREQUESTSPORTBYDATE;
-                request.SportByDate = new SportByDate {
+                request.Type = Proto.Seto.EventsRequestType.EVENTSREQUESTSPORTBYDATE;
+                request.SportByDate = new Proto.Seto.SportByDate {
                     Type = _sport,
-                    Date = new Date {
+                    Date = new Proto.Seto.Date {
                         Year = (uint)dateTime.Year,
                         Month = (uint)dateTime.Month,
                         Day = (uint)dateTime.Day

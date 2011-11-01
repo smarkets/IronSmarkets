@@ -88,7 +88,8 @@ namespace IronSmarkets.ConsoleExample
                 client.AddPayloadHandler(payload => true);
                 client.Login();
                 Log.Info("Connected");
-                var acct = client.GetAccountState();
+                ulong currentSequence;
+                var acct = client.GetAccountState(out currentSequence);
                 Log.Info(string.Format("Got account {0}", acct));
                 var threads = new List<Thread>(pingers);
                 foreach (var sleeper in Enumerable.Range(1, pingers))
@@ -121,7 +122,7 @@ namespace IronSmarkets.ConsoleExample
                 builder.SetCategory("sport");
                 builder.SetSport("football");
                 builder.SetDateTime(DateTime.Today);
-                var events = client.RequestEvents(builder.GetResult());
+                var events = client.RequestEvents(builder.GetResult(), out currentSequence);
                 Log.Debug(string.Format("Got {0} events:", events.Count));
                 foreach (var eventInfo in events)
                 {

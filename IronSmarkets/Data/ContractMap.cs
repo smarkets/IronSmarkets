@@ -25,36 +25,35 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-using IronSmarkets.Proto.Seto;
-
 namespace IronSmarkets.Data
 {
-    public interface IContractMap : IDictionary<Uuid, Contract>
+    public interface IContractMap : IDictionary<Uuid, ContractInfo>
     {
     }
 
     internal class ContractMap : IContractMap
     {
-        private readonly IDictionary<Uuid, Contract> _contracts;
+        private readonly IDictionary<Uuid, ContractInfo> _contracts;
 
-        private ContractMap(IDictionary<Uuid, Contract> contracts)
+        private ContractMap(IDictionary<Uuid, ContractInfo> contracts)
         {
             _contracts = contracts;
         }
 
-        public static IContractMap FromContracts(IEnumerable<ContractInfo> setoContracts)
+        public static IContractMap FromContracts(
+            IEnumerable<Proto.Seto.ContractInfo> setoContracts)
         {
             return new ContractMap(
                 setoContracts.Aggregate(
-                    new Dictionary<Uuid, Contract>(),
+                    new Dictionary<Uuid, ContractInfo>(),
                     (dict, contractInfo) => {
-                        var contract = Contract.FromSeto(contractInfo);
+                        var contract = ContractInfo.FromSeto(contractInfo);
                         dict[contract.Uuid] = contract;
                         return dict;
                     }));
         }
 
-        public IEnumerator<KeyValuePair<Uuid, Contract>> GetEnumerator()
+        public IEnumerator<KeyValuePair<Uuid, ContractInfo>> GetEnumerator()
         {
             return _contracts.GetEnumerator();
         }
@@ -64,7 +63,7 @@ namespace IronSmarkets.Data
             return GetEnumerator();
         }
 
-        public void Add(KeyValuePair<Uuid, Contract> item)
+        public void Add(KeyValuePair<Uuid, ContractInfo> item)
         {
             throw new NotSupportedException();
         }
@@ -74,17 +73,17 @@ namespace IronSmarkets.Data
             throw new NotSupportedException();
         }
 
-        public bool Contains(KeyValuePair<Uuid, Contract> item)
+        public bool Contains(KeyValuePair<Uuid, ContractInfo> item)
         {
             return _contracts.Contains(item);
         }
 
-        public void CopyTo(KeyValuePair<Uuid, Contract>[] array, int arrayIndex)
+        public void CopyTo(KeyValuePair<Uuid, ContractInfo>[] array, int arrayIndex)
         {
             _contracts.CopyTo(array, arrayIndex);
         }
 
-        public bool Remove(KeyValuePair<Uuid, Contract> item)
+        public bool Remove(KeyValuePair<Uuid, ContractInfo> item)
         {
             throw new NotSupportedException();
         }
@@ -104,7 +103,7 @@ namespace IronSmarkets.Data
             return _contracts.ContainsKey(key);
         }
 
-        public void Add(Uuid key, Contract value)
+        public void Add(Uuid key, ContractInfo value)
         {
             throw new NotSupportedException();
         }
@@ -114,12 +113,12 @@ namespace IronSmarkets.Data
             throw new NotSupportedException();
         }
 
-        public bool TryGetValue(Uuid key, out Contract value)
+        public bool TryGetValue(Uuid key, out ContractInfo value)
         {
             return _contracts.TryGetValue(key, out value);
         }
 
-        public Contract this[Uuid key]
+        public ContractInfo this[Uuid key]
         {
             get { return _contracts[key]; }
             set { throw new NotSupportedException(); }
@@ -130,7 +129,7 @@ namespace IronSmarkets.Data
             get { return _contracts.Keys; }
         }
 
-        public ICollection<Contract> Values
+        public ICollection<ContractInfo> Values
         {
             get { return _contracts.Values; }
         }

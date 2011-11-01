@@ -68,7 +68,7 @@
     <Compile Include="Clients\SmarketsClient.cs" />
     <Compile Include="Clients\SyncRequest.cs" />
     <Compile Include="Data\AccountState.cs" />
-    <Compile Include="Data\Contract.cs" />
+    <Compile Include="Data\ContractInfo.cs" />
     <Compile Include="Data\ContractMap.cs" />
     <Compile Include="Data\Currency.cs" />
     <Compile Include="Data\EntityRelationships.cs" />

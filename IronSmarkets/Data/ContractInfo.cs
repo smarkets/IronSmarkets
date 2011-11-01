@@ -22,20 +22,18 @@
 
 using System.Collections.Generic;
 
-using IronSmarkets.Proto.Seto;
-
 namespace IronSmarkets.Data
 {
-    public class Contract
+    public class ContractInfo
     {
-        private static readonly IDictionary<ContractType, string> TypeStrings =
-            new Dictionary<ContractType, string> {
-            { ContractType.CONTRACTHALFTIMEFULLTIME, "half-time-full-time" },
-            { ContractType.CONTRACTCORRECTSCORE, "correct-score" },
-            { ContractType.CONTRACTGENERIC, "generic" },
-            { ContractType.CONTRACTWINNER, "winner" },
-            { ContractType.CONTRACTBINARY, "binary" },
-            { ContractType.CONTRACTOVERUNDER, "over-under" }
+        private static readonly IDictionary<Proto.Seto.ContractType, string> TypeStrings =
+            new Dictionary<Proto.Seto.ContractType, string> {
+            { Proto.Seto.ContractType.CONTRACTHALFTIMEFULLTIME, "half-time-full-time" },
+            { Proto.Seto.ContractType.CONTRACTCORRECTSCORE, "correct-score" },
+            { Proto.Seto.ContractType.CONTRACTGENERIC, "generic" },
+            { Proto.Seto.ContractType.CONTRACTWINNER, "winner" },
+            { Proto.Seto.ContractType.CONTRACTBINARY, "binary" },
+            { Proto.Seto.ContractType.CONTRACTOVERUNDER, "over-under" }
         };
 
         private readonly Uuid _uuid;
@@ -52,7 +50,7 @@ namespace IronSmarkets.Data
         public string Shortname { get { return _shortname; } }
         public IEnumerable<KeyValuePair<Uuid, string>> Entities { get { return _entities; } }
 
-        private Contract(
+        private ContractInfo(
             Uuid uuid,
             string type,
             string slug,
@@ -68,9 +66,9 @@ namespace IronSmarkets.Data
             _entities = entities;
         }
 
-        internal static Contract FromSeto(ContractInfo info)
+        internal static ContractInfo FromSeto(Proto.Seto.ContractInfo info)
         {
-            return new Contract(
+            return new ContractInfo(
                 Uuid.FromUuid128(info.Contract),
                 TypeStrings[info.Type],
                 info.Slug,

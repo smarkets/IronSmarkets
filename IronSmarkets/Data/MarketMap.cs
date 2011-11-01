@@ -25,36 +25,34 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-using IronSmarkets.Proto.Seto;
-
 namespace IronSmarkets.Data
 {
-    public interface IMarketMap : IDictionary<Uuid, Market>
+    public interface IMarketMap : IDictionary<Uuid, MarketInfo>
     {
     }
 
     internal class MarketMap : IMarketMap
     {
-        private readonly IDictionary<Uuid, Market> _markets;
+        private readonly IDictionary<Uuid, MarketInfo> _markets;
 
-        private MarketMap(IDictionary<Uuid, Market> markets)
+        private MarketMap(IDictionary<Uuid, MarketInfo> markets)
         {
             _markets = markets;
         }
 
-        public static IMarketMap FromMarkets(IEnumerable<MarketInfo> setoMarkets)
+        public static IMarketMap FromMarkets(IEnumerable<Proto.Seto.MarketInfo> setoMarkets)
         {
             return new MarketMap(
                 setoMarkets.Aggregate(
-                    new Dictionary<Uuid, Market>(),
+                    new Dictionary<Uuid, MarketInfo>(),
                     (dict, marketInfo) => {
-                        var market = Market.FromSeto(marketInfo);
+                        var market = MarketInfo.FromSeto(marketInfo);
                         dict[market.Uuid] = market;
                         return dict;
                     }));
         }
 
-        public IEnumerator<KeyValuePair<Uuid, Market>> GetEnumerator()
+        public IEnumerator<KeyValuePair<Uuid, MarketInfo>> GetEnumerator()
         {
             return _markets.GetEnumerator();
         }
@@ -64,7 +62,7 @@ namespace IronSmarkets.Data
             return GetEnumerator();
         }
 
-        public void Add(KeyValuePair<Uuid, Market> item)
+        public void Add(KeyValuePair<Uuid, MarketInfo> item)
         {
             throw new NotSupportedException();
         }
@@ -74,17 +72,17 @@ namespace IronSmarkets.Data
             throw new NotSupportedException();
         }
 
-        public bool Contains(KeyValuePair<Uuid, Market> item)
+        public bool Contains(KeyValuePair<Uuid, MarketInfo> item)
         {
             return _markets.Contains(item);
         }
 
-        public void CopyTo(KeyValuePair<Uuid, Market>[] array, int arrayIndex)
+        public void CopyTo(KeyValuePair<Uuid, MarketInfo>[] array, int arrayIndex)
         {
             _markets.CopyTo(array, arrayIndex);
         }
 
-        public bool Remove(KeyValuePair<Uuid, Market> item)
+        public bool Remove(KeyValuePair<Uuid, MarketInfo> item)
         {
             throw new NotSupportedException();
         }
@@ -104,7 +102,7 @@ namespace IronSmarkets.Data
             return _markets.ContainsKey(key);
         }
 
-        public void Add(Uuid key, Market value)
+        public void Add(Uuid key, MarketInfo value)
         {
             throw new NotSupportedException();
         }
@@ -114,12 +112,12 @@ namespace IronSmarkets.Data
             throw new NotSupportedException();
         }
 
-        public bool TryGetValue(Uuid key, out Market value)
+        public bool TryGetValue(Uuid key, out MarketInfo value)
         {
             return _markets.TryGetValue(key, out value);
         }
 
-        public Market this[Uuid key]
+        public MarketInfo this[Uuid key]
         {
             get { return _markets[key]; }
             set { throw new NotSupportedException(); }
@@ -130,7 +128,7 @@ namespace IronSmarkets.Data
             get { return _markets.Keys; }
         }
 
-        public ICollection<Market> Values
+        public ICollection<MarketInfo> Values
         {
             get { return _markets.Values; }
         }

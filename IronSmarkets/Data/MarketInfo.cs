@@ -23,11 +23,9 @@
 using System;
 using System.Collections.Generic;
 
-using IronSmarkets.Proto.Seto;
-
 namespace IronSmarkets.Data
 {
-    public class Market
+    public class MarketInfo
     {
         private readonly Uuid _uuid;
         private readonly string _slug;
@@ -47,7 +45,7 @@ namespace IronSmarkets.Data
         public IEnumerable<KeyValuePair<Uuid, string>> Entities { get { return _entities; } }
         public IContractMap Contracts { get { return _contracts; } }
 
-        private Market(
+        private MarketInfo(
             Uuid uuid,
             string slug,
             string name,
@@ -67,9 +65,9 @@ namespace IronSmarkets.Data
             _contracts = contracts;
         }
 
-        internal static Market FromSeto(MarketInfo info)
+        internal static MarketInfo FromSeto(Proto.Seto.MarketInfo info)
         {
-            return new Market(
+            return new MarketInfo(
                 Uuid.FromUuid128(info.Market),
                 info.Slug,
                 info.Name,

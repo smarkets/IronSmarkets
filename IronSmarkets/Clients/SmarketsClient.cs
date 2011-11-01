@@ -54,9 +54,9 @@ namespace IronSmarkets.Clients
         ulong RequestOrdersForAccount();
         ulong RequestOrdersForMarket(Uuid market);
 
-        IEventMap RequestEvents(EventQuery query);
-        AccountState GetAccountState();
-        AccountState GetAccountState(Uuid account);
+        IEventMap RequestEvents(EventQuery query, out ulong sequence);
+        AccountState GetAccountState(out ulong sequence);
+        AccountState GetAccountState(Uuid account, out ulong sequence);
     }
 
     internal sealed class SyncRequest<T>
@@ -270,6 +270,12 @@ namespace IronSmarkets.Clients
 
         public IEventMap RequestEvents(EventQuery query)
         {
+            ulong sequence;
+            return RequestEvents(query, out sequence);
+        }
+
+        public IEventMap RequestEvents(EventQuery query, out ulong sequence)
+        {
             if (IsDisposed)
                 throw new ObjectDisposedException(
                     "SmarketsClient",
@@ -281,23 +287,35 @@ namespace IronSmarkets.Clients
             };
 
             SendPayload(payload);
-            var seq = payload.EtoPayload.Seq;
+            sequence = payload.EtoPayload.Seq;
             var req = new SyncRequest<Proto.Seto.Events>();
-            _eventsRequests[seq] = req;
+            _eventsRequests[sequence] = req;
             return EventMap.FromSeto(req.Response);
         }
 
         public AccountState GetAccountState()
+        {
+            ulong sequence;
+            return GetAccountState(out sequence);
+        }
+
+        public AccountState GetAccountState(out ulong sequence)
         {
             if (IsDisposed)
                 throw new ObjectDisposedException(
                     "SmarketsClient",
                     "Called GetAccount on disposed object");
 
-            return GetAccountState(new Proto.Seto.AccountStateRequest());
+            return GetAccountState(new Proto.Seto.AccountStateRequest(), out sequence);
         }
 
         public AccountState GetAccountState(Uuid account)
+        {
+            ulong sequence;
+            return GetAccountState(account, out sequence);
+        }
+
+        public AccountState GetAccountState(Uuid account, out ulong sequence)
         {
             if (IsDisposed)
                 throw new ObjectDisposedException(
@@ -307,19 +325,21 @@ namespace IronSmarkets.Clients
             return GetAccountState(
                 new Proto.Seto.AccountStateRequest {
                     Account = account.ToUuid128()
-                });
+                }, out sequence);
         }
 
-        private AccountState GetAccountState(Proto.Seto.AccountStateRequest request)
+        private AccountState GetAccountState(
+            Proto.Seto.AccountStateRequest request,
+            out ulong sequence)
         {
             var payload = new Proto.Seto.Payload {
                 Type = Proto.Seto.PayloadType.PAYLOADACCOUNTSTATEREQUEST,
                 AccountStateRequest = request
             };
             SendPayload(payload);
-            var seq = payload.EtoPayload.Seq;
+            sequence = payload.EtoPayload.Seq;
             var req = new SyncRequest<Proto.Seto.AccountState>();
-            _accountRequests[seq] = req;
+            _accountRequests[sequence] = req;
             return AccountState.FromSeto(req.Response);
         }
 

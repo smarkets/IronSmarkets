@@ -59,38 +59,6 @@ namespace IronSmarkets.Clients
         AccountState GetAccountState(Uuid account, out ulong sequence);
     }
 
-    internal sealed class SyncRequest<T>
-    {
-        private readonly ManualResetEvent _replied =
-            new ManualResetEvent(false);
-
-        private T _response;
-        private Exception _responseException;
-
-        public T Response {
-            get
-            {
-                _replied.WaitOne();
-                if (_responseException != null)
-                {
-                    throw _responseException;
-                }
-                return _response;
-            }
-            set
-            {
-                _response = value;
-                _replied.Set();
-            }
-        }
-
-        public void SetException(Exception exception)
-        {
-            _responseException = exception;
-            _replied.Set();
-        }
-    }
-
     public sealed class SmarketsClient : ISmarketsClient
     {
         private static readonly ILog Log = LogManager.GetLogger(
@@ -98,14 +66,14 @@ namespace IronSmarkets.Clients
 
         private readonly IClientSettings _settings;
         private readonly ISession<Proto.Seto.Payload> _session;
-
-        private int _disposed;
         private readonly Receiver<Proto.Seto.Payload> _receiver;
 
         private readonly IDictionary<ulong, SyncRequest<Proto.Seto.Events>> _eventsRequests =
             new Dictionary<ulong, SyncRequest<Proto.Seto.Events>>();
         private readonly IDictionary<ulong, SyncRequest<Proto.Seto.AccountState>> _accountRequests =
             new Dictionary<ulong, SyncRequest<Proto.Seto.AccountState>>();
+
+        private int _disposed;
 
         private SmarketsClient(IClientSettings settings)
         {
@@ -461,59 +429,6 @@ namespace IronSmarkets.Clients
         {
             Dispose(true);
             GC.SuppressFinalize(this);
-        }
-    }
-
-    internal sealed class Receiver<T> where T : Proto.Seto.IPayload
-    {
-        private static readonly ILog Log = LogManager.GetLogger(
-            System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-
-        private readonly Thread _loop;
-        private readonly ISession<T> _session;
-
-        private volatile bool _complete;
-
-        public Receiver(ISession<T> session)
-        {
-            _session = session;
-            _loop = new Thread(Loop) {
-                Name = "receiver"
-            };
-        }
-
-        public void Start()
-        {
-            _complete = false;
-            _loop.Start();
-        }
-
-        public void Stop()
-        {
-            _complete = true;
-            _loop.Join();
-        }
-
-        private void Loop()
-        {
-            while (!_complete)
-            {
-                try
-                {
-                    var payload = _session.Receive();
-                    if (payload.IsLogoutConfirmation())
-                    {
-                        Log.Info(
-                            "Received a logout confirmation; " +
-                            "assuming socket will close");
-                        _complete = true;
-                    }
-                }
-                catch (IOException ex)
-                {
-                    Log.Warn("Receiving socket timed out", ex);
-                }
-            }
         }
     }
 }

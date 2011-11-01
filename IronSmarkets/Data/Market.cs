@@ -36,7 +36,7 @@ namespace IronSmarkets.Data
         private readonly DateTime? _startDateTime;
         private readonly DateTime? _endDateTime;
         private readonly IEnumerable<KeyValuePair<Uuid, string>> _entities;
-        private readonly IDictionary<Uuid, Contract> _contracts;
+        private readonly IContractMap _contracts;
 
         public Uuid Uuid { get { return _uuid; } }
         public string Slug { get { return _slug; } }
@@ -45,7 +45,7 @@ namespace IronSmarkets.Data
         public DateTime? StartDateTime { get { return _startDateTime; } }
         public DateTime? EndDateTime { get { return _endDateTime; } }
         public IEnumerable<KeyValuePair<Uuid, string>> Entities { get { return _entities; } }
-        public IDictionary<Uuid, Contract> Contracts { get { return _contracts; } }
+        public IContractMap Contracts { get { return _contracts; } }
 
         private Market(
             Uuid uuid,
@@ -55,7 +55,7 @@ namespace IronSmarkets.Data
             DateTime? startDateTime,
             DateTime? endDateTime,
             IEnumerable<KeyValuePair<Uuid, string>> entities,
-            IDictionary<Uuid, Contract> contracts)
+            IContractMap contracts)
         {
             _uuid = uuid;
             _slug = slug;

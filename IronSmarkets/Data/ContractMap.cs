@@ -29,7 +29,11 @@ using IronSmarkets.Proto.Seto;
 
 namespace IronSmarkets.Data
 {
-    internal class ContractMap : IDictionary<Uuid, Contract>
+    public interface IContractMap : IDictionary<Uuid, Contract>
+    {
+    }
+
+    internal class ContractMap : IContractMap
     {
         private readonly IDictionary<Uuid, Contract> _contracts;
 
@@ -38,7 +42,7 @@ namespace IronSmarkets.Data
             _contracts = contracts;
         }
 
-        public static ContractMap FromContracts(IEnumerable<ContractInfo> setoContracts)
+        public static IContractMap FromContracts(IEnumerable<ContractInfo> setoContracts)
         {
             return new ContractMap(
                 setoContracts.Aggregate(

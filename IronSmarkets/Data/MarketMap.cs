@@ -29,7 +29,11 @@ using IronSmarkets.Proto.Seto;
 
 namespace IronSmarkets.Data
 {
-    internal class MarketMap : IDictionary<Uuid, Market>
+    public interface IMarketMap : IDictionary<Uuid, Market>
+    {
+    }
+
+    internal class MarketMap : IMarketMap
     {
         private readonly IDictionary<Uuid, Market> _markets;
 
@@ -38,7 +42,7 @@ namespace IronSmarkets.Data
             _markets = markets;
         }
 
-        public static MarketMap FromMarkets(IEnumerable<MarketInfo> setoMarkets)
+        public static IMarketMap FromMarkets(IEnumerable<MarketInfo> setoMarkets)
         {
             return new MarketMap(
                 setoMarkets.Aggregate(

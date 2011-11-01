@@ -95,9 +95,8 @@ namespace IronSmarkets.Data
         public static Uuid? MaybeFromUuid128(Uuid128 uuid)
         {
             if (uuid == null)
-            {
-                return (Uuid?)null;
-            }
+                return null;
+
             return FromUuid128(uuid);
         }
     }

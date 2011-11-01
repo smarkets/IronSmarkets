@@ -44,5 +44,13 @@ namespace IronSmarkets.Data
                 (int)date.Year, (int)date.Month, (int)date.Day,
                 (int)time.Hour, (int)time.Minute, 0);
         }
+
+        public static decimal FromDecimal(Proto.Seto.Decimal sDecimal)
+        {
+            var val = new decimal(sDecimal.Value);
+            // Annoyingly, there is no integer exponentiation
+            var divisor = new decimal((long)Math.Pow(10, sDecimal.Exponent));
+            return Math.Round(val / divisor, (int)sDecimal.Exponent);
+        }
     }
 }

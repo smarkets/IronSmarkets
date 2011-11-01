@@ -58,6 +58,8 @@ namespace IronSmarkets.Clients
         ulong RequestOrdersForMarket(Uuid market);
 
         IEventMap RequestEvents(EventQuery query);
+        Data.Account GetAccountState();
+        Data.Account GetAccountState(Uuid account);
     }
 
     internal sealed class SyncRequest<T>
@@ -105,6 +107,8 @@ namespace IronSmarkets.Clients
 
         private readonly IDictionary<ulong, SyncRequest<Proto.Seto.Events>> _eventsRequests =
             new Dictionary<ulong, SyncRequest<Proto.Seto.Events>>();
+        private readonly IDictionary<ulong, SyncRequest<Proto.Seto.AccountState>> _accountRequests =
+            new Dictionary<ulong, SyncRequest<Proto.Seto.AccountState>>();
 
         private SmarketsClient(IClientSettings settings)
         {
@@ -286,6 +290,42 @@ namespace IronSmarkets.Clients
             return EventMap.FromSeto(req.Response);
         }
 
+        public Data.Account GetAccountState()
+        {
+            if (IsDisposed)
+                throw new ObjectDisposedException(
+                    "SmarketsClient",
+                    "Called GetAccount on disposed object");
+
+            return GetAccountState(new AccountStateRequest());
+        }
+
+        public Data.Account GetAccountState(Uuid account)
+        {
+            if (IsDisposed)
+                throw new ObjectDisposedException(
+                    "SmarketsClient",
+                    "Called GetAccount on disposed object");
+
+            return GetAccountState(
+                new AccountStateRequest {
+                    Account = account.ToUuid128()
+                });
+        }
+
+        private Data.Account GetAccountState(AccountStateRequest request)
+        {
+            var payload = new Payload {
+                Type = PayloadType.PAYLOADACCOUNTSTATEREQUEST,
+                AccountStateRequest = request
+            };
+            SendPayload(payload);
+            var seq = payload.EtoPayload.Seq;
+            var req = new SyncRequest<Proto.Seto.AccountState>();
+            _accountRequests[seq] = req;
+            return Data.Account.FromSeto(req.Response);
+        }
+
         private void OnPayloadReceived(Payload payload)
         {
             EventHandler<PayloadReceivedEventArgs<Payload>> ev = PayloadReceived;
@@ -297,6 +337,11 @@ namespace IronSmarkets.Clients
             {
                 HandleEventsHttpFound(payload);
             }
+
+            if (payload.Type == PayloadType.PAYLOADACCOUNTSTATE)
+            {
+                HandleAccountState(payload);
+            }
         }
 
         private void OnPayloadSent(Payload payload)
@@ -306,6 +351,22 @@ namespace IronSmarkets.Clients
                 ev(this, new PayloadReceivedEventArgs<Payload>(
                        payload.EtoPayload.Seq,
                        payload));
+        }
+
+        private void HandleAccountState(Payload payload)
+        {
+            SyncRequest<Proto.Seto.AccountState> req;
+            if (_accountRequests.TryGetValue(
+                    payload.EtoPayload.Seq,
+                    out req)) {
+                req.Response = payload.AccountState;
+            }
+            else
+            {
+                Log.Warn(
+                    "Received ACCOUNT_STATE payload " +
+                    "but could find original request");
+            }
         }
 
         private void HandleEventsHttpFound(Payload payload)

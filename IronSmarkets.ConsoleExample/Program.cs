@@ -54,6 +54,8 @@ namespace IronSmarkets.ConsoleExample
 
         static void Main(string[] args)
         {
+            const int pingers = 3;
+            const int pings = 2;
             Thread.CurrentThread.Name = "main";
             if (args.Length != 4)
             {
@@ -86,8 +88,13 @@ namespace IronSmarkets.ConsoleExample
                 client.AddPayloadHandler(payload => true);
                 client.Login();
                 Log.Info("Connected");
-                var threads = new List<Thread>(10);
-                foreach (var sleeper in Enumerable.Range(1, 10))
+                var acct = client.GetAccountState();
+                Log.Info(
+                    string.Format(
+                        "Got account {0} with {1}{2} cash, {1}{3} total exposure",
+                        acct.Uuid, acct.Currency.Iso4217, acct.Cash, acct.Exposure));
+                var threads = new List<Thread>(pingers);
+                foreach (var sleeper in Enumerable.Range(1, pingers))
                 {
                     int sleeper1 = sleeper;
                     var t1 = new Thread(
@@ -101,7 +108,7 @@ namespace IronSmarkets.ConsoleExample
                     t1.Start();
                     threads.Add(t1);
                 }
-                foreach (var ping in Enumerable.Range(1, 5))
+                foreach (var ping in Enumerable.Range(1, pings))
                 {
                     Log.Debug(
                         string.Format(

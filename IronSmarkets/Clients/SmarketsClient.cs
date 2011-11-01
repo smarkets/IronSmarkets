@@ -268,12 +268,6 @@ namespace IronSmarkets.Clients
             return payload.EtoPayload.Seq;
         }
 
-        public IEventMap RequestEvents(EventQuery query)
-        {
-            ulong sequence;
-            return RequestEvents(query, out sequence);
-        }
-
         public IEventMap RequestEvents(EventQuery query, out ulong sequence)
         {
             if (IsDisposed)
@@ -293,12 +287,6 @@ namespace IronSmarkets.Clients
             return EventMap.FromSeto(req.Response);
         }
 
-        public AccountState GetAccountState()
-        {
-            ulong sequence;
-            return GetAccountState(out sequence);
-        }
-
         public AccountState GetAccountState(out ulong sequence)
         {
             if (IsDisposed)
@@ -307,12 +295,6 @@ namespace IronSmarkets.Clients
                     "Called GetAccount on disposed object");
 
             return GetAccountState(new Proto.Seto.AccountStateRequest(), out sequence);
-        }
-
-        public AccountState GetAccountState(Uuid account)
-        {
-            ulong sequence;
-            return GetAccountState(account, out sequence);
         }
 
         public AccountState GetAccountState(Uuid account, out ulong sequence)

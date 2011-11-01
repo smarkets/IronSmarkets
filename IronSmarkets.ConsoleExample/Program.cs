@@ -89,10 +89,7 @@ namespace IronSmarkets.ConsoleExample
                 client.Login();
                 Log.Info("Connected");
                 var acct = client.GetAccountState();
-                Log.Info(
-                    string.Format(
-                        "Got account {0} with {1}{2} cash, {1}{3} total exposure",
-                        acct.Uuid, acct.Currency.Iso4217, acct.Cash, acct.Exposure));
+                Log.Info(string.Format("Got account {0}", acct));
                 var threads = new List<Thread>(pingers);
                 foreach (var sleeper in Enumerable.Range(1, pingers))
                 {

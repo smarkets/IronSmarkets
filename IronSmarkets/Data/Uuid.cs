@@ -35,8 +35,8 @@ namespace IronSmarkets.Data
         public ulong High { get { return _high; } }
         public ulong Low { get { return _low; } }
 
-        private Uuid(ulong low) : this(0, low) {}
-        private Uuid(ulong high, ulong low)
+        internal Uuid(ulong low) : this(0, low) {}
+        internal Uuid(ulong high, ulong low)
         {
             _high = high;
             _low = low;
@@ -49,11 +49,8 @@ namespace IronSmarkets.Data
 
         public override bool Equals(object right)
         {
-            if (object.ReferenceEquals(right, null))
+            if (ReferenceEquals(right, null))
                 return false;
-
-            if (object.ReferenceEquals(this, right))
-                return true;
 
             if (GetType() != right.GetType())
                 return false;

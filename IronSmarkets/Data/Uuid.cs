@@ -20,13 +20,14 @@
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+using System;
 using System.Globalization;
 
 using IronSmarkets.Proto.Seto;
 
 namespace IronSmarkets.Data
 {
-    public struct Uuid
+    public struct Uuid : IEquatable<Uuid>
     {
         private readonly ulong _high;
         private readonly ulong _low;
@@ -39,6 +40,30 @@ namespace IronSmarkets.Data
         {
             _high = high;
             _low = low;
+        }
+
+        public override int GetHashCode()
+        {
+            return _high.GetHashCode() ^ _low.GetHashCode();
+        }
+
+        public override bool Equals(object right)
+        {
+            if (object.ReferenceEquals(right, null))
+                return false;
+
+            if (object.ReferenceEquals(this, right))
+                return true;
+
+            if (GetType() != right.GetType())
+                return false;
+
+            return Equals((Uuid)right);
+        }
+
+        public bool Equals(Uuid other)
+        {
+            return _high == other._high && _low == other._low;
         }
 
         public override string ToString()

@@ -69,9 +69,19 @@ namespace IronSmarkets.Data
             return _name == other._name && _iso4217 == other._iso4217;
         }
 
+        public static bool operator==(Currency left, Currency right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator!=(Currency left, Currency right)
+        {
+            return !left.Equals(right);
+        }
+
         public override string ToString()
         {
-            return _name;
+            return _iso4217;
         }
 
         public static Currency FromSeto(Proto.Seto.Currency currency)

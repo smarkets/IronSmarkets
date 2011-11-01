@@ -20,9 +20,11 @@
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+using System;
+
 namespace IronSmarkets.Data
 {
-    public struct AccountState
+    public struct AccountState : IEquatable<AccountState>
     {
         private readonly Uuid _uuid;
         private readonly Currency _currency;
@@ -49,6 +51,56 @@ namespace IronSmarkets.Data
             _cash = cash;
             _bonus = bonus;
             _exposure = exposure;
+        }
+
+        public override int GetHashCode()
+        {
+            return _uuid.GetHashCode()
+                ^ _currency.GetHashCode()
+                ^ _cash.GetHashCode()
+                ^ _bonus.GetHashCode()
+                ^ _exposure.GetHashCode();
+        }
+
+        public override bool Equals(object right)
+        {
+            if (ReferenceEquals(right, null))
+                return false;
+
+            if (GetType() != right.GetType())
+                return false;
+
+            return Equals((AccountState)right);
+        }
+
+        public bool Equals(AccountState other)
+        {
+            return _uuid == other._uuid
+                && _currency == other._currency
+                && _cash == other._cash
+                && _bonus == other._bonus
+                && _exposure == other._exposure;
+        }
+
+        public override string ToString()
+        {
+            return string.Format(
+                "AccountState(uuid: {0}, "
+                + "currency: {1}, "
+                + "cash: {2}, "
+                + "bonus: {3}, "
+                + "exposure: {4})",
+                _uuid, _currency, _cash, _bonus, _exposure);
+        }
+
+        public static bool operator==(AccountState left, AccountState right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator!=(AccountState left, AccountState right)
+        {
+            return !left.Equals(right);
         }
 
         internal static AccountState FromSeto(Proto.Seto.AccountState info)

@@ -89,6 +89,16 @@ namespace IronSmarkets.Data
             };
         }
 
+        public static bool operator==(Uuid left, Uuid right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator!=(Uuid left, Uuid right)
+        {
+            return !left.Equals(right);
+        }
+
         /// <summary>
         ///   Parses a hex representation of a 128-bit UUID.
         /// </summary>

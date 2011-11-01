@@ -93,7 +93,7 @@
     <Compile Include="Sessions\SeqSession.cs" />
     <Compile Include="Sessions\Settings.cs" />
     <Compile Include="Sockets\ISocket.cs" />
-    <Compile Include="Sockets\SafeStream.cs" />
+    <Compile Include="Sockets\SafeSslStream.cs" />
     <Compile Include="Sockets\SessionSocket.cs" />
     <Compile Include="Sockets\Settings.cs" />
   </ItemGroup>

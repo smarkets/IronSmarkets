@@ -47,49 +47,109 @@ namespace IronSmarkets.Sockets
     ///   completed. Performance will suffer slightly, but TLS network
     ///   performance incurs its own buffering penalties by nature.
     /// </summary>
-    internal sealed class SafeStream : Stream
+    internal sealed class SafeSslStream : Stream
     {
+        private readonly object _streamLock = new object();
         private readonly SslStream _stream;
 
-        public SafeStream(SslStream stream)
+        public SafeSslStream(SslStream stream)
         {
             _stream = stream;
         }
 
-        public override bool CanRead { get { return _stream.CanRead; } }
-        public override bool CanSeek { get { return _stream.CanSeek; } }
-        public override bool CanWrite { get { return _stream.CanWrite; } }
-        public override long Length { get { return _stream.Length; } }
-        public override long Position {
+        public override bool CanRead
+        {
             get
             {
-                return _stream.Position;
+                lock (_streamLock)
+                {
+                    return _stream.CanRead;
+                }
+            }
+        }
+
+        public override bool CanSeek
+        {
+            get
+            {
+                lock (_streamLock)
+                {
+                    return _stream.CanSeek;
+                }
+            }
+        }
+
+        public override bool CanWrite
+        {
+            get
+            {
+                lock (_streamLock)
+                {
+                    return _stream.CanWrite;
+                }
+            }
+        }
+
+        public override long Length
+        {
+            get
+            {
+                lock (_streamLock)
+                {
+                    return _stream.Length;
+                }
+            }
+        }
+        
+        public override long Position
+        {
+            get
+            {
+                lock (_streamLock)
+                {
+                    return _stream.Position;
+                }
             }
             set
             {
-                _stream.Position = value;
+                lock (_streamLock)
+                {
+                    _stream.Position = value;
+                }
             }
         }
 
         public override void Flush()
         {
-            _stream.Flush();
+            lock (_streamLock)
+            {
+                _stream.Flush();
+            }
         }
 
         public override long Seek(long offset, SeekOrigin origin)
         {
-            return _stream.Seek(offset, origin);
+            lock (_streamLock)
+            {
+                return _stream.Seek(offset, origin);
+            }
         }
 
         public override void SetLength(long length)
         {
-            _stream.SetLength(length);
+            lock (_streamLock)
+            {
+                _stream.SetLength(length);
+            }
         }
 
         public override int Read(byte[] buffer, int offset, int count)
         {
             var state = new StateObject();
-            _stream.BeginRead(buffer, offset, count, ReadCallback, state);
+            lock (_streamLock)
+            {
+                _stream.BeginRead(buffer, offset, count, ReadCallback, state);
+            }
             state.Done.WaitOne();
             return state.BytesRead;
         }
@@ -97,21 +157,30 @@ namespace IronSmarkets.Sockets
         public override void Write(byte[] buffer, int offset, int count)
         {
             var state = new StateObject();
-            _stream.BeginWrite(buffer, offset, count, WriteCallback, state);
+            lock (_streamLock)
+            {
+                _stream.BeginWrite(buffer, offset, count, WriteCallback, state);
+            }
             state.Done.WaitOne();
         }
 
         private void ReadCallback(IAsyncResult ar)
         {
             var state = (StateObject)ar.AsyncState;
-            state.BytesRead = _stream.EndRead(ar);
+            lock (_streamLock)
+            {
+                state.BytesRead = _stream.EndRead(ar);
+            }
             state.Done.Set();
         }
 
         private void WriteCallback(IAsyncResult ar)
         {
             var state = (StateObject)ar.AsyncState;
-            _stream.EndWrite(ar);
+            lock (_streamLock)
+            {
+                _stream.EndWrite(ar);
+            }
             state.Done.Set();
         }
     }

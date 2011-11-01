@@ -332,14 +332,15 @@ namespace IronSmarkets.Clients
                 ev(this, new PayloadReceivedEventArgs<Proto.Seto.Payload>(
                        payload.EtoPayload.Seq,
                        payload));
-            if (payload.Type == Proto.Seto.PayloadType.PAYLOADHTTPFOUND)
-            {
-                HandleEventsHttpFound(payload);
-            }
 
-            if (payload.Type == Proto.Seto.PayloadType.PAYLOADACCOUNTSTATE)
+            switch (payload.Type)
             {
-                HandleAccountState(payload);
+                case Proto.Seto.PayloadType.PAYLOADHTTPFOUND:
+                    HandleEventsHttpFound(payload);
+                    break;
+                case Proto.Seto.PayloadType.PAYLOADACCOUNTSTATE:
+                    HandleAccountState(payload);
+                    break;
             }
         }
 

@@ -72,8 +72,8 @@
     <Compile Include="Data\Contract.cs" />
     <Compile Include="Data\ContractInfo.cs" />
     <Compile Include="Data\ContractMap.cs" />
-    <Compile Include="Data\ContractQuoteMap.cs" />
     <Compile Include="Data\ContractQuotes.cs" />
+    <Compile Include="Data\ContractQuotesMap.cs" />
     <Compile Include="Data\Currency.cs" />
     <Compile Include="Data\EntityRelationships.cs" />
     <Compile Include="Data\EventInfo.cs" />

@@ -27,7 +27,7 @@ using System.Linq;
 
 namespace IronSmarkets.Data
 {
-    public interface IMarketMap : IDictionary<Uuid, MarketInfo>
+    public interface IMarketMap : IReadOnlyMap<Uuid, MarketInfo>
     {
     }
 
@@ -62,16 +62,6 @@ namespace IronSmarkets.Data
             return GetEnumerator();
         }
 
-        public void Add(KeyValuePair<Uuid, MarketInfo> item)
-        {
-            throw new NotSupportedException();
-        }
-
-        public void Clear()
-        {
-            throw new NotSupportedException();
-        }
-
         public bool Contains(KeyValuePair<Uuid, MarketInfo> item)
         {
             return _markets.Contains(item);
@@ -82,34 +72,14 @@ namespace IronSmarkets.Data
             _markets.CopyTo(array, arrayIndex);
         }
 
-        public bool Remove(KeyValuePair<Uuid, MarketInfo> item)
-        {
-            throw new NotSupportedException();
-        }
-
         public int Count
         {
             get { return _markets.Count; }
         }
 
-        public bool IsReadOnly
-        {
-            get { return true; }
-        }
-
         public bool ContainsKey(Uuid key)
         {
             return _markets.ContainsKey(key);
-        }
-
-        public void Add(Uuid key, MarketInfo value)
-        {
-            throw new NotSupportedException();
-        }
-
-        public bool Remove(Uuid key)
-        {
-            throw new NotSupportedException();
         }
 
         public bool TryGetValue(Uuid key, out MarketInfo value)
@@ -120,7 +90,6 @@ namespace IronSmarkets.Data
         public MarketInfo this[Uuid key]
         {
             get { return _markets[key]; }
-            set { throw new NotSupportedException(); }
         }
 
         public ICollection<Uuid> Keys

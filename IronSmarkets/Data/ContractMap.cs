@@ -27,7 +27,7 @@ using System.Linq;
 
 namespace IronSmarkets.Data
 {
-    public interface IContractMap : IDictionary<Uuid, ContractInfo>
+    public interface IContractMap : IReadOnlyMap<Uuid, ContractInfo>
     {
     }
 
@@ -63,16 +63,6 @@ namespace IronSmarkets.Data
             return GetEnumerator();
         }
 
-        public void Add(KeyValuePair<Uuid, ContractInfo> item)
-        {
-            throw new NotSupportedException();
-        }
-
-        public void Clear()
-        {
-            throw new NotSupportedException();
-        }
-
         public bool Contains(KeyValuePair<Uuid, ContractInfo> item)
         {
             return _contracts.Contains(item);
@@ -83,34 +73,14 @@ namespace IronSmarkets.Data
             _contracts.CopyTo(array, arrayIndex);
         }
 
-        public bool Remove(KeyValuePair<Uuid, ContractInfo> item)
-        {
-            throw new NotSupportedException();
-        }
-
         public int Count
         {
             get { return _contracts.Count; }
         }
 
-        public bool IsReadOnly
-        {
-            get { return true; }
-        }
-
         public bool ContainsKey(Uuid key)
         {
             return _contracts.ContainsKey(key);
-        }
-
-        public void Add(Uuid key, ContractInfo value)
-        {
-            throw new NotSupportedException();
-        }
-
-        public bool Remove(Uuid key)
-        {
-            throw new NotSupportedException();
         }
 
         public bool TryGetValue(Uuid key, out ContractInfo value)
@@ -121,7 +91,6 @@ namespace IronSmarkets.Data
         public ContractInfo this[Uuid key]
         {
             get { return _contracts[key]; }
-            set { throw new NotSupportedException(); }
         }
 
         public ICollection<Uuid> Keys

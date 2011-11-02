@@ -27,7 +27,7 @@ using System.Linq;
 
 namespace IronSmarkets.Data
 {
-    public interface IEventMap : IDictionary<Uuid, EventInfo>
+    public interface IEventMap : IReadOnlyMap<Uuid, EventInfo>
     {
     }
 
@@ -62,16 +62,6 @@ namespace IronSmarkets.Data
             return GetEnumerator();
         }
 
-        public void Add(KeyValuePair<Uuid, EventInfo> item)
-        {
-            throw new NotSupportedException();
-        }
-
-        public void Clear()
-        {
-            throw new NotSupportedException();
-        }
-
         public bool Contains(KeyValuePair<Uuid, EventInfo> item)
         {
             return _events.Contains(item);
@@ -82,34 +72,14 @@ namespace IronSmarkets.Data
             _events.CopyTo(array, arrayIndex);
         }
 
-        public bool Remove(KeyValuePair<Uuid, EventInfo> item)
-        {
-            throw new NotSupportedException();
-        }
-
         public int Count
         {
             get { return _events.Count; }
         }
 
-        public bool IsReadOnly
-        {
-            get { return true; }
-        }
-
         public bool ContainsKey(Uuid key)
         {
             return _events.ContainsKey(key);
-        }
-
-        public void Add(Uuid key, EventInfo value)
-        {
-            throw new NotSupportedException();
-        }
-
-        public bool Remove(Uuid key)
-        {
-            throw new NotSupportedException();
         }
 
         public bool TryGetValue(Uuid key, out EventInfo value)
@@ -120,7 +90,6 @@ namespace IronSmarkets.Data
         public EventInfo this[Uuid key]
         {
             get { return _events[key]; }
-            set { throw new NotSupportedException(); }
         }
 
         public ICollection<Uuid> Keys

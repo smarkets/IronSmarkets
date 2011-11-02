@@ -27,7 +27,7 @@ namespace IronSmarkets.Data
 {
     public class EventInfo
     {
-        internal static readonly IDictionary<Proto.Seto.EventCategory, string> CategoryStrings =
+        private static readonly IDictionary<Proto.Seto.EventCategory, string> CategoryStrings =
             new Dictionary<Proto.Seto.EventCategory, string> {
             { Proto.Seto.EventCategory.EVENTCATEGORYSPORT, "sport" },
             { Proto.Seto.EventCategory.EVENTCATEGORYPOLITICS, "politics" },
@@ -62,7 +62,7 @@ namespace IronSmarkets.Data
             { "tennis", Proto.Seto.SportByDateType.SPORTBYDATETENNIS }
         };
 
-        internal static readonly IDictionary<Proto.Seto.EventType, string> TypeStrings =
+        private static readonly IDictionary<Proto.Seto.EventType, string> TypeStrings =
             new Dictionary<Proto.Seto.EventType, string> {
             { Proto.Seto.EventType.EVENTFOOTBALLMATCH, "football-match" },
             { Proto.Seto.EventType.EVENTFOOTBALLSEASON, "football-season" },

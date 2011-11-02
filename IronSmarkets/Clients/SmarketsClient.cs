@@ -378,7 +378,7 @@ namespace IronSmarkets.Clients
 
         private void HandleAccountState(Proto.Seto.Payload payload)
         {
-            SyncRequest<Proto.Seto.AccountState> req = null;
+            SyncRequest<Proto.Seto.AccountState> req;
             lock (_accountReqLock)
             {
                 if (_accountRequests.TryGetValue(
@@ -400,7 +400,7 @@ namespace IronSmarkets.Clients
 
         private void HandleEventsHttpFound(Proto.Seto.Payload payload)
         {
-            SyncRequest<Proto.Seto.Events> req = null;
+            SyncRequest<Proto.Seto.Events> req;
             lock (_eventsReqLock)
             {
                 if (_eventsRequests.TryGetValue(
@@ -425,12 +425,10 @@ namespace IronSmarkets.Clients
         {
             Uid market = Uid.FromUuid128(payload.MarketQuotes.Market);
             SyncRequest<Proto.Seto.MarketQuotes> req = null;
-            bool found;
             lock (_marketQuotesReqLock)
             {
                 Queue<SyncRequest<Proto.Seto.MarketQuotes>> queue;
-                found = _marketQuotesRequests.TryGetValue(market, out queue);
-                if (found)
+                if (_marketQuotesRequests.TryGetValue(market, out queue))
                 {
                     Debug.Assert(queue.Count > 0);
                     req = queue.Dequeue();

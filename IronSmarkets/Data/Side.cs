@@ -26,8 +26,8 @@ namespace IronSmarkets.Data
 {
     public struct Side : IEquatable<Side>
     {
-        public static readonly Side BUY  = new Side("buy");
-        public static readonly Side SELL = new Side("sell");
+        public static readonly Side Buy  = new Side("buy");
+        public static readonly Side Sell = new Side("sell");
 
         private readonly string _side;
 

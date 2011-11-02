@@ -23,8 +23,6 @@
 using System;
 using System.Collections.Generic;
 
-using IronSmarkets.Proto.Seto;
-
 namespace IronSmarkets.Data
 {
     public struct Currency : IEquatable<Currency>
@@ -42,7 +40,7 @@ namespace IronSmarkets.Data
         public string Name { get { return _name; } }
         public string Iso4217 { get { return _iso4217; } }
 
-        internal Currency(string name, string iso4217)
+        private Currency(string name, string iso4217)
         {
             _name = name;
             _iso4217 = iso4217;

@@ -91,7 +91,7 @@ namespace IronSmarkets.Data
             return new Execution(
                 new Price(setoExecution.Price),
                 new Quantity(setoExecution.Quantity),
-                setoExecution.Liquidity == Proto.Seto.Side.SIDEBUY ? Side.BUY : Side.SELL,
+                setoExecution.Liquidity == Proto.Seto.Side.SIDEBUY ? Side.Buy : Side.Sell,
                 setoExecution.Microseconds);
         }
 

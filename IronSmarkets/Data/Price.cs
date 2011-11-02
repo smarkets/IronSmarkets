@@ -26,11 +26,11 @@ namespace IronSmarkets.Data
 {
     public struct Price : IEquatable<Price>
     {
-        private const decimal DIVISOR = 10000m;
+        private const decimal Divisor = 10000m;
         private readonly uint _raw;
 
         public uint Raw { get { return _raw; } }
-        public decimal Percent { get { return (decimal)_raw / DIVISOR; } }
+        public decimal Percent { get { return _raw / Divisor; } }
 
         public Price(uint raw)
         {

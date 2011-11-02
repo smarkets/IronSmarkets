@@ -26,11 +26,11 @@ namespace IronSmarkets.Data
 {
     public struct Quantity : IEquatable<Quantity>
     {
-        private const decimal DIVISOR = 10000.0000m;
+        private const decimal Divisor = 10000.0000m;
         private readonly uint _raw;
 
         public uint Raw { get { return _raw; } }
-        public decimal Currency { get { return (decimal)_raw / DIVISOR; } }
+        public decimal Currency { get { return _raw / Divisor; } }
 
         public Quantity(uint raw)
         {
@@ -39,7 +39,7 @@ namespace IronSmarkets.Data
 
         public Quantity(decimal currency)
         {
-            _raw = (uint)(currency * DIVISOR);
+            _raw = (uint)(currency * Divisor);
         }
 
         public override int GetHashCode()

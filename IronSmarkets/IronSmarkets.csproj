@@ -63,6 +63,7 @@
     <Compile Include="..\Metadata\VersionInfo.cs">
       <Link>Properties\VersionInfo.cs</Link>
     </Compile>
+    <Compile Include="Clients\Response.cs" />
     <Compile Include="Clients\Receiver.cs" />
     <Compile Include="Clients\Settings.cs" />
     <Compile Include="Clients\SmarketsClient.cs" />

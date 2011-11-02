@@ -336,7 +336,7 @@ namespace IronSmarkets.Clients
             {
                 Log.Warn(
                     "Received ACCOUNT_STATE payload " +
-                    "but could find original request");
+                    "but could not find original request");
             }
         }
 
@@ -352,7 +352,7 @@ namespace IronSmarkets.Clients
             {
                 Log.Warn(
                     "Received HTTP_FOUND payload " +
-                    "but could find original request");
+                    "but could not find original request");
             }
         }
 

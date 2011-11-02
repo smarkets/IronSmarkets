@@ -47,6 +47,11 @@ namespace IronSmarkets.Data
             return _raw.GetHashCode();
         }
 
+        public override string ToString()
+        {
+            return Currency.ToString("#,#.00#");
+        }
+
         public override bool Equals(object right)
         {
             if (ReferenceEquals(right, null))

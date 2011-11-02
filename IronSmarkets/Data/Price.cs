@@ -26,7 +26,7 @@ namespace IronSmarkets.Data
 {
     public struct Price : IEquatable<Price>
     {
-        private const decimal DIVISOR = 100m;
+        private const decimal DIVISOR = 10000m;
         private readonly uint _raw;
 
         public uint Raw { get { return _raw; } }
@@ -51,6 +51,11 @@ namespace IronSmarkets.Data
                 return false;
 
             return Equals((Price)right);
+        }
+
+        public override string ToString()
+        {
+            return Percent.ToString("#,#.00#%");
         }
 
         public bool Equals(Price other)

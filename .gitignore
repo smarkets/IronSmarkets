@@ -29,3 +29,4 @@ test-results/*
 test-results
 TestResult.xml
 NUnitTestResult.xml
+*.ReSharper

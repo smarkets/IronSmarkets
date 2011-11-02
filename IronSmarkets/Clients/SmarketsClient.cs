@@ -22,6 +22,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Net;
 using System.IO;
 using System.Threading;
@@ -72,10 +73,15 @@ namespace IronSmarkets.Clients
 
         private readonly IDictionary<ulong, SyncRequest<Proto.Seto.Events>> _eventsRequests =
             new Dictionary<ulong, SyncRequest<Proto.Seto.Events>>();
+        private readonly object _eventsReqLock = new object();
+
         private readonly IDictionary<ulong, SyncRequest<Proto.Seto.AccountState>> _accountRequests =
             new Dictionary<ulong, SyncRequest<Proto.Seto.AccountState>>();
+        private readonly object _accountReqLock = new object();
+
         private readonly IDictionary<Uuid, Queue<SyncRequest<Proto.Seto.MarketQuotes>>> _marketQuotesRequests =
             new Dictionary<Uuid, Queue<SyncRequest<Proto.Seto.MarketQuotes>>>();
+        private readonly object _marketQuotesReqLock = new object();
 
         private int _disposed;
 
@@ -252,12 +258,25 @@ namespace IronSmarkets.Clients
                 EventsRequest = query.ToEventsRequest()
             };
 
-            SendPayload(payload);
-            var sequence = payload.EtoPayload.Seq;
             var req = new SyncRequest<Proto.Seto.Events>();
-            _eventsRequests[sequence] = req;
+            lock (_eventsReqLock)
+            {
+
+                // XXX: At the moment, SendPayload needs to be inside
+                // the lock because the receiver thread could
+                // theoretically receive the payload before the
+                // SyncRequest is added to the dictionary. Although
+                // very unlikely, I am opting for safer in this case
+                // (as well as other cases which exhibit the same
+                // pattern). It may make sense instead to track the
+                // last sequence number for these types of requests in
+                // a volatile long variable and spin-wait in the
+                // receiver where necessary.
+                SendPayload(payload);
+                _eventsRequests[payload.EtoPayload.Seq] = req;
+            }
             return new Response<IEventMap>(
-                sequence,
+                payload.EtoPayload.Seq,
                 EventMap.FromSeto(req.Response));
         }
 
@@ -291,12 +310,14 @@ namespace IronSmarkets.Clients
                 Type = Proto.Seto.PayloadType.PAYLOADACCOUNTSTATEREQUEST,
                 AccountStateRequest = request
             };
-            SendPayload(payload);
-            var sequence = payload.EtoPayload.Seq;
             var req = new SyncRequest<Proto.Seto.AccountState>();
-            _accountRequests[sequence] = req;
+            lock (_accountReqLock)
+            {
+                SendPayload(payload);
+                _accountRequests[payload.EtoPayload.Seq] = req;
+            }
             return new Response<AccountState>(
-                sequence,
+                payload.EtoPayload.Seq,
                 AccountState.FromSeto(req.Response));
         }
 
@@ -308,17 +329,19 @@ namespace IronSmarkets.Clients
                     Market = market.ToUuid128()
                 }
             };
-            SendPayload(payload);
-            var sequence = payload.EtoPayload.Seq;
             var req = new SyncRequest<Proto.Seto.MarketQuotes>();
-            if (!_marketQuotesRequests.ContainsKey(market))
+            lock (_marketQuotesReqLock)
             {
-                _marketQuotesRequests[market] =
-                    new Queue<SyncRequest<Proto.Seto.MarketQuotes>>();
+                SendPayload(payload);
+                if (!_marketQuotesRequests.ContainsKey(market))
+                {
+                    _marketQuotesRequests[market] =
+                        new Queue<SyncRequest<Proto.Seto.MarketQuotes>>();
+                }
+                _marketQuotesRequests[market].Enqueue(req);
             }
-            _marketQuotesRequests[market].Enqueue(req);
             return new Response<MarketQuotes>(
-                sequence,
+                payload.EtoPayload.Seq,
                 MarketQuotes.FromSeto(req.Response));
         }
 
@@ -355,10 +378,16 @@ namespace IronSmarkets.Clients
 
         private void HandleAccountState(Proto.Seto.Payload payload)
         {
-            SyncRequest<Proto.Seto.AccountState> req;
-            if (_accountRequests.TryGetValue(
-                    payload.EtoPayload.Seq,
-                    out req)) {
+            SyncRequest<Proto.Seto.AccountState> req = null;
+            lock (_accountReqLock)
+            {
+                if (_accountRequests.TryGetValue(
+                        payload.EtoPayload.Seq,
+                        out req)) {
+                    _accountRequests.Remove(payload.EtoPayload.Seq);
+                }
+            }
+            if (req != null) {
                 req.Response = payload.AccountState;
             }
             else
@@ -371,10 +400,17 @@ namespace IronSmarkets.Clients
 
         private void HandleEventsHttpFound(Proto.Seto.Payload payload)
         {
-            SyncRequest<Proto.Seto.Events> req;
-            if (_eventsRequests.TryGetValue(
-                    payload.EtoPayload.Seq,
-                    out req)) {
+            SyncRequest<Proto.Seto.Events> req = null;
+            lock (_eventsReqLock)
+            {
+                if (_eventsRequests.TryGetValue(
+                        payload.EtoPayload.Seq,
+                        out req)) {
+                    _eventsRequests.Remove(payload.EtoPayload.Seq);
+                }
+            }
+            if (req != null)
+            {
                 BeginFetchHttpFound(req, payload);
             }
             else
@@ -387,14 +423,24 @@ namespace IronSmarkets.Clients
 
         private void HandleMarketQuotes(Proto.Seto.Payload payload)
         {
-            Queue<SyncRequest<Proto.Seto.MarketQuotes>> queue;
             Uuid market = Uuid.FromUuid128(payload.MarketQuotes.Market);
-            if (_marketQuotesRequests.TryGetValue(market, out queue)) {
-                SyncRequest<Proto.Seto.MarketQuotes> req = queue.Dequeue();
-                if (queue.Count == 0)
+            SyncRequest<Proto.Seto.MarketQuotes> req = null;
+            bool found;
+            lock (_marketQuotesReqLock)
+            {
+                Queue<SyncRequest<Proto.Seto.MarketQuotes>> queue;
+                found = _marketQuotesRequests.TryGetValue(market, out queue);
+                if (found)
                 {
-                    _marketQuotesRequests.Remove(market);
+                    Debug.Assert(queue.Count > 0);
+                    req = queue.Dequeue();
+                    if (queue.Count == 0)
+                    {
+                        _marketQuotesRequests.Remove(market);
+                    }
                 }
+            }
+            if (req != null) {
                 req.Response = payload.MarketQuotes;
             }
             else

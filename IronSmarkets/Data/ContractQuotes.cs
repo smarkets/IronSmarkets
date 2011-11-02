@@ -54,7 +54,7 @@ namespace IronSmarkets.Data
             _lastExecution = lastExecution;
         }
 
-        private static ContractQuotes FromSeto(Proto.Seto.ContractQuotes setoQuotes)
+        internal static ContractQuotes FromSeto(Proto.Seto.ContractQuotes setoQuotes)
         {
             return new ContractQuotes(
                 Uuid.FromUuid128(setoQuotes.Contract),

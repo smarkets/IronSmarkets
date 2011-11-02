@@ -71,6 +71,7 @@
     <Compile Include="Data\Contract.cs" />
     <Compile Include="Data\ContractInfo.cs" />
     <Compile Include="Data\ContractMap.cs" />
+    <Compile Include="Data\ContractQuoteMap.cs" />
     <Compile Include="Data\ContractQuotes.cs" />
     <Compile Include="Data\Currency.cs" />
     <Compile Include="Data\EntityRelationships.cs" />
@@ -82,6 +83,7 @@
     <Compile Include="Data\Price.cs" />
     <Compile Include="Data\MarketInfo.cs" />
     <Compile Include="Data\MarketMap.cs" />
+    <Compile Include="Data\MarketQuotes.cs" />
     <Compile Include="Data\Quantity.cs" />
     <Compile Include="Data\Quote.cs" />
     <Compile Include="Data\SetoMap.cs" />

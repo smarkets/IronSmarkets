@@ -27,15 +27,15 @@ using System.Linq;
 
 namespace IronSmarkets.Data
 {
-    public interface IContractMap : IReadOnlyMap<Uuid, ContractInfo>
+    public interface IContractMap : IReadOnlyMap<Uid, ContractInfo>
     {
     }
 
     internal class ContractMap : IContractMap
     {
-        private readonly IDictionary<Uuid, ContractInfo> _contracts;
+        private readonly IDictionary<Uid, ContractInfo> _contracts;
 
-        private ContractMap(IDictionary<Uuid, ContractInfo> contracts)
+        private ContractMap(IDictionary<Uid, ContractInfo> contracts)
         {
             _contracts = contracts;
         }
@@ -45,15 +45,15 @@ namespace IronSmarkets.Data
         {
             return new ContractMap(
                 setoContracts.Aggregate(
-                    new Dictionary<Uuid, ContractInfo>(),
+                    new Dictionary<Uid, ContractInfo>(),
                     (dict, contractInfo) => {
                         var contract = ContractInfo.FromSeto(contractInfo);
-                        dict[contract.Uuid] = contract;
+                        dict[contract.Uid] = contract;
                         return dict;
                     }));
         }
 
-        public IEnumerator<KeyValuePair<Uuid, ContractInfo>> GetEnumerator()
+        public IEnumerator<KeyValuePair<Uid, ContractInfo>> GetEnumerator()
         {
             return _contracts.GetEnumerator();
         }
@@ -63,12 +63,12 @@ namespace IronSmarkets.Data
             return GetEnumerator();
         }
 
-        public bool Contains(KeyValuePair<Uuid, ContractInfo> item)
+        public bool Contains(KeyValuePair<Uid, ContractInfo> item)
         {
             return _contracts.Contains(item);
         }
 
-        public void CopyTo(KeyValuePair<Uuid, ContractInfo>[] array, int arrayIndex)
+        public void CopyTo(KeyValuePair<Uid, ContractInfo>[] array, int arrayIndex)
         {
             _contracts.CopyTo(array, arrayIndex);
         }
@@ -78,22 +78,22 @@ namespace IronSmarkets.Data
             get { return _contracts.Count; }
         }
 
-        public bool ContainsKey(Uuid key)
+        public bool ContainsKey(Uid key)
         {
             return _contracts.ContainsKey(key);
         }
 
-        public bool TryGetValue(Uuid key, out ContractInfo value)
+        public bool TryGetValue(Uid key, out ContractInfo value)
         {
             return _contracts.TryGetValue(key, out value);
         }
 
-        public ContractInfo this[Uuid key]
+        public ContractInfo this[Uid key]
         {
             get { return _contracts[key]; }
         }
 
-        public ICollection<Uuid> Keys
+        public ICollection<Uid> Keys
         {
             get { return _contracts.Keys; }
         }

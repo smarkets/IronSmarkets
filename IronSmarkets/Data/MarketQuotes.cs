@@ -37,23 +37,23 @@ namespace IronSmarkets.Data
             { Proto.Seto.QuantityType.QUANTITYPAYOFFCURRENCY, "payoff-currency" }
         };
 
-        private readonly Uuid _uuid;
+        private readonly Uid _uid;
         private readonly IContractQuotesMap _contractQuotes;
         private readonly string _priceType;
         private readonly string _quantityType;
 
-        public Uuid Uuid { get { return _uuid; } }
+        public Uid Uid { get { return _uid; } }
         public IContractQuotesMap ContractQuotes { get { return _contractQuotes; } }
         public string PriceType { get { return _priceType; } }
         public string QuantityType { get { return _quantityType; } }
 
         private MarketQuotes(
-            Uuid uuid,
+            Uid uid,
             IContractQuotesMap contractQuotes,
             string priceType,
             string quantityType)
         {
-            _uuid = uuid;
+            _uid = uid;
             _contractQuotes = contractQuotes;
             _priceType = priceType;
             _quantityType = quantityType;
@@ -62,7 +62,7 @@ namespace IronSmarkets.Data
         internal static MarketQuotes FromSeto(Proto.Seto.MarketQuotes setoQuotes)
         {
             return new MarketQuotes(
-                Uuid.FromUuid128(setoQuotes.Market),
+                Uid.FromUuid128(setoQuotes.Market),
                 ContractQuotesMap.FromSeto(setoQuotes.ContractQuotes),
                 PriceTypeStrings[setoQuotes.PriceType],
                 QuantityTypeStrings[setoQuotes.QuantityType]);

@@ -27,7 +27,7 @@ using IronSmarkets.Proto.Seto;
 
 namespace IronSmarkets.Data
 {
-    public struct Uuid : IEquatable<Uuid>
+    public struct Uid : IEquatable<Uid>
     {
         private readonly ulong _high;
         private readonly ulong _low;
@@ -35,8 +35,8 @@ namespace IronSmarkets.Data
         public ulong High { get { return _high; } }
         public ulong Low { get { return _low; } }
 
-        internal Uuid(ulong low) : this(0, low) {}
-        internal Uuid(ulong high, ulong low)
+        internal Uid(ulong low) : this(0, low) {}
+        internal Uid(ulong high, ulong low)
         {
             _high = high;
             _low = low;
@@ -55,10 +55,10 @@ namespace IronSmarkets.Data
             if (GetType() != right.GetType())
                 return false;
 
-            return Equals((Uuid)right);
+            return Equals((Uid)right);
         }
 
-        public bool Equals(Uuid other)
+        public bool Equals(Uid other)
         {
             return _high == other._high && _low == other._low;
         }
@@ -89,12 +89,12 @@ namespace IronSmarkets.Data
             };
         }
 
-        public static bool operator==(Uuid left, Uuid right)
+        public static bool operator==(Uid left, Uid right)
         {
             return left.Equals(right);
         }
 
-        public static bool operator!=(Uuid left, Uuid right)
+        public static bool operator!=(Uid left, Uid right)
         {
             return !left.Equals(right);
         }
@@ -102,29 +102,29 @@ namespace IronSmarkets.Data
         /// <summary>
         ///   Parses a hex representation of a 128-bit UUID.
         /// </summary>
-        public static Uuid Parse(string str)
+        public static Uid Parse(string str)
         {
             if (str.Length > 16)
             {
                 string highStr = str.Substring(0, str.Length - 16);
                 string lowStr = str.Substring(str.Length - 16);
-                return new Uuid(
+                return new Uid(
                     ulong.Parse(highStr, NumberStyles.HexNumber),
                     ulong.Parse(lowStr, NumberStyles.HexNumber));
             }
 
             // We have a number which can be represented without the
             // high long.
-            return new Uuid(
+            return new Uid(
                 ulong.Parse(str, NumberStyles.HexNumber));
         }
 
-        public static Uuid FromUuid128(Uuid128 uuid)
+        public static Uid FromUuid128(Uuid128 uuid)
         {
-            return new Uuid(uuid.High, uuid.Low);
+            return new Uid(uuid.High, uuid.Low);
         }
 
-        public static Uuid? MaybeFromUuid128(Uuid128 uuid)
+        public static Uid? MaybeFromUuid128(Uuid128 uuid)
         {
             if (uuid == null)
                 return null;

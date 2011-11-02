@@ -49,17 +49,17 @@ namespace IronSmarkets.Clients
 
         ulong Ping();
 
-        ulong SubscribeMarket(Uuid market);
-        ulong UnsubscribeMarket(Uuid market);
+        ulong SubscribeMarket(Uid market);
+        ulong UnsubscribeMarket(Uid market);
 
         ulong RequestOrdersForAccount();
-        ulong RequestOrdersForMarket(Uuid market);
+        ulong RequestOrdersForMarket(Uid market);
 
         Response<IEventMap> RequestEvents(EventQuery query);
         Response<AccountState> GetAccountState();
-        Response<AccountState> GetAccountState(Uuid account);
+        Response<AccountState> GetAccountState(Uid account);
 
-        Response<MarketQuotes> GetMarketQuotes(Uuid market);
+        Response<MarketQuotes> GetMarketQuotes(Uid market);
     }
 
     public sealed class SmarketsClient : ISmarketsClient
@@ -79,8 +79,8 @@ namespace IronSmarkets.Clients
             new Dictionary<ulong, SyncRequest<Proto.Seto.AccountState>>();
         private readonly object _accountReqLock = new object();
 
-        private readonly IDictionary<Uuid, Queue<SyncRequest<Proto.Seto.MarketQuotes>>> _marketQuotesRequests =
-            new Dictionary<Uuid, Queue<SyncRequest<Proto.Seto.MarketQuotes>>>();
+        private readonly IDictionary<Uid, Queue<SyncRequest<Proto.Seto.MarketQuotes>>> _marketQuotesRequests =
+            new Dictionary<Uid, Queue<SyncRequest<Proto.Seto.MarketQuotes>>>();
         private readonly object _marketQuotesReqLock = new object();
 
         private int _disposed;
@@ -176,7 +176,7 @@ namespace IronSmarkets.Clients
             return payload.EtoPayload.Seq;
         }
 
-        public ulong SubscribeMarket(Uuid market)
+        public ulong SubscribeMarket(Uid market)
         {
             if (IsDisposed)
                 throw new ObjectDisposedException(
@@ -194,7 +194,7 @@ namespace IronSmarkets.Clients
             return payload.EtoPayload.Seq;
         }
 
-        public ulong UnsubscribeMarket(Uuid market)
+        public ulong UnsubscribeMarket(Uid market)
         {
             if (IsDisposed)
                 throw new ObjectDisposedException(
@@ -212,7 +212,7 @@ namespace IronSmarkets.Clients
             return payload.EtoPayload.Seq;
         }
 
-        public ulong RequestOrdersForMarket(Uuid market)
+        public ulong RequestOrdersForMarket(Uid market)
         {
             if (IsDisposed)
                 throw new ObjectDisposedException(
@@ -290,7 +290,7 @@ namespace IronSmarkets.Clients
             return GetAccountState(new Proto.Seto.AccountStateRequest());
         }
 
-        public Response<AccountState> GetAccountState(Uuid account)
+        public Response<AccountState> GetAccountState(Uid account)
         {
             if (IsDisposed)
                 throw new ObjectDisposedException(
@@ -321,7 +321,7 @@ namespace IronSmarkets.Clients
                 AccountState.FromSeto(req.Response));
         }
 
-        public Response<MarketQuotes> GetMarketQuotes(Uuid market)
+        public Response<MarketQuotes> GetMarketQuotes(Uid market)
         {
             var payload = new Proto.Seto.Payload {
                 Type = Proto.Seto.PayloadType.PAYLOADMARKETQUOTESREQUEST,
@@ -423,7 +423,7 @@ namespace IronSmarkets.Clients
 
         private void HandleMarketQuotes(Proto.Seto.Payload payload)
         {
-            Uuid market = Uuid.FromUuid128(payload.MarketQuotes.Market);
+            Uid market = Uid.FromUuid128(payload.MarketQuotes.Market);
             SyncRequest<Proto.Seto.MarketQuotes> req = null;
             bool found;
             lock (_marketQuotesReqLock)

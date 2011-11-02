@@ -36,29 +36,29 @@ namespace IronSmarkets.Data
             { Proto.Seto.ContractType.CONTRACTOVERUNDER, "over-under" }
         };
 
-        private readonly Uuid _uuid;
+        private readonly Uid _uid;
         private readonly string _type;
         private readonly string _slug;
         private readonly string _name;
         private readonly string _shortname;
-        private readonly IEnumerable<KeyValuePair<Uuid, string>> _entities;
+        private readonly IEnumerable<KeyValuePair<Uid, string>> _entities;
 
-        public Uuid Uuid { get { return _uuid; } }
+        public Uid Uid { get { return _uid; } }
         public string Type { get { return _type; } }
         public string Slug { get { return _slug; } }
         public string Name { get { return _name; } }
         public string Shortname { get { return _shortname; } }
-        public IEnumerable<KeyValuePair<Uuid, string>> Entities { get { return _entities; } }
+        public IEnumerable<KeyValuePair<Uid, string>> Entities { get { return _entities; } }
 
         private ContractInfo(
-            Uuid uuid,
+            Uid uid,
             string type,
             string slug,
             string name,
             string shortname,
-            IEnumerable<KeyValuePair<Uuid, string>> entities)
+            IEnumerable<KeyValuePair<Uid, string>> entities)
         {
-            _uuid = uuid;
+            _uid = uid;
             _type = type;
             _slug = slug;
             _name = name;
@@ -69,7 +69,7 @@ namespace IronSmarkets.Data
         internal static ContractInfo FromSeto(Proto.Seto.ContractInfo info)
         {
             return new ContractInfo(
-                Uuid.FromUuid128(info.Contract),
+                Uid.FromUuid128(info.Contract),
                 TypeStrings[info.Type],
                 info.Slug,
                 info.Name,

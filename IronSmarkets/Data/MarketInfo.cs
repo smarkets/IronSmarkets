@@ -27,35 +27,35 @@ namespace IronSmarkets.Data
 {
     public class MarketInfo
     {
-        private readonly Uuid _uuid;
+        private readonly Uid _uid;
         private readonly string _slug;
         private readonly string _name;
         private readonly string _shortname;
         private readonly DateTime? _startDateTime;
         private readonly DateTime? _endDateTime;
-        private readonly IEnumerable<KeyValuePair<Uuid, string>> _entities;
+        private readonly IEnumerable<KeyValuePair<Uid, string>> _entities;
         private readonly IContractMap _contracts;
 
-        public Uuid Uuid { get { return _uuid; } }
+        public Uid Uid { get { return _uid; } }
         public string Slug { get { return _slug; } }
         public string Name { get { return _name; } }
         public string Shortname { get { return _shortname; } }
         public DateTime? StartDateTime { get { return _startDateTime; } }
         public DateTime? EndDateTime { get { return _endDateTime; } }
-        public IEnumerable<KeyValuePair<Uuid, string>> Entities { get { return _entities; } }
+        public IEnumerable<KeyValuePair<Uid, string>> Entities { get { return _entities; } }
         public IContractMap Contracts { get { return _contracts; } }
 
         private MarketInfo(
-            Uuid uuid,
+            Uid uid,
             string slug,
             string name,
             string shortname,
             DateTime? startDateTime,
             DateTime? endDateTime,
-            IEnumerable<KeyValuePair<Uuid, string>> entities,
+            IEnumerable<KeyValuePair<Uid, string>> entities,
             IContractMap contracts)
         {
-            _uuid = uuid;
+            _uid = uid;
             _slug = slug;
             _name = name;
             _shortname = shortname;
@@ -68,7 +68,7 @@ namespace IronSmarkets.Data
         internal static MarketInfo FromSeto(Proto.Seto.MarketInfo info)
         {
             return new MarketInfo(
-                Uuid.FromUuid128(info.Market),
+                Uid.FromUuid128(info.Market),
                 info.Slug,
                 info.Name,
                 info.Shortname,

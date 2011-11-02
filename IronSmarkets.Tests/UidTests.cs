@@ -28,32 +28,32 @@ using IronSmarkets.Data;
 
 namespace IronSmarkets.Tests
 {
-    public class UuidTests
+    public class UidTests
     {
         [Fact]
         public void EqualityTest()
         {
-            Assert.Equal(new Uuid(93, 2981), new Uuid(93, 2981));
+            Assert.Equal(new Uid(93, 2981), new Uid(93, 2981));
             Assert.Equal(
-                new Uuid(93, 2981).GetHashCode(),
-                new Uuid(93, 2981).GetHashCode());
-            Assert.Equal(new Uuid(93), new Uuid(0, 93));
+                new Uid(93, 2981).GetHashCode(),
+                new Uid(93, 2981).GetHashCode());
+            Assert.Equal(new Uid(93), new Uid(0, 93));
             Assert.Equal(
-                new Uuid(93).GetHashCode(),
-                new Uuid(0, 93).GetHashCode());
+                new Uid(93).GetHashCode(),
+                new Uid(0, 93).GetHashCode());
         }
 
         [Fact]
         public void ParseTest()
         {
-            Assert.Equal(new Uuid(1), Uuid.Parse("1"));
-            Assert.Equal(new Uuid(9238109283), Uuid.Parse("226a25c63"));
+            Assert.Equal(new Uid(1), Uid.Parse("1"));
+            Assert.Equal(new Uid(9238109283), Uid.Parse("226a25c63"));
             Assert.Equal(
-                new Uuid(18446744073709551615, 18446744073709551615),
-                Uuid.Parse("ffffffffffffffffffffffffffffffff"));
+                new Uid(18446744073709551615, 18446744073709551615),
+                Uid.Parse("ffffffffffffffffffffffffffffffff"));
             Assert.Equal(
-                new Uuid(18446744073709551615, 0),
-                Uuid.Parse("ffffffffffffffff0000000000000000"));
+                new Uid(18446744073709551615, 0),
+                Uid.Parse("ffffffffffffffff0000000000000000"));
         }
 
         [Fact]
@@ -65,7 +65,7 @@ namespace IronSmarkets.Tests
                 "ffffffffffffffffffffffffffffffff",
                 "ffffffffffffffff0000000000000000"
             };
-            tests.ForAll(x => Assert.Equal(Uuid.Parse(x).ToString(), x));
+            tests.ForAll(x => Assert.Equal(Uid.Parse(x).ToString(), x));
         }
     }
 }

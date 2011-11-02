@@ -26,13 +26,13 @@ namespace IronSmarkets.Data
 {
     public struct AccountState : IEquatable<AccountState>
     {
-        private readonly Uuid _uuid;
+        private readonly Uid _uid;
         private readonly Currency _currency;
         private readonly decimal _cash;
         private readonly decimal _bonus;
         private readonly decimal _exposure;
 
-        public Uuid Uuid { get { return _uuid; } }
+        public Uid Uid { get { return _uid; } }
         public Currency Currency { get { return _currency; } }
         public decimal Cash { get { return _cash; } }
         public decimal Bonus { get { return _bonus; } }
@@ -40,13 +40,13 @@ namespace IronSmarkets.Data
         public decimal Available { get { return _cash - _exposure; } }
 
         private AccountState(
-            Uuid uuid,
+            Uid uid,
             Currency currency,
             decimal cash,
             decimal bonus,
             decimal exposure)
         {
-            _uuid = uuid;
+            _uid = uid;
             _currency = currency;
             _cash = cash;
             _bonus = bonus;
@@ -55,7 +55,7 @@ namespace IronSmarkets.Data
 
         public override int GetHashCode()
         {
-            return _uuid.GetHashCode()
+            return _uid.GetHashCode()
                 ^ _currency.GetHashCode()
                 ^ _cash.GetHashCode()
                 ^ _bonus.GetHashCode()
@@ -75,7 +75,7 @@ namespace IronSmarkets.Data
 
         public bool Equals(AccountState other)
         {
-            return _uuid == other._uuid
+            return _uid == other._uid
                 && _currency == other._currency
                 && _cash == other._cash
                 && _bonus == other._bonus
@@ -90,7 +90,7 @@ namespace IronSmarkets.Data
                 + "cash: {2}, "
                 + "bonus: {3}, "
                 + "exposure: {4})",
-                _uuid, _currency, _cash, _bonus, _exposure);
+                _uid, _currency, _cash, _bonus, _exposure);
         }
 
         public static bool operator==(AccountState left, AccountState right)
@@ -106,7 +106,7 @@ namespace IronSmarkets.Data
         internal static AccountState FromSeto(Proto.Seto.AccountState info)
         {
             return new AccountState(
-                Uuid.FromUuid128(info.Account),
+                Uid.FromUuid128(info.Account),
                 Currency.FromSeto(info.Currency),
                 SetoMap.FromDecimal(info.Cash),
                 SetoMap.FromDecimal(info.Bonus),

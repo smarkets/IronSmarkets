@@ -89,49 +89,49 @@ namespace IronSmarkets.Data
             { Proto.Seto.EventType.EVENTRUGBYUNIONMATCH, "rugby-union-match" }
         };
 
-        private readonly Uuid _uuid;
+        private readonly Uid _uid;
         private readonly string _name;
         private readonly string _type;
         private readonly string _category;
         private readonly string _slug;
-        private readonly Uuid? _parentUuid;
+        private readonly Uid? _parentUid;
         private readonly DateTime? _startDateTime;
         private readonly DateTime? _endDateTime;
         private readonly string _description;
-        private readonly IEnumerable<KeyValuePair<Uuid, string>> _entities;
+        private readonly IEnumerable<KeyValuePair<Uid, string>> _entities;
         private readonly IMarketMap _markets;
 
-        public Uuid Uuid { get { return _uuid; } }
+        public Uid Uid { get { return _uid; } }
         public string Name { get { return _name; } }
         public string Type { get { return _type; } }
         public string Category { get { return _category; } }
         public string Slug { get { return _slug; } }
-        public Uuid? ParentUuid { get { return _parentUuid; } }
+        public Uid? ParentUid { get { return _parentUid; } }
         public DateTime? StartDateTime { get { return _startDateTime; } }
         public DateTime? EndDateTime { get { return _endDateTime; } }
         public string Description { get { return _description; } }
-        public IEnumerable<KeyValuePair<Uuid, string>> Entities { get { return _entities; } }
+        public IEnumerable<KeyValuePair<Uid, string>> Entities { get { return _entities; } }
         public IMarketMap Markets { get { return _markets; } }
 
         private EventInfo(
-            Uuid uuid,
+            Uid uid,
             string name,
             string type,
             string category,
             string slug,
-            Uuid? parentUuid,
+            Uid? parentUid,
             DateTime? startDateTime,
             DateTime? endDateTime,
             string description,
-            IEnumerable<KeyValuePair<Uuid, String>> entities,
+            IEnumerable<KeyValuePair<Uid, String>> entities,
             IMarketMap markets)
         {
-            _uuid = uuid;
+            _uid = uid;
             _name = name;
             _type = type;
             _category = category;
             _slug = slug;
-            _parentUuid = parentUuid;
+            _parentUid = parentUid;
             _startDateTime = startDateTime;
             _endDateTime = endDateTime;
             _description = description;
@@ -142,12 +142,12 @@ namespace IronSmarkets.Data
         internal static EventInfo FromSeto(Proto.Seto.EventInfo info)
         {
             return new EventInfo(
-                Uuid.FromUuid128(info.Event),
+                Uid.FromUuid128(info.Event),
                 info.Name,
                 TypeStrings[info.Type],
                 CategoryStrings[info.Category],
                 info.Slug,
-                Uuid.MaybeFromUuid128(info.Parent),
+                Uid.MaybeFromUuid128(info.Parent),
                 SetoMap.FromDateTime(info.StartDate, info.StartTime),
                 SetoMap.FromDateTime(info.EndDate, info.EndTime),
                 info.Description,

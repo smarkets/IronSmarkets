@@ -27,15 +27,15 @@ using System.Linq;
 
 namespace IronSmarkets.Data
 {
-    public interface IContractQuotesMap : IReadOnlyMap<Uuid, ContractQuotes>
+    public interface IContractQuotesMap : IReadOnlyMap<Uid, ContractQuotes>
     {
     }
 
     internal class ContractQuotesMap : IContractQuotesMap
     {
-        private readonly IDictionary<Uuid, ContractQuotes> _contractQuotes;
+        private readonly IDictionary<Uid, ContractQuotes> _contractQuotes;
 
-        private ContractQuotesMap(IDictionary<Uuid, ContractQuotes> contractQuotes)
+        private ContractQuotesMap(IDictionary<Uid, ContractQuotes> contractQuotes)
         {
             _contractQuotes = contractQuotes;
         }
@@ -45,15 +45,15 @@ namespace IronSmarkets.Data
         {
             return new ContractQuotesMap(
                 setoContractQuotes.Aggregate(
-                    new Dictionary<Uuid, ContractQuotes>(),
+                    new Dictionary<Uid, ContractQuotes>(),
                     (dict, contractQuotes) => {
                         var cq = ContractQuotes.FromSeto(contractQuotes);
-                        dict[cq.Uuid] = cq;
+                        dict[cq.Uid] = cq;
                         return dict;
                     }));
         }
 
-        public IEnumerator<KeyValuePair<Uuid, ContractQuotes>> GetEnumerator()
+        public IEnumerator<KeyValuePair<Uid, ContractQuotes>> GetEnumerator()
         {
             return _contractQuotes.GetEnumerator();
         }
@@ -63,12 +63,12 @@ namespace IronSmarkets.Data
             return GetEnumerator();
         }
 
-        public bool Contains(KeyValuePair<Uuid, ContractQuotes> item)
+        public bool Contains(KeyValuePair<Uid, ContractQuotes> item)
         {
             return _contractQuotes.Contains(item);
         }
 
-        public void CopyTo(KeyValuePair<Uuid, ContractQuotes>[] array, int arrayIndex)
+        public void CopyTo(KeyValuePair<Uid, ContractQuotes>[] array, int arrayIndex)
         {
             _contractQuotes.CopyTo(array, arrayIndex);
         }
@@ -78,22 +78,22 @@ namespace IronSmarkets.Data
             get { return _contractQuotes.Count; }
         }
 
-        public bool ContainsKey(Uuid key)
+        public bool ContainsKey(Uid key)
         {
             return _contractQuotes.ContainsKey(key);
         }
 
-        public bool TryGetValue(Uuid key, out ContractQuotes value)
+        public bool TryGetValue(Uid key, out ContractQuotes value)
         {
             return _contractQuotes.TryGetValue(key, out value);
         }
 
-        public ContractQuotes this[Uuid key]
+        public ContractQuotes this[Uid key]
         {
             get { return _contractQuotes[key]; }
         }
 
-        public ICollection<Uuid> Keys
+        public ICollection<Uid> Keys
         {
             get { return _contractQuotes.Keys; }
         }

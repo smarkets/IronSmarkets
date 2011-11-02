@@ -72,7 +72,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="ClientTests.cs" />
-    <Compile Include="UuidTests.cs" />
+    <Compile Include="UidTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\Metadata\IronSmarkets.snk">

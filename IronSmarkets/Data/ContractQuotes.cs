@@ -28,26 +28,26 @@ namespace IronSmarkets.Data
 {
     public class ContractQuotes
     {
-        private readonly Uuid _uuid;
+        private readonly Uid _uid;
         private readonly List<Quote> _bids;
         private readonly List<Quote> _offers;
         private readonly List<Execution> _executions;
         private readonly Execution? _lastExecution;
 
-        public Uuid Uuid { get { return _uuid; } }
+        public Uid Uid { get { return _uid; } }
         public IEnumerable<Quote> Bids { get { return _bids; } }
         public IEnumerable<Quote> Offers { get { return _offers; } }
         public IEnumerable<Execution> Executions { get { return _executions; } }
         public Execution? LastExecution { get { return _lastExecution; } }
 
         private ContractQuotes(
-            Uuid uuid,
+            Uid uid,
             IEnumerable<Quote> bids,
             IEnumerable<Quote> offers,
             IEnumerable<Execution> executions,
             Execution? lastExecution)
         {
-            _uuid = uuid;
+            _uid = uid;
             _bids = new List<Quote>(bids);
             _offers = new List<Quote>(offers);
             _executions = new List<Execution>(executions);
@@ -57,7 +57,7 @@ namespace IronSmarkets.Data
         internal static ContractQuotes FromSeto(Proto.Seto.ContractQuotes setoQuotes)
         {
             return new ContractQuotes(
-                Uuid.FromUuid128(setoQuotes.Contract),
+                Uid.FromUuid128(setoQuotes.Contract),
                 setoQuotes.Bids.Select(Quote.FromSeto),
                 setoQuotes.Offers.Select(Quote.FromSeto),
                 setoQuotes.Executions.Select(Execution.FromSeto),

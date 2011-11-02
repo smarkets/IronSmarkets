@@ -57,6 +57,8 @@ namespace IronSmarkets.Clients
         Response<IEventMap> RequestEvents(EventQuery query);
         Response<AccountState> GetAccountState();
         Response<AccountState> GetAccountState(Uuid account);
+
+        Response<MarketQuotes> GetMarketQuotes(Uuid market);
     }
 
     public sealed class SmarketsClient : ISmarketsClient
@@ -72,6 +74,8 @@ namespace IronSmarkets.Clients
             new Dictionary<ulong, SyncRequest<Proto.Seto.Events>>();
         private readonly IDictionary<ulong, SyncRequest<Proto.Seto.AccountState>> _accountRequests =
             new Dictionary<ulong, SyncRequest<Proto.Seto.AccountState>>();
+        private readonly IDictionary<Uuid, Queue<SyncRequest<Proto.Seto.MarketQuotes>>> _marketQuotesRequests =
+            new Dictionary<Uuid, Queue<SyncRequest<Proto.Seto.MarketQuotes>>>();
 
         private int _disposed;
 
@@ -296,6 +300,28 @@ namespace IronSmarkets.Clients
                 AccountState.FromSeto(req.Response));
         }
 
+        public Response<MarketQuotes> GetMarketQuotes(Uuid market)
+        {
+            var payload = new Proto.Seto.Payload {
+                Type = Proto.Seto.PayloadType.PAYLOADMARKETQUOTESREQUEST,
+                MarketQuotesRequest = new Proto.Seto.MarketQuotesRequest {
+                    Market = market.ToUuid128()
+                }
+            };
+            SendPayload(payload);
+            var sequence = payload.EtoPayload.Seq;
+            var req = new SyncRequest<Proto.Seto.MarketQuotes>();
+            if (!_marketQuotesRequests.ContainsKey(market))
+            {
+                _marketQuotesRequests[market] =
+                    new Queue<SyncRequest<Proto.Seto.MarketQuotes>>();
+            }
+            _marketQuotesRequests[market].Enqueue(req);
+            return new Response<MarketQuotes>(
+                sequence,
+                MarketQuotes.FromSeto(req.Response));
+        }
+
         private void OnPayloadReceived(Proto.Seto.Payload payload)
         {
             EventHandler<PayloadReceivedEventArgs<Proto.Seto.Payload>> ev = PayloadReceived;
@@ -311,6 +337,9 @@ namespace IronSmarkets.Clients
                     break;
                 case Proto.Seto.PayloadType.PAYLOADACCOUNTSTATE:
                     HandleAccountState(payload);
+                    break;
+                case Proto.Seto.PayloadType.PAYLOADMARKETQUOTES:
+                    HandleMarketQuotes(payload);
                     break;
             }
         }
@@ -353,6 +382,26 @@ namespace IronSmarkets.Clients
                 Log.Warn(
                     "Received HTTP_FOUND payload " +
                     "but could not find original request");
+            }
+        }
+
+        private void HandleMarketQuotes(Proto.Seto.Payload payload)
+        {
+            Queue<SyncRequest<Proto.Seto.MarketQuotes>> queue;
+            Uuid market = Uuid.FromUuid128(payload.MarketQuotes.Market);
+            if (_marketQuotesRequests.TryGetValue(market, out queue)) {
+                SyncRequest<Proto.Seto.MarketQuotes> req = queue.Dequeue();
+                if (queue.Count == 0)
+                {
+                    _marketQuotesRequests.Remove(market);
+                }
+                req.Response = payload.MarketQuotes;
+            }
+            else
+            {
+                Log.Warn(
+                    "Received MARKET_QUOTES payload " +
+                    "but could find no original request");
             }
         }
 

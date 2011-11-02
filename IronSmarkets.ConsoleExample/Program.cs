@@ -52,10 +52,59 @@ namespace IronSmarkets.ConsoleExample
             return true;
         }
 
+        static void MultiPing(ISmarketsClient client, int pingers, int syncPings)
+        {
+            var threads = new List<Thread>(pingers);
+            foreach (var sleeper in Enumerable.Range(1, pingers))
+            {
+                int sleeper1 = sleeper;
+                var t1 = new Thread(
+                    () => {
+                        Thread.Sleep(sleeper1 * 50);
+                        var pingSeq = client.Ping();
+                        Log.Debug(string.Format("Sent ping {0}", pingSeq));
+                    }) {
+                    Name = string.Format("pinger{0}", sleeper)
+                };
+                t1.Start();
+                threads.Add(t1);
+            }
+            foreach (var ping in Enumerable.Range(1, syncPings))
+            {
+                Log.Debug(
+                    string.Format(
+                        "[{0}] Sent ping with sequence {1}",
+                        ping, client.Ping()));
+            }
+            foreach (var thread in threads)
+            {
+                Log.Debug(string.Format("Joining {0}", thread.Name));
+                thread.Join();
+            }
+        }
+
+        static IEventMap GetEvents(ISmarketsClient client)
+        {
+            var builder = new EventQueryBuilder();
+            builder.SetCategory("sport");
+            builder.SetSport("football");
+            builder.SetDateTime(DateTime.Today);
+            var events = client.RequestEvents(builder.GetResult()).Data;
+            Log.Debug(string.Format("Got {0} events:", events.Count));
+            foreach (var eventInfo in events)
+            {
+                Log.Debug(
+                    string.Format(
+                        "\t{0} => {1} ({2})",
+                        eventInfo.Key,
+                        eventInfo.Value.Name,
+                        eventInfo.Value.Category));
+            }
+            return events;
+        }
+
         static void Main(string[] args)
         {
-            const int pingers = 3;
-            const int pings = 2;
             Thread.CurrentThread.Name = "main";
             if (args.Length != 4)
             {
@@ -66,7 +115,6 @@ namespace IronSmarkets.ConsoleExample
             }
 
             Log.Info("Application start");
-
             string host = args[0];
             int port = int.Parse(args[1]);
             string username = args[2];
@@ -90,48 +138,6 @@ namespace IronSmarkets.ConsoleExample
                 Log.Info("Connected");
                 var acct = client.GetAccountState().Data;
                 Log.Info(string.Format("Got account {0}", acct));
-                var threads = new List<Thread>(pingers);
-                foreach (var sleeper in Enumerable.Range(1, pingers))
-                {
-                    int sleeper1 = sleeper;
-                    var t1 = new Thread(
-                        () => {
-                            Thread.Sleep(sleeper1 * 50);
-                            var pingSeq = client.Ping();
-                            Log.Debug(string.Format("Sent ping {0}", pingSeq));
-                        }) {
-                        Name = string.Format("pinger{0}", sleeper)
-                    };
-                    t1.Start();
-                    threads.Add(t1);
-                }
-                foreach (var ping in Enumerable.Range(1, pings))
-                {
-                    Log.Debug(
-                        string.Format(
-                            "[{0}] Sent ping with sequence {1}",
-                            ping, client.Ping()));
-                }
-                foreach (var thread in threads)
-                {
-                    Log.Debug(string.Format("Joining {0}", thread.Name));
-                    thread.Join();
-                }
-                var builder = new EventQueryBuilder();
-                builder.SetCategory("sport");
-                builder.SetSport("football");
-                builder.SetDateTime(DateTime.Today);
-                var events = client.RequestEvents(builder.GetResult()).Data;
-                Log.Debug(string.Format("Got {0} events:", events.Count));
-                foreach (var eventInfo in events)
-                {
-                    Log.Debug(
-                        string.Format(
-                            "\t{0} => {1} ({2})",
-                            eventInfo.Key,
-                            eventInfo.Value.Name,
-                            eventInfo.Value.Category));
-                }
                 Log.Debug("Calling client.Logout()");
                 var logoutSeq = client.Logout();
                 Log.Debug(string.Format("Logout seq was {0}", logoutSeq));

@@ -26,11 +26,16 @@ using System.Linq;
 
 namespace IronSmarkets.Data
 {
+    internal interface IRWContractQuotesMap : IContractQuotesMap
+    {
+        ContractQuotes this[Uid key] { set; }
+    }
+
     public interface IContractQuotesMap : IReadOnlyMap<Uid, ContractQuotes>
     {
     }
 
-    internal class ContractQuotesMap : IContractQuotesMap
+    internal class ContractQuotesMap : IRWContractQuotesMap
     {
         private readonly IDictionary<Uid, ContractQuotes> _contractQuotes;
 
@@ -39,7 +44,7 @@ namespace IronSmarkets.Data
             _contractQuotes = contractQuotes;
         }
 
-        public static IContractQuotesMap FromSeto(
+        internal static IRWContractQuotesMap FromSeto(
             IEnumerable<Proto.Seto.ContractQuotes> setoContractQuotes)
         {
             return new ContractQuotesMap(
@@ -90,6 +95,7 @@ namespace IronSmarkets.Data
         public ContractQuotes this[Uid key]
         {
             get { return _contractQuotes[key]; }
+            set { _contractQuotes[key] = value; }
         }
 
         public ICollection<Uid> Keys

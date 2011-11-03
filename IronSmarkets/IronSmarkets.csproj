@@ -83,6 +83,7 @@
     <Compile Include="Data\Execution.cs" />
     <Compile Include="Data\IReadOnlyMap.cs" />
     <Compile Include="Data\Price.cs" />
+    <Compile Include="Data\Market.cs" />
     <Compile Include="Data\MarketInfo.cs" />
     <Compile Include="Data\MarketMap.cs" />
     <Compile Include="Data\MarketQuotes.cs" />

@@ -124,16 +124,71 @@ namespace IronSmarkets.Clients
 
         public void AddPayloadHandler(Predicate<Proto.Seto.Payload> predicate)
         {
+            if (IsDisposed)
+                throw new ObjectDisposedException(
+                    "SmarketsClient",
+                    "Called AddPayloadHandler on disposed object");
+
             _session.AddPayloadHandler(predicate);
         }
 
         public void RemovePayloadHandler(Predicate<Proto.Seto.Payload> predicate)
         {
+            if (IsDisposed)
+                throw new ObjectDisposedException(
+                    "SmarketsClient",
+                    "Called RemovePayloadHandler on disposed object");
+
             _session.RemovePayloadHandler(predicate);
+        }
+
+        public void AddMarketQuotesHandler(Uid uid, EventHandler<QuotesReceivedEventArgs<Proto.Seto.MarketQuotes>> handler)
+        {
+            if (IsDisposed)
+                throw new ObjectDisposedException(
+                    "SmarketsClient",
+                    "Called AddMarketQuotesHandler on disposed object");
+
+            _marketQuotesHandler.AddHandler(uid, handler);
+        }
+
+        public void RemoveMarketQuotesHandler(Uid uid, EventHandler<QuotesReceivedEventArgs<Proto.Seto.MarketQuotes>> handler)
+        {
+            if (IsDisposed)
+                throw new ObjectDisposedException(
+                    "SmarketsClient",
+                    "Called RemoveMarketQuotesHandler on disposed object");
+
+            _marketQuotesHandler.RemoveHandler(uid, handler);
+        }
+
+        public void AddContractQuotesHandler(Uid uid, EventHandler<QuotesReceivedEventArgs<Proto.Seto.ContractQuotes>> handler)
+        {
+            if (IsDisposed)
+                throw new ObjectDisposedException(
+                    "SmarketsClient",
+                    "Called AddContractQuotesHandler on disposed object");
+
+            _contractQuotesHandler.AddHandler(uid, handler);
+        }
+
+        public void RemoveContractQuotesHandler(Uid uid, EventHandler<QuotesReceivedEventArgs<Proto.Seto.ContractQuotes>> handler)
+        {
+            if (IsDisposed)
+                throw new ObjectDisposedException(
+                    "SmarketsClient",
+                    "Called RemoveContractQuotesHandler on disposed object");
+
+            _contractQuotesHandler.RemoveHandler(uid, handler);
         }
 
         public void SendPayload(Proto.Seto.Payload payload)
         {
+            if (IsDisposed)
+                throw new ObjectDisposedException(
+                    "SmarketsClient",
+                    "Called SendPayload on disposed object");
+
             _session.SendPayload(payload);
         }
 
@@ -142,7 +197,7 @@ namespace IronSmarkets.Clients
             if (IsDisposed)
                 throw new ObjectDisposedException(
                     "SmarketsClient",
-                    "Called Logout on disposed object");
+                    "Called Login on disposed object");
 
             ulong seq = _session.Login();
             _receiver.Start();
@@ -234,7 +289,7 @@ namespace IronSmarkets.Clients
             if (IsDisposed)
                 throw new ObjectDisposedException(
                     "SmarketsClient",
-                    "Called GetAccount on disposed object");
+                    "Called GetAccountState on disposed object");
 
             return GetAccountState(new Proto.Seto.AccountStateRequest());
         }
@@ -244,7 +299,7 @@ namespace IronSmarkets.Clients
             if (IsDisposed)
                 throw new ObjectDisposedException(
                     "SmarketsClient",
-                    "Called GetAccount on disposed object");
+                    "Called GetAccountState on disposed object");
 
             return GetAccountState(
                 new Proto.Seto.AccountStateRequest {
@@ -264,6 +319,11 @@ namespace IronSmarkets.Clients
 
         public Response<MarketQuotes> GetMarketQuotes(Uid market)
         {
+            if (IsDisposed)
+                throw new ObjectDisposedException(
+                    "SmarketsClient",
+                    "Called GetMarketQuotes on disposed object");
+
             return _marketQuotesRequestHandler.Request(
                 market,
                 new Proto.Seto.Payload {
@@ -272,26 +332,6 @@ namespace IronSmarkets.Clients
                         Market = market.ToUuid128()
                     }
                 });
-        }
-
-        public void AddMarketQuotesHandler(Uid uid, EventHandler<QuotesReceivedEventArgs<Proto.Seto.MarketQuotes>> handler)
-        {
-            _marketQuotesHandler.AddHandler(uid, handler);
-        }
-
-        public void RemoveMarketQuotesHandler(Uid uid, EventHandler<QuotesReceivedEventArgs<Proto.Seto.MarketQuotes>> handler)
-        {
-            _marketQuotesHandler.RemoveHandler(uid, handler);
-        }
-
-        public void AddContractQuotesHandler(Uid uid, EventHandler<QuotesReceivedEventArgs<Proto.Seto.ContractQuotes>> handler)
-        {
-            _contractQuotesHandler.AddHandler(uid, handler);
-        }
-
-        public void RemoveContractQuotesHandler(Uid uid, EventHandler<QuotesReceivedEventArgs<Proto.Seto.ContractQuotes>> handler)
-        {
-            _contractQuotesHandler.RemoveHandler(uid, handler);
         }
 
         private void OnPayloadReceived(Proto.Seto.Payload payload)

@@ -46,10 +46,7 @@ namespace IronSmarkets.Clients
         ulong SubscribeMarket(Uid market);
         ulong UnsubscribeMarket(Uid market);
 
-        ulong RequestOrdersForAccount();
-        ulong RequestOrdersForMarket(Uid market);
-
-        Response<IEventMap> RequestEvents(EventQuery query);
+        Response<IEventMap> GetEvents(EventQuery query);
         Response<AccountState> GetAccountState();
         Response<AccountState> GetAccountState(Uid account);
 
@@ -218,46 +215,12 @@ namespace IronSmarkets.Clients
             return payload.EtoPayload.Seq;
         }
 
-        public ulong RequestOrdersForMarket(Uid market)
+        public Response<IEventMap> GetEvents(EventQuery query)
         {
             if (IsDisposed)
                 throw new ObjectDisposedException(
                     "SmarketsClient",
-                    "Called RequestOrdersForMarket on disposed object");
-
-            var payload = new Proto.Seto.Payload {
-                Type = Proto.Seto.PayloadType.PAYLOADORDERSFORMARKETREQUEST,
-                OrdersForMarketRequest = new Proto.Seto.OrdersForMarketRequest {
-                    Market = market.ToUuid128()
-                }
-            };
-
-            SendPayload(payload);
-            return payload.EtoPayload.Seq;
-        }
-
-        public ulong RequestOrdersForAccount()
-        {
-            if (IsDisposed)
-                throw new ObjectDisposedException(
-                    "SmarketsClient",
-                    "Called RequestOrdersForAccount on disposed object");
-
-            var payload = new Proto.Seto.Payload {
-                Type = Proto.Seto.PayloadType.PAYLOADORDERSFORACCOUNTREQUEST,
-                OrdersForAccountRequest = new Proto.Seto.OrdersForAccountRequest()
-            };
-
-            SendPayload(payload);
-            return payload.EtoPayload.Seq;
-        }
-
-        public Response<IEventMap> RequestEvents(EventQuery query)
-        {
-            if (IsDisposed)
-                throw new ObjectDisposedException(
-                    "SmarketsClient",
-                    "Called RequestEvents on disposed object");
+                    "Called GetEvents on disposed object");
 
             return _eventsRequestHandler.Request(
                 new Proto.Seto.Payload {

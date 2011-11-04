@@ -89,7 +89,7 @@ namespace IronSmarkets.ConsoleExample
             builder.SetCategory("sport");
             builder.SetSport("football");
             builder.SetDateTime(DateTime.Today);
-            var events = client.RequestEvents(builder.GetResult()).Data;
+            var events = client.GetEvents(builder.GetResult()).Data;
             Log.Debug(string.Format("Got {0} events:", events.Count));
             foreach (var eventInfo in events)
             {

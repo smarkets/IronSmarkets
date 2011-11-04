@@ -64,6 +64,7 @@
       <Link>Properties\VersionInfo.cs</Link>
     </Compile>
     <Compile Include="Clients\IQuoteSink.cs" />
+    <Compile Include="Clients\QuoteHandler.cs" />
     <Compile Include="Clients\Response.cs" />
     <Compile Include="Clients\Receiver.cs" />
     <Compile Include="Clients\Settings.cs" />

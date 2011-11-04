@@ -63,13 +63,16 @@
     <Compile Include="..\Metadata\VersionInfo.cs">
       <Link>Properties\VersionInfo.cs</Link>
     </Compile>
+    <Compile Include="Clients\HttpFoundHandler.cs" />
     <Compile Include="Clients\IQuoteSink.cs" />
     <Compile Include="Clients\QuoteHandler.cs" />
     <Compile Include="Clients\Response.cs" />
     <Compile Include="Clients\Receiver.cs" />
+    <Compile Include="Clients\SeqRpcHandler.cs" />
     <Compile Include="Clients\Settings.cs" />
     <Compile Include="Clients\SmarketsClient.cs" />
     <Compile Include="Clients\SyncRequest.cs" />
+    <Compile Include="Clients\UidQueueRpcHandler.cs" />
     <Compile Include="Data\AccountState.cs" />
     <Compile Include="Data\Contract.cs" />
     <Compile Include="Data\ContractInfo.cs" />

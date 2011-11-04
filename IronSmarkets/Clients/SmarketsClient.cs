@@ -83,6 +83,13 @@ namespace IronSmarkets.Clients
             new Dictionary<Uid, Queue<SyncRequest<Proto.Seto.MarketQuotes>>>();
         private readonly object _marketQuotesReqLock = new object();
 
+        private readonly IDictionary<Uid, EventHandler<QuotesReceivedEventArgs<Proto.Seto.MarketQuotes>>> _marketQuotesHandlers =
+            new Dictionary<Uid, EventHandler<QuotesReceivedEventArgs<Proto.Seto.MarketQuotes>>>();
+        private readonly object _marketQuotesHandlerLock = new object();
+        private readonly IDictionary<Uid, EventHandler<QuotesReceivedEventArgs<Proto.Seto.ContractQuotes>>> _contractQuotesHandlers =
+            new Dictionary<Uid, EventHandler<QuotesReceivedEventArgs<Proto.Seto.ContractQuotes>>>();
+        private readonly object _contractQuotesHandlerLock = new object();
+
         private int _disposed;
 
         private SmarketsClient(IClientSettings settings)
@@ -95,6 +102,7 @@ namespace IronSmarkets.Clients
                 OnPayloadReceived(args.Payload);
             _session.PayloadSent += (sender, args) =>
                 OnPayloadSent(args.Payload);
+            AddPayloadHandler(HandlePayload);
             _receiver = new Receiver<Proto.Seto.Payload>(_session);
         }
 
@@ -345,6 +353,72 @@ namespace IronSmarkets.Clients
                 MarketQuotes.FromSeto(req.Response));
         }
 
+        public void AddMarketQuotesHandler(Uid uid, EventHandler<QuotesReceivedEventArgs<Proto.Seto.MarketQuotes>> handler)
+        {
+            lock (_marketQuotesHandlerLock)
+            {
+                EventHandler<QuotesReceivedEventArgs<Proto.Seto.MarketQuotes>> md;
+                if (!_marketQuotesHandlers.TryGetValue(uid, out md))
+                {
+                    _marketQuotesHandlers[uid] = handler;
+                }
+                else
+                {
+                    _marketQuotesHandlers[uid] = md + handler;
+                }
+            }
+        }
+
+        public void RemoveMarketQuotesHandler(Uid uid, EventHandler<QuotesReceivedEventArgs<Proto.Seto.MarketQuotes>> handler)
+        {
+            lock (_marketQuotesHandlerLock)
+            {
+                EventHandler<QuotesReceivedEventArgs<Proto.Seto.MarketQuotes>> md = _marketQuotesHandlers[uid];
+                md -= handler;
+                if (md == null)
+                {
+                    _marketQuotesHandlers.Remove(uid);
+                }
+                else
+                {
+                    _marketQuotesHandlers[uid] = md;
+                }
+            }
+        }
+
+        public void AddContractQuotesHandler(Uid uid, EventHandler<QuotesReceivedEventArgs<Proto.Seto.ContractQuotes>> handler)
+        {
+            lock (_contractQuotesHandlerLock)
+            {
+                EventHandler<QuotesReceivedEventArgs<Proto.Seto.ContractQuotes>> md;
+                if (!_contractQuotesHandlers.TryGetValue(uid, out md))
+                {
+                    _contractQuotesHandlers[uid] = handler;
+                }
+                else
+                {
+                    _contractQuotesHandlers[uid] = md + handler;
+                }
+            }
+        }
+
+        public void RemoveContractQuotesHandler(Uid uid, EventHandler<QuotesReceivedEventArgs<Proto.Seto.ContractQuotes>> handler)
+        {
+            lock (_contractQuotesHandlerLock)
+            {
+                EventHandler<QuotesReceivedEventArgs<Proto.Seto.ContractQuotes>> md = _contractQuotesHandlers[uid];
+                md -= handler;
+                if (md == null)
+                {
+                    _contractQuotesHandlers.Remove(uid);
+                }
+                else
+                {
+                    _contractQuotesHandlers[uid] = md;
+                }
+            }
+        }
+
         private void OnPayloadReceived(Proto.Seto.Payload payload)
         {
             EventHandler<PayloadReceivedEventArgs<Proto.Seto.Payload>> ev = PayloadReceived;
@@ -352,7 +426,10 @@ namespace IronSmarkets.Clients
                 ev(this, new PayloadReceivedEventArgs<Proto.Seto.Payload>(
                        payload.EtoPayload.Seq,
                        payload));
+        }
 
+        private bool HandlePayload(Proto.Seto.Payload payload)
+        {
             switch (payload.Type)
             {
                 case Proto.Seto.PayloadType.PAYLOADHTTPFOUND:
@@ -364,7 +441,12 @@ namespace IronSmarkets.Clients
                 case Proto.Seto.PayloadType.PAYLOADMARKETQUOTES:
                     HandleMarketQuotes(payload);
                     break;
+                case Proto.Seto.PayloadType.PAYLOADCONTRACTQUOTES:
+                    HandleContractQuotes(payload);
+                    break;
             }
+
+            return true;
         }
 
         private void OnPayloadSent(Proto.Seto.Payload payload)
@@ -424,6 +506,7 @@ namespace IronSmarkets.Clients
         private void HandleMarketQuotes(Proto.Seto.Payload payload)
         {
             Uid market = Uid.FromUuid128(payload.MarketQuotes.Market);
+            // First, respond to a possible synchronous request
             SyncRequest<Proto.Seto.MarketQuotes> req = null;
             lock (_marketQuotesReqLock)
             {
@@ -438,15 +521,34 @@ namespace IronSmarkets.Clients
                     }
                 }
             }
-            if (req != null) {
+            if (req != null)
                 req.Response = payload.MarketQuotes;
-            }
-            else
+
+            // Dispatch updates to all listeners
+            EventHandler<QuotesReceivedEventArgs<Proto.Seto.MarketQuotes>> handler = null;
+            lock (_marketQuotesHandlerLock)
             {
-                Log.Warn(
-                    "Received MARKET_QUOTES payload " +
-                    "but could find no original request");
+                _marketQuotesHandlers.TryGetValue(market, out handler);
             }
+            if (handler != null)
+                handler(this, new QuotesReceivedEventArgs<Proto.Seto.MarketQuotes>(
+                       payload.EtoPayload.Seq,
+                       payload.MarketQuotes));
+        }
+
+        private void HandleContractQuotes(Proto.Seto.Payload payload)
+        {
+            Uid contract = Uid.FromUuid128(payload.ContractQuotes.Contract);
+            // Dispatch updates to all listeners
+            EventHandler<QuotesReceivedEventArgs<Proto.Seto.ContractQuotes>> handler = null;
+            lock (_contractQuotesHandlerLock)
+            {
+                _contractQuotesHandlers.TryGetValue(contract, out handler);
+            }
+            if (handler != null)
+                handler(this, new QuotesReceivedEventArgs<Proto.Seto.ContractQuotes>(
+                       payload.EtoPayload.Seq,
+                       payload.ContractQuotes));
         }
 
         private IAsyncResult BeginFetchHttpFound<T>(

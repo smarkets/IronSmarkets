@@ -40,6 +40,9 @@ namespace IronSmarkets.Clients
 
     public interface IQuoteSink
     {
+        ulong SubscribeMarket(Uid uid);
+        ulong UnsubscribeMarket(Uid uid);
+
         void AddMarketQuotesHandler(Uid uid, EventHandler<QuotesReceivedEventArgs<Proto.Seto.MarketQuotes>> handler);
         void RemoveMarketQuotesHandler(Uid uid, EventHandler<QuotesReceivedEventArgs<Proto.Seto.MarketQuotes>> handler);
         void AddContractQuotesHandler(Uid uid, EventHandler<QuotesReceivedEventArgs<Proto.Seto.ContractQuotes>> handler);

@@ -42,77 +42,65 @@ namespace IronSmarkets.Data
     public class Market
     {
         private readonly MarketInfo _info;
-        private readonly HashSet<Uid> _contracts;
+        private readonly IContractMap _contracts;
 
         private MarketQuotes _quotes;
         private ulong _subscriptionSeq;
-        private ISmarketsClient _client;
+        private IQuoteSink _sink;
 
         public MarketInfo Info { get { return _info; } }
+        public IContractMap Contracts { get { return _contracts; } }
         public MarketQuotes Quotes { get { return _quotes; } }
 
         public EventHandler<MarketQuotesUpdatedEventArgs> MarketQuotesUpdated;
 
-        private Market(MarketInfo info, MarketQuotes quotes = null)
+        private Market(
+            MarketInfo info,
+            IContractMap contracts,
+            MarketQuotes quotes = null)
         {
             _info = info;
-            _contracts = new HashSet<Uid>(info.Contracts.Keys);
+            _contracts = contracts;
             _quotes = quotes;
         }
 
-        public void SubscribeQuotes(ISmarketsClient client)
+        public void SubscribeQuotes(IQuoteSink sink)
         {
-            if (_client != null)
+            if (_sink != null)
             {
                 throw new InvalidOperationException("Already subscribed");
             }
-            _client = client;
-            _client.PayloadReceived += OnPayloadReceived;
-            _subscriptionSeq = _client.SubscribeMarket(_info.Uid);
+            _sink = sink;
+            _sink.AddMarketQuotesHandler(_info.Uid, OnMarketQuotesReceived);
+            _subscriptionSeq = _sink.SubscribeMarket(_info.Uid);
         }
 
         public void UnsubscribeQuotes()
         {
-            _client.PayloadReceived -= OnPayloadReceived;
-            _client = null;
+            _sink.UnsubscribeMarket(_info.Uid);
+            _sink.RemoveMarketQuotesHandler(_info.Uid, OnMarketQuotesReceived);
+            _sink = null;
             _subscriptionSeq = 0;
         }
 
-        private void OnPayloadReceived(object sender, Events.PayloadReceivedEventArgs<Proto.Seto.Payload> e)
+        private void OnMarketQuotesReceived(object sender, QuotesReceivedEventArgs<Proto.Seto.MarketQuotes> e)
         {
-            switch(e.Payload.Type)
-            {
-                case Proto.Seto.PayloadType.PAYLOADMARKETQUOTES:
-                    var incoming = Uid.FromUuid128(e.Payload.MarketQuotes.Market);
-                    if (incoming == _info.Uid)
-                    {
-                        _quotes = MarketQuotes.FromSeto(e.Payload.MarketQuotes);
-                        OnMarketQuotesUpdated(e.Payload.EtoPayload.Seq, _quotes);
-                    }
-                    break;
-                case Proto.Seto.PayloadType.PAYLOADCONTRACTQUOTES:
-                    var incomingContract = Uid.FromUuid128(e.Payload.ContractQuotes.Contract);
-                    if (_contracts.Contains(incomingContract))
-                    {
-                        _quotes.RWContractQuotes[incomingContract] = ContractQuotes.FromSeto(e.Payload.ContractQuotes);
-                        OnMarketQuotesUpdated(e.Payload.EtoPayload.Seq, _quotes);
-                    }
-                    break;
-            }
+            _quotes = MarketQuotes.FromSeto(e.Payload);
+            OnMarketQuotesUpdated(e.Sequence);
         }
 
-        private void OnMarketQuotesUpdated(ulong sequence, MarketQuotes quotes)
+        private void OnMarketQuotesUpdated(ulong seq)
         {
-            // TODO: Offer a copy constructor on MarketQuotes so it
-            // can be sent between threads.
             EventHandler<MarketQuotesUpdatedEventArgs> ev = MarketQuotesUpdated;
             if (ev != null)
-                ev(this, new MarketQuotesUpdatedEventArgs(sequence, quotes));
+                ev(this, new MarketQuotesUpdatedEventArgs(seq, _quotes));
         }
 
         internal static Market FromSeto(Proto.Seto.MarketInfo setoInfo)
         {
-            return new Market(MarketInfo.FromSeto(setoInfo));
+            return new Market(
+                MarketInfo.FromSeto(setoInfo),
+                ContractMap.FromContracts(setoInfo.Contracts));
         }
     }
 }

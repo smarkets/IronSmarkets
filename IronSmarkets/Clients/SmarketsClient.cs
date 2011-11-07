@@ -34,7 +34,8 @@ namespace IronSmarkets.Clients
     public interface ISmarketsClient :
         IDisposable,
         IPayloadEvents<Proto.Seto.Payload>,
-        IPayloadEndpoint<Proto.Seto.Payload>
+        IPayloadEndpoint<Proto.Seto.Payload>,
+        IQuoteSink
     {
         bool IsDisposed { get; }
 
@@ -42,9 +43,6 @@ namespace IronSmarkets.Clients
         ulong Logout();
 
         ulong Ping();
-
-        ulong SubscribeMarket(Uid market);
-        ulong UnsubscribeMarket(Uid market);
 
         Response<IEventMap> GetEvents(EventQuery query);
         Response<AccountState> GetAccountState();

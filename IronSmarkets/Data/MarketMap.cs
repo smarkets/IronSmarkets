@@ -26,15 +26,15 @@ using System.Linq;
 
 namespace IronSmarkets.Data
 {
-    public interface IMarketMap : IReadOnlyMap<Uid, MarketInfo>
+    public interface IMarketMap : IReadOnlyMap<Uid, Market>
     {
     }
 
     internal class MarketMap : IMarketMap
     {
-        private readonly IDictionary<Uid, MarketInfo> _markets;
+        private readonly IDictionary<Uid, Market> _markets;
 
-        private MarketMap(IDictionary<Uid, MarketInfo> markets)
+        private MarketMap(IDictionary<Uid, Market> markets)
         {
             _markets = markets;
         }
@@ -43,15 +43,15 @@ namespace IronSmarkets.Data
         {
             return new MarketMap(
                 setoMarkets.Aggregate(
-                    new Dictionary<Uid, MarketInfo>(),
+                    new Dictionary<Uid, Market>(),
                     (dict, marketInfo) => {
-                        var market = MarketInfo.FromSeto(marketInfo);
-                        dict[market.Uid] = market;
+                        var market = Market.FromSeto(marketInfo);
+                        dict[market.Info.Uid] = market;
                         return dict;
                     }));
         }
 
-        public IEnumerator<KeyValuePair<Uid, MarketInfo>> GetEnumerator()
+        public IEnumerator<KeyValuePair<Uid, Market>> GetEnumerator()
         {
             return _markets.GetEnumerator();
         }
@@ -61,12 +61,12 @@ namespace IronSmarkets.Data
             return GetEnumerator();
         }
 
-        public bool Contains(KeyValuePair<Uid, MarketInfo> item)
+        public bool Contains(KeyValuePair<Uid, Market> item)
         {
             return _markets.Contains(item);
         }
 
-        public void CopyTo(KeyValuePair<Uid, MarketInfo>[] array, int arrayIndex)
+        public void CopyTo(KeyValuePair<Uid, Market>[] array, int arrayIndex)
         {
             _markets.CopyTo(array, arrayIndex);
         }
@@ -81,12 +81,12 @@ namespace IronSmarkets.Data
             return _markets.ContainsKey(key);
         }
 
-        public bool TryGetValue(Uid key, out MarketInfo value)
+        public bool TryGetValue(Uid key, out Market value)
         {
             return _markets.TryGetValue(key, out value);
         }
 
-        public MarketInfo this[Uid key]
+        public Market this[Uid key]
         {
             get { return _markets[key]; }
         }
@@ -96,7 +96,7 @@ namespace IronSmarkets.Data
             get { return _markets.Keys; }
         }
 
-        public ICollection<MarketInfo> Values
+        public ICollection<Market> Values
         {
             get { return _markets.Values; }
         }

@@ -24,6 +24,7 @@ using System;
 using System.Collections.Generic;
 
 using IronSmarkets.Clients;
+using IronSmarkets.Extensions;
 
 namespace IronSmarkets.Data
 {
@@ -67,18 +68,20 @@ namespace IronSmarkets.Data
         public void SubscribeQuotes(IQuoteSink sink)
         {
             if (_sink != null)
-            {
                 throw new InvalidOperationException("Already subscribed");
-            }
             _sink = sink;
             _sink.AddMarketQuotesHandler(_info.Uid, OnMarketQuotesReceived);
+            _contracts.Values.ForAll(contract => contract.SubscribeQuotes(_sink));
             _subscriptionSeq = _sink.SubscribeMarket(_info.Uid);
         }
 
         public void UnsubscribeQuotes()
         {
+            if (_sink == null)
+                throw new InvalidOperationException("Not subscribed");
             _sink.UnsubscribeMarket(_info.Uid);
             _sink.RemoveMarketQuotesHandler(_info.Uid, OnMarketQuotesReceived);
+            _contracts.Values.ForAll(contract => contract.UnsubscribeQuotes());
             _sink = null;
             _subscriptionSeq = 0;
         }

@@ -20,20 +20,69 @@
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+using System;
+
+using IronSmarkets.Clients;
+
 namespace IronSmarkets.Data
 {
+    public class ContractQuotesUpdatedEventArgs : EventArgs
+    {
+        public ulong Sequence { get; private set; }
+        public ContractQuotes Quotes { get; private set; }
+
+        internal ContractQuotesUpdatedEventArgs(ulong sequence, ContractQuotes quotes)
+        {
+            Sequence = sequence;
+            Quotes = quotes;
+        }
+    }
+
     public class Contract
     {
-        private ContractInfo _info;
+        private readonly ContractInfo _info;
+
         private ContractQuotes _quotes;
+        private IQuoteSink _sink;
 
         public ContractInfo Info { get { return _info; } }
         public ContractQuotes Quotes { get { return _quotes; } }
+
+        public EventHandler<ContractQuotesUpdatedEventArgs> ContractQuotesUpdated;
 
         private Contract(ContractInfo info, ContractQuotes quotes = null)
         {
             _info = info;
             _quotes = quotes;
+        }
+
+        internal void SubscribeQuotes(IQuoteSink sink)
+        {
+            if (_sink != null)
+                throw new InvalidOperationException("Already subscribed");
+            _sink = sink;
+            _sink.AddContractQuotesHandler(_info.Uid, OnContractQuotesReceived);
+        }
+
+        internal void UnsubscribeQuotes()
+        {
+            if (_sink == null)
+                throw new InvalidOperationException("Not subscribed");
+            _sink.RemoveContractQuotesHandler(_info.Uid, OnContractQuotesReceived);
+            _sink = null;
+        }
+
+        private void OnContractQuotesReceived(object sender, QuotesReceivedEventArgs<Proto.Seto.ContractQuotes> e)
+        {
+            _quotes = ContractQuotes.FromSeto(e.Payload);
+            OnContractQuotesUpdated(e.Sequence);
+        }
+
+        private void OnContractQuotesUpdated(ulong seq)
+        {
+            EventHandler<ContractQuotesUpdatedEventArgs> ev = ContractQuotesUpdated;
+            if (ev != null)
+                ev(this, new ContractQuotesUpdatedEventArgs(seq, _quotes));
         }
 
         internal static Contract FromSeto(Proto.Seto.ContractInfo setoInfo)

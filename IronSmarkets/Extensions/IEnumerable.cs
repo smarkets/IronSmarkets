@@ -23,9 +23,9 @@
 using System;
 using System.Collections.Generic;
 
-namespace IronSmarkets.Tests
+namespace IronSmarkets.Extensions
 {
-    internal static class Extensions
+    internal static class EnumerableExtensions
     {
         public static void ForAll<T>(
             this IEnumerable<T> sequence,
@@ -36,4 +36,3 @@ namespace IronSmarkets.Tests
         }
     }
 }
-

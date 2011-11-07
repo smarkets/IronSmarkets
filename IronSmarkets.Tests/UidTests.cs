@@ -25,6 +25,7 @@ using System.Collections.Generic;
 using Xunit;
 
 using IronSmarkets.Data;
+using IronSmarkets.Extensions;
 
 namespace IronSmarkets.Tests
 {

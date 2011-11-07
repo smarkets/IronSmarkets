@@ -32,6 +32,16 @@ using IronSmarkets.Exceptions;
 
 namespace IronSmarkets.Clients
 {
+    internal sealed class RequestState<T> : Tuple<HttpWebRequest, SyncRequest<T>>
+    {
+        public HttpWebRequest WebRequest { get { return Item1; } }
+        public SyncRequest<T> Request { get { return Item2; } }
+
+        public RequestState(HttpWebRequest webRequest, SyncRequest<T> request) : base(webRequest, request)
+        {
+        }
+    }
+
     internal sealed class HttpFoundHandler<T>
     {
         private static readonly ILog Log = LogManager.GetLogger(
@@ -51,8 +61,7 @@ namespace IronSmarkets.Clients
             if (Log.IsDebugEnabled) Log.Debug(
                 string.Format("Fetching payload from URL {0}", url));
             var req = (HttpWebRequest)WebRequest.Create(url);
-            var state = new Tuple<HttpWebRequest, SyncRequest<T>>(
-                req, syncRequest);
+            var state = new RequestState<T>(req, syncRequest);
             var result = req.BeginGetResponse(
                 FetchHttpFoundCallback, state);
             ThreadPool.RegisterWaitForSingleObject(
@@ -63,43 +72,42 @@ namespace IronSmarkets.Clients
 
         private void FetchHttpFoundCallback(IAsyncResult result)
         {
-            var stateTuple = (Tuple<HttpWebRequest, SyncRequest<T>>)result.AsyncState;
+            var requestState = result.AsyncState as RequestState<T>;
+            if (requestState == null) throw new ArgumentNullException("result");
             if (Log.IsDebugEnabled) Log.Debug(
-                string.Format("Web request callback for URL {0}", stateTuple.Item1.RequestUri));
+                string.Format("Web request callback for URL {0}", requestState.WebRequest.RequestUri));
             try
             {
-                using (var resp = stateTuple.Item1.EndGetResponse(result))
+                using (var resp = requestState.WebRequest.EndGetResponse(result))
                 {
                     if (Log.IsDebugEnabled) Log.Debug("Received a response, deserializing");
                     Stream receiveStream = resp.GetResponseStream();
-                    stateTuple.Item2.Response = Serializer.Deserialize<T>(receiveStream);
+                    requestState.Request.Response = Serializer.Deserialize<T>(receiveStream);
                 }
             }
             catch (WebException wex)
             {
                 if (wex.Message == "Aborted.")
                 {
-                    stateTuple.Item2.SetException(
+                    requestState.Request.SetException(
                         new RequestTimedOutException(_timeout));
                 }
                 else
                 {
-                    stateTuple.Item2.SetException(wex);
+                    requestState.Request.SetException(wex);
                 }
             }
             catch (Exception ex)
             {
-                stateTuple.Item2.SetException(ex);
+                requestState.Request.SetException(ex);
             }
         }
 
         private void HttpFoundTimeoutCallback(object state, bool timedOut)
         {
-            if (timedOut)
-            {
-                var stateTuple = (Tuple<HttpWebRequest, SyncRequest<T>>)state;
-                stateTuple.Item1.Abort();
-            }
+            if (!timedOut) return;
+            var requestState = state as RequestState<T>;
+            if (requestState != null) requestState.WebRequest.Abort();
         }
     }
 }

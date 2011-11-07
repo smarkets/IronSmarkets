@@ -26,18 +26,6 @@ using IronSmarkets.Clients;
 
 namespace IronSmarkets.Data
 {
-    public class ContractQuotesUpdatedEventArgs : EventArgs
-    {
-        public ulong Sequence { get; private set; }
-        public ContractQuotes Quotes { get; private set; }
-
-        internal ContractQuotesUpdatedEventArgs(ulong sequence, ContractQuotes quotes)
-        {
-            Sequence = sequence;
-            Quotes = quotes;
-        }
-    }
-
     public class Contract
     {
         private readonly ContractInfo _info;
@@ -48,7 +36,7 @@ namespace IronSmarkets.Data
         public ContractInfo Info { get { return _info; } }
         public ContractQuotes Quotes { get { return _quotes; } }
 
-        public EventHandler<ContractQuotesUpdatedEventArgs> ContractQuotesUpdated;
+        public EventHandler<QuotesUpdatedEventArgs<ContractQuotes>> ContractQuotesUpdated;
 
         private Contract(ContractInfo info, ContractQuotes quotes = null)
         {
@@ -80,9 +68,9 @@ namespace IronSmarkets.Data
 
         private void OnContractQuotesUpdated(ulong seq)
         {
-            EventHandler<ContractQuotesUpdatedEventArgs> ev = ContractQuotesUpdated;
+            var ev = ContractQuotesUpdated;
             if (ev != null)
-                ev(this, new ContractQuotesUpdatedEventArgs(seq, _quotes));
+                ev(this, new QuotesUpdatedEventArgs<ContractQuotes>(seq, _quotes));
         }
 
         internal static Contract FromSeto(Proto.Seto.ContractInfo setoInfo)

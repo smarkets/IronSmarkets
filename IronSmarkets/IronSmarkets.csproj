@@ -95,6 +95,7 @@
     <Compile Include="Data\MarketQuotes.cs" />
     <Compile Include="Data\Quantity.cs" />
     <Compile Include="Data\Quote.cs" />
+    <Compile Include="Data\QuotesUpdatedEventArgs.cs" />
     <Compile Include="Data\SetoMap.cs" />
     <Compile Include="Data\Side.cs" />
     <Compile Include="Data\Uid.cs" />

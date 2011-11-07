@@ -28,18 +28,6 @@ using IronSmarkets.Extensions;
 
 namespace IronSmarkets.Data
 {
-    public class MarketQuotesUpdatedEventArgs : EventArgs
-    {
-        public ulong Sequence { get; private set; }
-        public MarketQuotes Quotes { get; private set; }
-
-        internal MarketQuotesUpdatedEventArgs(ulong sequence, MarketQuotes quotes)
-        {
-            Sequence = sequence;
-            Quotes = quotes;
-        }
-    }
-
     public class Market
     {
         private readonly MarketInfo _info;
@@ -53,7 +41,7 @@ namespace IronSmarkets.Data
         public IContractMap Contracts { get { return _contracts; } }
         public MarketQuotes Quotes { get { return _quotes; } }
 
-        public EventHandler<MarketQuotesUpdatedEventArgs> MarketQuotesUpdated;
+        public EventHandler<QuotesUpdatedEventArgs<MarketQuotes>> MarketQuotesUpdated;
 
         private Market(
             MarketInfo info,
@@ -94,9 +82,9 @@ namespace IronSmarkets.Data
 
         private void OnMarketQuotesUpdated(ulong seq)
         {
-            EventHandler<MarketQuotesUpdatedEventArgs> ev = MarketQuotesUpdated;
+            var ev = MarketQuotesUpdated;
             if (ev != null)
-                ev(this, new MarketQuotesUpdatedEventArgs(seq, _quotes));
+                ev(this, new QuotesUpdatedEventArgs<MarketQuotes>(seq, _quotes));
         }
 
         internal static Market FromSeto(Proto.Seto.MarketInfo setoInfo)

@@ -36,20 +36,20 @@ namespace IronSmarkets.Data
         };
 
         private readonly Uid _uid;
-        private readonly IRWContractQuotesMap _contractQuotes;
+        private readonly IRwContractQuotesMap _contractQuotes;
         private readonly string _priceType;
         private readonly string _quantityType;
 
-        internal IRWContractQuotesMap RWContractQuotes { get { return _contractQuotes; } }
+        private IRwContractQuotesMap RwContractQuotes { get { return _contractQuotes; } }
 
         public Uid Uid { get { return _uid; } }
-        public IContractQuotesMap ContractQuotes { get { return RWContractQuotes; } }
+        public IContractQuotesMap ContractQuotes { get { return RwContractQuotes; } }
         public string PriceType { get { return _priceType; } }
         public string QuantityType { get { return _quantityType; } }
 
         private MarketQuotes(
             Uid uid,
-            IRWContractQuotesMap contractQuotes,
+            IRwContractQuotesMap contractQuotes,
             string priceType,
             string quantityType)
         {

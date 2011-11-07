@@ -21,7 +21,6 @@
 // SOFTWARE.
 
 using System;
-using System.Collections.Generic;
 
 using IronSmarkets.Clients;
 using IronSmarkets.Extensions;

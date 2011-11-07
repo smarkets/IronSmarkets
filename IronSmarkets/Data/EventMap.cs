@@ -26,15 +26,15 @@ using System.Linq;
 
 namespace IronSmarkets.Data
 {
-    public interface IEventMap : IReadOnlyMap<Uid, EventInfo>
+    public interface IEventMap : IReadOnlyMap<Uid, Event>
     {
     }
 
     internal class EventMap : IEventMap
     {
-        private readonly IDictionary<Uid, EventInfo> _events;
+        private readonly IDictionary<Uid, Event> _events;
 
-        private EventMap(IDictionary<Uid, EventInfo> events)
+        private EventMap(IDictionary<Uid, Event> events)
         {
             _events = events;
         }
@@ -43,15 +43,15 @@ namespace IronSmarkets.Data
         {
             return new EventMap(
                 setoEvents.WithMarkets.Concat(setoEvents.Parents).Aggregate(
-                    new Dictionary<Uid, EventInfo>(),
+                    new Dictionary<Uid, Event>(),
                     (dict, eventInfo) => {
-                        var ev = EventInfo.FromSeto(eventInfo);
-                        dict[ev.Uid] = ev;
+                        var ev = Event.FromSeto(eventInfo);
+                        dict[ev.Info.Uid] = ev;
                         return dict;
                     }));
         }
 
-        public IEnumerator<KeyValuePair<Uid, EventInfo>> GetEnumerator()
+        public IEnumerator<KeyValuePair<Uid, Event>> GetEnumerator()
         {
             return _events.GetEnumerator();
         }
@@ -61,12 +61,12 @@ namespace IronSmarkets.Data
             return GetEnumerator();
         }
 
-        public bool Contains(KeyValuePair<Uid, EventInfo> item)
+        public bool Contains(KeyValuePair<Uid, Event> item)
         {
             return _events.Contains(item);
         }
 
-        public void CopyTo(KeyValuePair<Uid, EventInfo>[] array, int arrayIndex)
+        public void CopyTo(KeyValuePair<Uid, Event>[] array, int arrayIndex)
         {
             _events.CopyTo(array, arrayIndex);
         }
@@ -81,12 +81,12 @@ namespace IronSmarkets.Data
             return _events.ContainsKey(key);
         }
 
-        public bool TryGetValue(Uid key, out EventInfo value)
+        public bool TryGetValue(Uid key, out Event value)
         {
             return _events.TryGetValue(key, out value);
         }
 
-        public EventInfo this[Uid key]
+        public Event this[Uid key]
         {
             get { return _events[key]; }
         }
@@ -96,7 +96,7 @@ namespace IronSmarkets.Data
             get { return _events.Keys; }
         }
 
-        public ICollection<EventInfo> Values
+        public ICollection<Event> Values
         {
             get { return _events.Values; }
         }

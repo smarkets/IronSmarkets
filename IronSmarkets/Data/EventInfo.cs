@@ -99,7 +99,6 @@ namespace IronSmarkets.Data
         private readonly DateTime? _endDateTime;
         private readonly string _description;
         private readonly IEnumerable<KeyValuePair<Uid, string>> _entities;
-        private readonly IMarketMap _markets;
 
         public Uid Uid { get { return _uid; } }
         public string Name { get { return _name; } }
@@ -111,7 +110,6 @@ namespace IronSmarkets.Data
         public DateTime? EndDateTime { get { return _endDateTime; } }
         public string Description { get { return _description; } }
         public IEnumerable<KeyValuePair<Uid, string>> Entities { get { return _entities; } }
-        public IMarketMap Markets { get { return _markets; } }
 
         private EventInfo(
             Uid uid,
@@ -123,8 +121,7 @@ namespace IronSmarkets.Data
             DateTime? startDateTime,
             DateTime? endDateTime,
             string description,
-            IEnumerable<KeyValuePair<Uid, String>> entities,
-            IMarketMap markets)
+            IEnumerable<KeyValuePair<Uid, String>> entities)
         {
             _uid = uid;
             _name = name;
@@ -136,7 +133,6 @@ namespace IronSmarkets.Data
             _endDateTime = endDateTime;
             _description = description;
             _entities = entities;
-            _markets = markets;
         }
 
         internal static EventInfo FromSeto(Proto.Seto.EventInfo info)
@@ -151,8 +147,7 @@ namespace IronSmarkets.Data
                 SetoMap.FromDateTime(info.StartDate, info.StartTime),
                 SetoMap.FromDateTime(info.EndDate, info.EndTime),
                 info.Description,
-                EntityRelationships.FromEntities(info.Entities),
-                MarketMap.FromMarkets(info.Markets));
+                EntityRelationships.FromEntities(info.Entities));
         }
     }
 }

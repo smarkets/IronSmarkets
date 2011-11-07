@@ -97,8 +97,8 @@ namespace IronSmarkets.ConsoleExample
                     string.Format(
                         "\t{0} => {1} ({2})",
                         eventInfo.Key,
-                        eventInfo.Value.Name,
-                        eventInfo.Value.Category));
+                        eventInfo.Value.Info.Name,
+                        eventInfo.Value.Info.Category));
             }
             return events;
         }

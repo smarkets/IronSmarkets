@@ -97,10 +97,9 @@ namespace IronSmarkets.ConsoleExample
             return events;
         }
 
-        static IEnumerable<string> GetEventStrings(Event child, string indent = "", bool last = false)
+        static IEnumerable<string> GetEventStrings(Event child, string indent = "", bool last = true)
         {
-            var sb = new StringBuilder();
-            sb.Append(indent);
+            var sb = new StringBuilder(indent);
             if (last)
             {
                 sb.Append("\\-");

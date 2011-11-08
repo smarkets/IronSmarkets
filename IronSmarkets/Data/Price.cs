@@ -54,7 +54,7 @@ namespace IronSmarkets.Data
 
         public override int GetHashCode()
         {
-            return _raw.GetHashCode();
+            return _type.GetHashCode() ^ _raw.GetHashCode();
         }
 
         public override bool Equals(object right)
@@ -75,7 +75,7 @@ namespace IronSmarkets.Data
 
         public bool Equals(Price other)
         {
-            return _raw == other._raw;
+            return _type == other._type && _raw == other._raw;
         }
 
         public static bool operator==(Price left, Price right)
@@ -88,7 +88,7 @@ namespace IronSmarkets.Data
             return !left.Equals(right);
         }
 
-        public static PriceType PriceTypeFromSeto(Proto.Seto.PriceType type)
+        internal static PriceType PriceTypeFromSeto(Proto.Seto.PriceType type)
         {
             return PriceTypes[type];
         }

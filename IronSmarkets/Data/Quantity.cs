@@ -60,7 +60,7 @@ namespace IronSmarkets.Data
 
         public override int GetHashCode()
         {
-            return _raw.GetHashCode();
+            return _type.GetHashCode() ^ _raw.GetHashCode();
         }
 
         public override string ToString()
@@ -81,7 +81,7 @@ namespace IronSmarkets.Data
 
         public bool Equals(Quantity other)
         {
-            return _raw == other._raw;
+            return _type == other._type && _raw == other._raw;
         }
 
         public static bool operator==(Quantity left, Quantity right)
@@ -94,7 +94,7 @@ namespace IronSmarkets.Data
             return !left.Equals(right);
         }
 
-        public static QuantityType QuantityTypeFromSeto(Proto.Seto.QuantityType type)
+        internal static QuantityType QuantityTypeFromSeto(Proto.Seto.QuantityType type)
         {
             return QuantityTypes[type];
         }

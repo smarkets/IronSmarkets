@@ -32,6 +32,7 @@ namespace IronSmarkets.Data
         private readonly List<Quote> _offers;
         private readonly List<Execution> _executions;
         private readonly Execution? _lastExecution;
+        private readonly PriceType _priceType;
         private readonly QuantityType _quantityType;
 
         public Uid Uid { get { return _uid; } }
@@ -39,6 +40,7 @@ namespace IronSmarkets.Data
         public IEnumerable<Quote> Offers { get { return _offers; } }
         public IEnumerable<Execution> Executions { get { return _executions; } }
         public Execution? LastExecution { get { return _lastExecution; } }
+        public PriceType PriceType { get { return _priceType; } }
         public QuantityType QuantityType { get { return _quantityType; } }
 
         private ContractQuotes(
@@ -47,6 +49,7 @@ namespace IronSmarkets.Data
             IEnumerable<Quote> offers,
             IEnumerable<Execution> executions,
             Execution? lastExecution,
+            PriceType priceType,
             QuantityType quantityType)
         {
             _uid = uid;
@@ -54,17 +57,22 @@ namespace IronSmarkets.Data
             _offers = new List<Quote>(offers);
             _executions = new List<Execution>(executions);
             _lastExecution = lastExecution;
+            _priceType = priceType;
             _quantityType = quantityType;
         }
 
-        internal static ContractQuotes FromSeto(Proto.Seto.ContractQuotes setoQuotes, QuantityType quantityType)
+        internal static ContractQuotes FromSeto(
+            Proto.Seto.ContractQuotes setoQuotes,
+            PriceType priceType,
+            QuantityType quantityType)
         {
             return new ContractQuotes(
                 Uid.FromUuid128(setoQuotes.Contract),
-                setoQuotes.Bids.Select(x => Quote.FromSeto(x, quantityType)),
-                setoQuotes.Offers.Select(x => Quote.FromSeto(x, quantityType)),
-                setoQuotes.Executions.Select(x => Execution.FromSeto(x, quantityType)),
-                Execution.MaybeFromSeto(setoQuotes.LastExecution, quantityType),
+                setoQuotes.Bids.Select(x => Quote.FromSeto(x, priceType, quantityType)),
+                setoQuotes.Offers.Select(x => Quote.FromSeto(x, priceType, quantityType)),
+                setoQuotes.Executions.Select(x => Execution.FromSeto(x, priceType, quantityType)),
+                Execution.MaybeFromSeto(setoQuotes.LastExecution, priceType, quantityType),
+                priceType,
                 quantityType);
         }
     }

@@ -70,10 +70,13 @@ namespace IronSmarkets.Data
             return !left.Equals(right);
         }
 
-        internal static Quote FromSeto(Proto.Seto.Quote setoQuote, QuantityType quantityType)
+        internal static Quote FromSeto(
+            Proto.Seto.Quote setoQuote,
+            PriceType priceType,
+            QuantityType quantityType)
         {
             return new Quote(
-                new Price(setoQuote.Price),
+                new Price(priceType, setoQuote.Price),
                 new Quantity(quantityType, setoQuote.Quantity));
         }
     }

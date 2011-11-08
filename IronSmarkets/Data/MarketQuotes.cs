@@ -26,27 +26,22 @@ namespace IronSmarkets.Data
 {
     public class MarketQuotes
     {
-        private static readonly IDictionary<Proto.Seto.PriceType, string> PriceTypeStrings =
-            new Dictionary<Proto.Seto.PriceType, string> {
-            { Proto.Seto.PriceType.PRICEPERCENTODDS, "percent-odds" }
-        };
-
         private readonly Uid _uid;
         private readonly IRwContractQuotesMap _contractQuotes;
-        private readonly string _priceType;
+        private readonly PriceType _priceType;
         private readonly QuantityType _quantityType;
 
         private IRwContractQuotesMap RwContractQuotes { get { return _contractQuotes; } }
 
         public Uid Uid { get { return _uid; } }
         public IContractQuotesMap ContractQuotes { get { return RwContractQuotes; } }
-        public string PriceType { get { return _priceType; } }
+        public PriceType PriceType { get { return _priceType; } }
         public QuantityType QuantityType { get { return _quantityType; } }
 
         private MarketQuotes(
             Uid uid,
             IRwContractQuotesMap contractQuotes,
-            string priceType,
+            PriceType priceType,
             QuantityType quantityType)
         {
             _uid = uid;
@@ -58,10 +53,12 @@ namespace IronSmarkets.Data
         internal static MarketQuotes FromSeto(Proto.Seto.MarketQuotes setoQuotes)
         {
             var quantityType = Quantity.QuantityTypeFromSeto(setoQuotes.QuantityType);
+            var priceType = Price.PriceTypeFromSeto(setoQuotes.PriceType);
             return new MarketQuotes(
                 Uid.FromUuid128(setoQuotes.Market),
-                ContractQuotesMap.FromSeto(setoQuotes.ContractQuotes, quantityType),
-                PriceTypeStrings[setoQuotes.PriceType],
+                ContractQuotesMap.FromSeto(
+                    setoQuotes.ContractQuotes, priceType, quantityType),
+                priceType,
                 quantityType);
         }
     }

@@ -21,19 +21,34 @@
 // SOFTWARE.
 
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace IronSmarkets.Data
 {
+    public enum PriceType
+    {
+        PercentOdds
+    }
+
     public struct Price : IEquatable<Price>
     {
+        private static readonly IDictionary<Proto.Seto.PriceType, PriceType> PriceTypes =
+            new Dictionary<Proto.Seto.PriceType, PriceType> {
+            { Proto.Seto.PriceType.PRICEPERCENTODDS, PriceType.PercentOdds }
+        };
+
         private const decimal Divisor = 10000m;
         private readonly uint _raw;
+        private readonly PriceType _type;
 
         public uint Raw { get { return _raw; } }
         public decimal Percent { get { return _raw / Divisor; } }
 
-        public Price(uint raw)
+        public Price(PriceType type, uint raw)
         {
+            Debug.Assert(type == PriceType.PercentOdds);
+            _type = type;
             _raw = raw;
         }
 
@@ -71,6 +86,11 @@ namespace IronSmarkets.Data
         public static bool operator!=(Price left, Price right)
         {
             return !left.Equals(right);
+        }
+
+        public static PriceType PriceTypeFromSeto(Proto.Seto.PriceType type)
+        {
+            return PriceTypes[type];
         }
     }
 }

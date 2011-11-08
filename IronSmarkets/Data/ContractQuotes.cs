@@ -20,6 +20,7 @@
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -66,37 +67,35 @@ namespace IronSmarkets.Data
 
         internal void UpdateFromSeto(Proto.Seto.ContractQuotes setoQuotes)
         {
-            foreach (var bid in setoQuotes.Bids.Select(
-                         x => Quote.FromSeto(x, _priceType, _quantityType)))
-            {
-                if (bid.Quantity.Raw == 0)
-                {
-                    _bids.Remove(bid.Price);
-                }
-                else
-                {
-                    _bids[bid.Price] = bid;
-                }
-            }
-            foreach (var offer in setoQuotes.Offers.Select(
-                         x => Quote.FromSeto(x, _priceType, _quantityType)))
-            {
-                if (offer.Quantity.Raw == 0)
-                {
-                    _offers.Remove(offer.Price);
-                }
-                else
-                {
-                    _offers[offer.Price] = offer;
-                }
-            }
-            var newExecutions = setoQuotes.Executions.Select(
-                x => Execution.FromSeto(x, _priceType, _quantityType));
+            var fromSeto = QuoteFromSeto();
+            setoQuotes.Bids.Select(fromSeto).ForAll(QuoteUpdateVisitor(_bids));
+            setoQuotes.Offers.Select(fromSeto).ForAll(QuoteUpdateVisitor(_offers));
+            var newExecutions = setoQuotes.Executions.Select(ExecutionFromSeto());
             if (!newExecutions.IsEmpty())
             {
                 _executions.AddRange(newExecutions);
                 _lastExecution = newExecutions.Last();
             }
+        }
+
+        private Func<Proto.Seto.Quote, Quote> QuoteFromSeto()
+        {
+            return QuoteFromSeto(_priceType, _quantityType);
+        }
+
+        private Func<Proto.Seto.Execution, Execution> ExecutionFromSeto()
+        {
+            return ExecutionFromSeto(_priceType, _quantityType);
+        }
+
+        private static Action<Quote> QuoteUpdateVisitor(IDictionary<Price, Quote> quotes)
+        {
+            return quote => {
+                if (quote.Quantity.Raw == 0)
+                    quotes.Remove(quote.Price);
+                else
+                    quotes[quote.Price] = quote;
+            };
         }
 
         internal static ContractQuotes FromSeto(
@@ -106,12 +105,26 @@ namespace IronSmarkets.Data
         {
             return new ContractQuotes(
                 Uid.FromUuid128(setoQuotes.Contract),
-                setoQuotes.Bids.Select(x => Quote.FromSeto(x, priceType, quantityType)),
-                setoQuotes.Offers.Select(x => Quote.FromSeto(x, priceType, quantityType)),
-                setoQuotes.Executions.Select(x => Execution.FromSeto(x, priceType, quantityType)),
+                setoQuotes.Bids.Select(QuoteFromSeto(priceType, quantityType)),
+                setoQuotes.Offers.Select(QuoteFromSeto(priceType, quantityType)),
+                setoQuotes.Executions.Select(ExecutionFromSeto(priceType, quantityType)),
                 Execution.MaybeFromSeto(setoQuotes.LastExecution, priceType, quantityType),
                 priceType,
                 quantityType);
+        }
+
+        private static Func<Proto.Seto.Quote, Quote> QuoteFromSeto(
+            PriceType priceType,
+            QuantityType quantityType)
+        {
+            return x => Quote.FromSeto(x, priceType, quantityType);
+        }
+
+        private static Func<Proto.Seto.Execution, Execution> ExecutionFromSeto(
+            PriceType priceType,
+            QuantityType quantityType)
+        {
+            return x => Execution.FromSeto(x, priceType, quantityType);
         }
     }
 }

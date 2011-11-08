@@ -32,6 +32,7 @@ namespace IronSmarkets.Data
 
     public enum OrderStatus
     {
+        Pending,
         Live,
         PartiallyFilled,
         Filled,

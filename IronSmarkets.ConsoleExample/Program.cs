@@ -25,6 +25,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
+using System.Text;
 using System.Threading;
 
 using log4net;
@@ -91,16 +92,36 @@ namespace IronSmarkets.ConsoleExample
             builder.SetDateTime(DateTime.Today);
             var events = client.GetEvents(builder.GetResult()).Data;
             Log.Debug(string.Format("Got {0} events:", events.Count));
-            foreach (var eventInfo in events)
-            {
-                Log.Debug(
-                    string.Format(
-                        "\t{0} => {1} ({2})",
-                        eventInfo.Key,
-                        eventInfo.Value.Info.Name,
-                        eventInfo.Value.Info.Category));
-            }
+            foreach (var topLevel in events.Roots)
+                foreach (var output in GetEventStrings(topLevel))
+                    Log.Debug(output);
             return events;
+        }
+
+        static IEnumerable<string> GetEventStrings(Event child, string indent = "", bool last = false)
+        {
+            var sb = new StringBuilder();
+            sb.Append(indent);
+            if (last)
+            {
+                sb.Append("\\-");
+                indent += "  ";
+            }
+            else
+            {
+                sb.Append("|-");
+                indent += "| ";
+            }
+            sb.AppendFormat(
+                "{0} => {1} ({2})",
+                child.Info.Uid,
+                child.Info.Name,
+                child.Info.Category);
+            yield return sb.ToString();
+            int i = 0;
+            foreach (var grandchild in child.Children)
+                foreach (var grandchildString in GetEventStrings(grandchild, indent, i++ == child.Children.Count - 1))
+                    yield return grandchildString;
         }
 
         static void Main(string[] args)

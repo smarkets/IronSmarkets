@@ -27,20 +27,18 @@ namespace IronSmarkets.Data
     public class MarketQuotes
     {
         private readonly Uid _uid;
-        private readonly IRwContractQuotesMap _contractQuotes;
+        private readonly IContractQuotesMap _contractQuotes;
         private readonly PriceType _priceType;
         private readonly QuantityType _quantityType;
 
-        private IRwContractQuotesMap RwContractQuotes { get { return _contractQuotes; } }
-
         public Uid Uid { get { return _uid; } }
-        public IContractQuotesMap ContractQuotes { get { return RwContractQuotes; } }
+        public IContractQuotesMap ContractQuotes { get { return _contractQuotes; } }
         public PriceType PriceType { get { return _priceType; } }
         public QuantityType QuantityType { get { return _quantityType; } }
 
         private MarketQuotes(
             Uid uid,
-            IRwContractQuotesMap contractQuotes,
+            IContractQuotesMap contractQuotes,
             PriceType priceType,
             QuantityType quantityType)
         {

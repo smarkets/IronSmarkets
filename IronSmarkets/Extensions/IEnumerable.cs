@@ -21,7 +21,9 @@
 // SOFTWARE.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace IronSmarkets.Extensions
 {
@@ -33,6 +35,20 @@ namespace IronSmarkets.Extensions
         {
             foreach (T item in sequence)
                 action(item);
+        }
+
+        public static bool IsEmpty<T>(this IEnumerable<T> sequence)
+        {
+            if (sequence == null)
+                throw new ArgumentNullException("sequence");
+
+            var gcollection = sequence as ICollection<T>;
+            if (gcollection != null)
+                return gcollection.Count == 0;
+            var collection = sequence as ICollection;
+            if (collection != null)
+                return collection.Count == 0;
+            return !sequence.Any();
         }
     }
 }

@@ -21,25 +21,41 @@
 // SOFTWARE.
 
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace IronSmarkets.Data
 {
+    public enum QuantityType
+    {
+        PayoffCurrency
+    }
+
     public struct Quantity : IEquatable<Quantity>
     {
+        private static readonly IDictionary<Proto.Seto.QuantityType, QuantityType> QuantityTypes =
+            new Dictionary<Proto.Seto.QuantityType, QuantityType>
+            {
+                { Proto.Seto.QuantityType.QUANTITYPAYOFFCURRENCY, QuantityType.PayoffCurrency }
+            };
+
         private const decimal Divisor = 10000.0000m;
         private readonly uint _raw;
+        private readonly QuantityType _type;
 
         public uint Raw { get { return _raw; } }
         public decimal Currency { get { return _raw / Divisor; } }
+        public QuantityType Type { get { return _type; } }
 
-        public Quantity(uint raw)
+        public Quantity(QuantityType type, uint raw)
         {
+            Debug.Assert(type == QuantityType.PayoffCurrency);
+            _type = type;
             _raw = raw;
         }
 
-        public Quantity(decimal currency)
+        public Quantity(QuantityType type, decimal currency) : this(type, (uint)(currency * Divisor))
         {
-            _raw = (uint)(currency * Divisor);
         }
 
         public override int GetHashCode()
@@ -76,6 +92,11 @@ namespace IronSmarkets.Data
         public static bool operator!=(Quantity left, Quantity right)
         {
             return !left.Equals(right);
+        }
+
+        public static QuantityType QuantityTypeFromSeto(Proto.Seto.QuantityType type)
+        {
+            return QuantityTypes[type];
         }
     }
 }

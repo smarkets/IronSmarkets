@@ -86,20 +86,20 @@ namespace IronSmarkets.Data
             return !left.Equals(right);
         }
 
-        internal static Execution FromSeto(Proto.Seto.Execution setoExecution)
+        internal static Execution FromSeto(Proto.Seto.Execution setoExecution, QuantityType quantityType)
         {
             return new Execution(
                 new Price(setoExecution.Price),
-                new Quantity(setoExecution.Quantity),
+                new Quantity(quantityType, setoExecution.Quantity),
                 setoExecution.Liquidity == Proto.Seto.Side.SIDEBUY ? Side.Buy : Side.Sell,
                 setoExecution.Microseconds);
         }
 
-        internal static Execution? MaybeFromSeto(Proto.Seto.Execution setoExecution)
+        internal static Execution? MaybeFromSeto(Proto.Seto.Execution setoExecution, QuantityType? quantityType)
         {
-            if (setoExecution == null)
+            if (setoExecution == null || !quantityType.HasValue)
                 return null;
-            return FromSeto(setoExecution);
+            return FromSeto(setoExecution, quantityType.Value);
         }
     }
 }

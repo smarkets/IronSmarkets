@@ -32,35 +32,40 @@ namespace IronSmarkets.Data
         private readonly List<Quote> _offers;
         private readonly List<Execution> _executions;
         private readonly Execution? _lastExecution;
+        private readonly QuantityType _quantityType;
 
         public Uid Uid { get { return _uid; } }
         public IEnumerable<Quote> Bids { get { return _bids; } }
         public IEnumerable<Quote> Offers { get { return _offers; } }
         public IEnumerable<Execution> Executions { get { return _executions; } }
         public Execution? LastExecution { get { return _lastExecution; } }
+        public QuantityType QuantityType { get { return _quantityType; } }
 
         private ContractQuotes(
             Uid uid,
             IEnumerable<Quote> bids,
             IEnumerable<Quote> offers,
             IEnumerable<Execution> executions,
-            Execution? lastExecution)
+            Execution? lastExecution,
+            QuantityType quantityType)
         {
             _uid = uid;
             _bids = new List<Quote>(bids);
             _offers = new List<Quote>(offers);
             _executions = new List<Execution>(executions);
             _lastExecution = lastExecution;
+            _quantityType = quantityType;
         }
 
-        internal static ContractQuotes FromSeto(Proto.Seto.ContractQuotes setoQuotes)
+        internal static ContractQuotes FromSeto(Proto.Seto.ContractQuotes setoQuotes, QuantityType quantityType)
         {
             return new ContractQuotes(
                 Uid.FromUuid128(setoQuotes.Contract),
-                setoQuotes.Bids.Select(Quote.FromSeto),
-                setoQuotes.Offers.Select(Quote.FromSeto),
-                setoQuotes.Executions.Select(Execution.FromSeto),
-                Execution.MaybeFromSeto(setoQuotes.LastExecution));
+                setoQuotes.Bids.Select(x => Quote.FromSeto(x, quantityType)),
+                setoQuotes.Offers.Select(x => Quote.FromSeto(x, quantityType)),
+                setoQuotes.Executions.Select(x => Execution.FromSeto(x, quantityType)),
+                Execution.MaybeFromSeto(setoQuotes.LastExecution, quantityType),
+                quantityType);
         }
     }
 }

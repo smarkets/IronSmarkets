@@ -30,28 +30,24 @@ namespace IronSmarkets.Data
             new Dictionary<Proto.Seto.PriceType, string> {
             { Proto.Seto.PriceType.PRICEPERCENTODDS, "percent-odds" }
         };
-        private static readonly IDictionary<Proto.Seto.QuantityType, string> QuantityTypeStrings =
-            new Dictionary<Proto.Seto.QuantityType, string> {
-            { Proto.Seto.QuantityType.QUANTITYPAYOFFCURRENCY, "payoff-currency" }
-        };
 
         private readonly Uid _uid;
         private readonly IRwContractQuotesMap _contractQuotes;
         private readonly string _priceType;
-        private readonly string _quantityType;
+        private readonly QuantityType _quantityType;
 
         private IRwContractQuotesMap RwContractQuotes { get { return _contractQuotes; } }
 
         public Uid Uid { get { return _uid; } }
         public IContractQuotesMap ContractQuotes { get { return RwContractQuotes; } }
         public string PriceType { get { return _priceType; } }
-        public string QuantityType { get { return _quantityType; } }
+        public QuantityType QuantityType { get { return _quantityType; } }
 
         private MarketQuotes(
             Uid uid,
             IRwContractQuotesMap contractQuotes,
             string priceType,
-            string quantityType)
+            QuantityType quantityType)
         {
             _uid = uid;
             _contractQuotes = contractQuotes;
@@ -61,11 +57,12 @@ namespace IronSmarkets.Data
 
         internal static MarketQuotes FromSeto(Proto.Seto.MarketQuotes setoQuotes)
         {
+            var quantityType = Quantity.QuantityTypeFromSeto(setoQuotes.QuantityType);
             return new MarketQuotes(
                 Uid.FromUuid128(setoQuotes.Market),
-                ContractQuotesMap.FromSeto(setoQuotes.ContractQuotes),
+                ContractQuotesMap.FromSeto(setoQuotes.ContractQuotes, quantityType),
                 PriceTypeStrings[setoQuotes.PriceType],
-                QuantityTypeStrings[setoQuotes.QuantityType]);
+                quantityType);
         }
     }
 }

@@ -45,13 +45,14 @@ namespace IronSmarkets.Data
         }
 
         internal static IRwContractQuotesMap FromSeto(
-            IEnumerable<Proto.Seto.ContractQuotes> setoContractQuotes)
+            IEnumerable<Proto.Seto.ContractQuotes> setoContractQuotes,
+            QuantityType quantityType)
         {
             return new ContractQuotesMap(
                 setoContractQuotes.Aggregate(
                     new Dictionary<Uid, ContractQuotes>(),
                     (dict, contractQuotes) => {
-                        var cq = ContractQuotes.FromSeto(contractQuotes);
+                        var cq = ContractQuotes.FromSeto(contractQuotes, quantityType);
                         dict[cq.Uid] = cq;
                         return dict;
                     }));

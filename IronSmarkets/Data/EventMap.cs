@@ -22,21 +22,37 @@
 
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+
+using IronSmarkets.Extensions;
 
 namespace IronSmarkets.Data
 {
     public interface IEventMap : IReadOnlyMap<Uid, Event>
     {
+        ICollection<Event> Roots { get; }
     }
 
     internal class EventMap : IEventMap
     {
         private readonly IDictionary<Uid, Event> _events;
+        private readonly IList<Event> _roots;
 
         private EventMap(IDictionary<Uid, Event> events)
         {
             _events = events;
+            _roots = new List<Event>(
+                Values.Where(ev => !ev.Info.ParentUid.HasValue)).AsReadOnly();
+            Values
+                .Where(childEvent => childEvent.Info.ParentUid.HasValue)
+                .ForAll(childEvent => {
+                        Debug.Assert(
+                            childEvent.Info.ParentUid != null,
+                            "childEvent.Info.ParentUid != null");
+                        var parent = this[childEvent.Info.ParentUid.Value];
+                        parent.AddChild(childEvent);
+                    });
         }
 
         public static EventMap FromSeto(Proto.Seto.Events setoEvents)
@@ -50,6 +66,8 @@ namespace IronSmarkets.Data
                         return dict;
                     }));
         }
+
+        public ICollection<Event> Roots { get { return _roots; } }
 
         public IEnumerator<KeyValuePair<Uid, Event>> GetEnumerator()
         {

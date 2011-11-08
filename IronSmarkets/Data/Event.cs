@@ -20,20 +20,34 @@
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+using System;
+using System.Collections.Generic;
+
 namespace IronSmarkets.Data
 {
     public class Event
     {
         private readonly EventInfo _info;
         private readonly IMarketMap _markets;
+        private readonly List<Event> _children =
+            new List<Event>();
 
         public EventInfo Info { get { return _info; } }
         public IMarketMap Markets { get { return _markets; } }
+        public ICollection<Event> Children { get { return _children.AsReadOnly(); } }
+
+        // Optional
+        public Event Parent { get; set; }
 
         private Event(EventInfo info, IMarketMap markets)
         {
             _info = info;
             _markets = markets;
+        }
+
+        public void AddChild(Event child)
+        {
+            _children.Add(child);
         }
 
         internal static Event FromSeto(Proto.Seto.EventInfo info)

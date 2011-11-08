@@ -58,7 +58,7 @@ namespace IronSmarkets.ConsoleExample
             var threads = new List<Thread>(pingers);
             foreach (var sleeper in Enumerable.Range(1, pingers))
             {
-                int sleeper1 = sleeper;
+                var sleeper1 = sleeper;
                 var t1 = new Thread(
                     () => {
                         Thread.Sleep(sleeper1 * 50);
@@ -92,9 +92,8 @@ namespace IronSmarkets.ConsoleExample
             builder.SetDateTime(DateTime.Today);
             var events = client.GetEvents(builder.GetResult()).Data;
             Log.Debug(string.Format("Got {0} events:", events.Count));
-            foreach (var topLevel in events.Roots)
-                foreach (var output in GetEventStrings(topLevel))
-                    Log.Debug(output);
+            foreach (var output in events.Roots.SelectMany(x => GetEventStrings(x)))
+                Log.Debug(output);
             return events;
         }
 
@@ -118,10 +117,11 @@ namespace IronSmarkets.ConsoleExample
                 child.Info.Name,
                 child.Info.Category);
             yield return sb.ToString();
-            int i = 0;
-            foreach (var grandchild in child.Children)
-                foreach (var grandchildString in GetEventStrings(grandchild, indent, i++ == child.Children.Count - 1))
-                    yield return grandchildString;
+            var i = 0;
+            foreach (var grandchildString in child.Children.SelectMany(
+                         grandchild => GetEventStrings(
+                             grandchild, indent, i++ == child.Children.Count - 1)))
+                yield return grandchildString;
         }
 
         static void Main(string[] args)

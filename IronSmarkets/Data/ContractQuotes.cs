@@ -23,21 +23,24 @@
 using System.Collections.Generic;
 using System.Linq;
 
+using IronSmarkets.Extensions;
+
 namespace IronSmarkets.Data
 {
     public class ContractQuotes
     {
         private readonly Uid _uid;
-        private readonly List<Quote> _bids;
-        private readonly List<Quote> _offers;
+        private readonly IDictionary<Price, Quote> _bids;
+        private readonly IDictionary<Price, Quote> _offers;
         private readonly List<Execution> _executions;
-        private readonly Execution? _lastExecution;
         private readonly PriceType _priceType;
         private readonly QuantityType _quantityType;
 
+        private Execution? _lastExecution;
+
         public Uid Uid { get { return _uid; } }
-        public IEnumerable<Quote> Bids { get { return _bids; } }
-        public IEnumerable<Quote> Offers { get { return _offers; } }
+        public IEnumerable<Quote> Bids { get { return _bids.Values; } }
+        public IEnumerable<Quote> Offers { get { return _offers.Values; } }
         public IEnumerable<Execution> Executions { get { return _executions; } }
         public Execution? LastExecution { get { return _lastExecution; } }
         public PriceType PriceType { get { return _priceType; } }
@@ -53,12 +56,47 @@ namespace IronSmarkets.Data
             QuantityType quantityType)
         {
             _uid = uid;
-            _bids = new List<Quote>(bids);
-            _offers = new List<Quote>(offers);
+            _bids = bids.ToDictionary(bid => bid.Price, bid => bid);
+            _offers = offers.ToDictionary(offer => offer.Price, offer => offer);
             _executions = new List<Execution>(executions);
             _lastExecution = lastExecution;
             _priceType = priceType;
             _quantityType = quantityType;
+        }
+
+        internal void UpdateFromSeto(Proto.Seto.ContractQuotes setoQuotes)
+        {
+            foreach (var bid in setoQuotes.Bids.Select(
+                         x => Quote.FromSeto(x, _priceType, _quantityType)))
+            {
+                if (bid.Quantity.Raw == 0)
+                {
+                    _bids.Remove(bid.Price);
+                }
+                else
+                {
+                    _bids[bid.Price] = bid;
+                }
+            }
+            foreach (var offer in setoQuotes.Offers.Select(
+                         x => Quote.FromSeto(x, _priceType, _quantityType)))
+            {
+                if (offer.Quantity.Raw == 0)
+                {
+                    _offers.Remove(offer.Price);
+                }
+                else
+                {
+                    _offers[offer.Price] = offer;
+                }
+            }
+            var newExecutions = setoQuotes.Executions.Select(
+                x => Execution.FromSeto(x, _priceType, _quantityType));
+            if (!newExecutions.IsEmpty())
+            {
+                _executions.AddRange(newExecutions);
+                _lastExecution = newExecutions.Last();
+            }
         }
 
         internal static ContractQuotes FromSeto(

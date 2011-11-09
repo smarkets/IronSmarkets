@@ -48,7 +48,7 @@ namespace IronSmarkets.Clients
         Response<AccountState> GetAccountState();
         Response<AccountState> GetAccountState(Uid account);
 
-        Response<MarketQuotes> GetMarketQuotes(Uid market);
+        Response<MarketQuotes> GetQuotesByMarket(Uid market);
     }
 
     public sealed class SmarketsClient : ISmarketsClient
@@ -315,12 +315,12 @@ namespace IronSmarkets.Clients
                         });
         }
 
-        public Response<MarketQuotes> GetMarketQuotes(Uid market)
+        public Response<MarketQuotes> GetQuotesByMarket(Uid market)
         {
             if (IsDisposed)
                 throw new ObjectDisposedException(
                     "SmarketsClient",
-                    "Called GetMarketQuotes on disposed object");
+                    "Called GetQuotesByMarket on disposed object");
 
             return _marketQuotesRequestHandler.Request(
                 market,

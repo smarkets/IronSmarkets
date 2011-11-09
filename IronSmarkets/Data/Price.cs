@@ -93,7 +93,7 @@ namespace IronSmarkets.Data
 
         public override string ToString()
         {
-            return Percent.ToString("#,#.00#%");
+            return Percent.ToString("#,0.00#%");
         }
 
         public bool Equals(Price other)

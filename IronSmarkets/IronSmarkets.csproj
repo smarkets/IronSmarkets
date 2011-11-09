@@ -107,6 +107,7 @@
     <Compile Include="Exceptions\NoHandlerException.cs" />
     <Compile Include="Exceptions\NotLoggedInException.cs" />
     <Compile Include="Exceptions\RequestTimedOutException.cs" />
+    <Compile Include="Extensions\IDictionary.cs" />
     <Compile Include="Extensions\IEnumerable.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Proto\Eto\Messages.cs" />

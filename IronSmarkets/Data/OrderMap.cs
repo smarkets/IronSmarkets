@@ -43,8 +43,7 @@ namespace IronSmarkets.Data
 
         public void Merge(IEnumerable<KeyValuePair<Uid, OrderState>> orders)
         {
-            foreach (var pair in orders)
-                Add(pair);
+            orders.ForAll(Add);
         }
 
         internal static IOrderMap FromSeto(Proto.Seto.OrdersForAccount orders)
@@ -59,28 +58,23 @@ namespace IronSmarkets.Data
 
         private void Add(Proto.Seto.OrdersForAccount orders)
         {
-            foreach (var state in orders.Markets)
-                Add(state);
+            orders.Markets.ForAll(Add);
         }
 
         private void Add(Proto.Seto.OrdersForMarket orders)
         {
-            foreach (var state in orders.Contracts)
-                Add(state);
+            orders.Contracts.ForAll(Add);
         }
 
         private void Add(Proto.Seto.OrdersForPrice orders)
         {
-            foreach (var state in orders.Orders)
-                Add(state);
+            orders.Orders.ForAll(Add);
         }
 
         private void Add(Proto.Seto.OrdersForContract orders)
         {
-            foreach (var state in orders.Bids)
-                Add(state);
-            foreach (var state in orders.Offers)
-                Add(state);
+            orders.Bids.ForAll(Add);
+            orders.Offers.ForAll(Add);
         }
 
         private void Add(Proto.Seto.OrderState state)
@@ -90,7 +84,7 @@ namespace IronSmarkets.Data
 
         private void Add(OrderState order)
         {
-            Add(order.Uid, order);
+            _inner.Add(order.Uid, order);
         }
     }
 }

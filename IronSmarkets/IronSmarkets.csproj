@@ -74,6 +74,7 @@
     <Compile Include="Clients\SyncRequest.cs" />
     <Compile Include="Clients\UidQueueRpcHandler.cs" />
     <Compile Include="Data\AccountState.cs" />
+    <Compile Include="Data\BiDictionary.cs" />
     <Compile Include="Data\Contract.cs" />
     <Compile Include="Data\ContractInfo.cs" />
     <Compile Include="Data\ContractMap.cs" />

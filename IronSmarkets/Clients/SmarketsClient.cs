@@ -49,6 +49,9 @@ namespace IronSmarkets.Clients
         Response<AccountState> GetAccountState(Uid account);
 
         Response<MarketQuotes> GetQuotesByMarket(Uid market);
+
+        Response<IOrderMap> GetOrders();
+        Response<IOrderMap> GetOrdersByMarket(Uid market);
     }
 
     public sealed class SmarketsClient : ISmarketsClient
@@ -63,6 +66,8 @@ namespace IronSmarkets.Clients
         private readonly SeqRpcHandler<Proto.Seto.Events, IEventMap> _eventsRequestHandler;
         private readonly SeqRpcHandler<Proto.Seto.AccountState, AccountState> _accountStateRequestHandler;
         private readonly UidQueueRpcHandler<Proto.Seto.MarketQuotes, MarketQuotes> _marketQuotesRequestHandler;
+        private readonly SeqRpcHandler<Proto.Seto.OrdersForAccount, IOrderMap> _ordersByAccountRequestHandler;
+        private readonly UidQueueRpcHandler<Proto.Seto.OrdersForMarket, IOrderMap> _ordersByMarketRequestHandler;
         private readonly HttpFoundHandler<Proto.Seto.Events> _httpHandler;
 
         private readonly QuoteHandler<Proto.Seto.MarketQuotes> _marketQuotesHandler =
@@ -97,6 +102,10 @@ namespace IronSmarkets.Clients
                 this, AccountState.FromSeto, (req, payload) => { req.Response = payload.AccountState; });
             _marketQuotesRequestHandler = new UidQueueRpcHandler<Proto.Seto.MarketQuotes, MarketQuotes>(
                 this, MarketQuotes.FromSeto, (req, payload) => { req.Response = payload.MarketQuotes; });
+            _ordersByAccountRequestHandler = new SeqRpcHandler<Proto.Seto.OrdersForAccount, IOrderMap>(
+                this, OrderMap.FromSeto, (req, payload) => { req.Response = payload.OrdersForAccount; });
+            _ordersByMarketRequestHandler = new UidQueueRpcHandler<Proto.Seto.OrdersForMarket, IOrderMap>(
+                this, OrderMap.FromSeto, (req, payload) => { req.Response = payload.OrdersForMarket; });
         }
 
         public static ISmarketsClient Create(IClientSettings settings)
@@ -332,6 +341,37 @@ namespace IronSmarkets.Clients
                 });
         }
 
+        public Response<IOrderMap> GetOrders()
+        {
+            if (IsDisposed)
+                throw new ObjectDisposedException(
+                    "SmarketsClient",
+                    "Called GetOrdersByAccount on disposed object");
+
+            return _ordersByAccountRequestHandler.Request(
+                new Proto.Seto.Payload {
+                    Type = Proto.Seto.PayloadType.PAYLOADORDERSFORACCOUNTREQUEST,
+                    OrdersForAccountRequest = new Proto.Seto.OrdersForAccountRequest()
+                });
+        }
+
+        public Response<IOrderMap> GetOrdersByMarket(Uid market)
+        {
+            if (IsDisposed)
+                throw new ObjectDisposedException(
+                    "SmarketsClient",
+                    "Called GetOrdersByMarket on disposed object");
+
+            return _ordersByMarketRequestHandler.Request(
+                market,
+                new Proto.Seto.Payload {
+                    Type = Proto.Seto.PayloadType.PAYLOADORDERSFORMARKETREQUEST,
+                        OrdersForMarketRequest = new Proto.Seto.OrdersForMarketRequest {
+                        Market = market.ToUuid128()
+                    }
+                });
+        }
+
         private void OnPayloadReceived(Proto.Seto.Payload payload)
         {
             EventHandler<PayloadReceivedEventArgs<Proto.Seto.Payload>> ev = PayloadReceived;
@@ -370,6 +410,14 @@ namespace IronSmarkets.Clients
                     break;
                 case Proto.Seto.PayloadType.PAYLOADCONTRACTQUOTES:
                     _contractQuotesHandler.Handle(payload);
+                    break;
+                case Proto.Seto.PayloadType.PAYLOADORDERSFORMARKET:
+                    _ordersByMarketRequestHandler.Handle(
+                        Uid.FromUuid128(payload.OrdersForMarket.Market),
+                        payload);
+                    break;
+                case Proto.Seto.PayloadType.PAYLOADORDERSFORACCOUNT:
+                    _ordersByAccountRequestHandler.Handle(payload);
                     break;
             }
 

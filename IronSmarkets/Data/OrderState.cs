@@ -87,7 +87,7 @@ namespace IronSmarkets.Data
             _quantityFilled = quantityFilled;
         }
 
-        internal OrderState FromSeto(Proto.Seto.OrderState state)
+        internal static OrderState FromSeto(Proto.Seto.OrderState state)
         {
             var quantityType = Quantity.QuantityTypeFromSeto(state.QuantityType);
             return new OrderState(

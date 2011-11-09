@@ -1,6 +1,6 @@
 #!/bin/sh
 
 # Mono, why u no support Client profile?
-xbuild /p:TargetFrameworkProfile="" IronSmarkets/IronSmarkets.csproj
-xbuild /p:TargetFrameworkProfile="" IronSmarkets.ConsoleExample/IronSmarkets.ConsoleExample.csproj
-xbuild /p:TargetFrameworkProfile="" IronSmarkets.Tests/IronSmarkets.Tests.csproj
+xbuild /verbosity:minimal /tv:4.0 /p:TargetFrameworkProfile="" IronSmarkets/IronSmarkets.csproj
+xbuild /verbosity:minimal /tv:4.0 /p:TargetFrameworkProfile="" IronSmarkets.ConsoleExample/IronSmarkets.ConsoleExample.csproj
+xbuild /verbosity:minimal /tv:4.0 /p:TargetFrameworkProfile="" IronSmarkets.Tests/IronSmarkets.Tests.csproj

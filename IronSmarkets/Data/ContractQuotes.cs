@@ -57,8 +57,8 @@ namespace IronSmarkets.Data
             QuantityType quantityType)
         {
             _uid = uid;
-            _bids = bids.ToDictionary(bid => bid.Price, bid => bid);
-            _offers = offers.ToDictionary(offer => offer.Price, offer => offer);
+            _bids = GetQuoteDict(bids, Price.BidOrder);
+            _offers = GetQuoteDict(offers, Price.OfferOrder);
             _executions = new List<Execution>(executions);
             _lastExecution = lastExecution;
             _priceType = priceType;
@@ -111,6 +111,21 @@ namespace IronSmarkets.Data
                 Execution.MaybeFromSeto(setoQuotes.LastExecution, priceType, quantityType),
                 priceType,
                 quantityType);
+        }
+
+        /// <summary>
+        ///   Returns a `SortedDictionary<Price, Quote>` of
+        ///   `quotes`. We use a `SortedDictionary<TKey, TValue>` here
+        ///   because insertion/removal is O(log n) instead of
+        ///   O(n). Fast indexed retrieval isn't really necessary for
+        ///   most use cases of `ContractQuotes`.
+        /// </summary>
+        private static IDictionary<Price, Quote> GetQuoteDict(
+            IEnumerable<Quote> quotes, IComparer<Price> comparer)
+        {
+            return new SortedDictionary<Price, Quote>(
+                quotes.ToDictionary(quote => quote.Price, quote => quote),
+                comparer);
         }
 
         private static Func<Proto.Seto.Quote, Quote> QuoteFromSeto(

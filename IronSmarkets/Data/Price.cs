@@ -23,6 +23,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 
 namespace IronSmarkets.Data
 {
@@ -62,6 +63,7 @@ namespace IronSmarkets.Data
 
         public uint Raw { get { return _raw; } }
         public decimal Percent { get { return _raw / Divisor; } }
+        public decimal Decimal { get { return EuropeanTable.RawToDecimal(_raw); } }
 
         public Price(PriceType type, uint raw)
         {
@@ -109,6 +111,21 @@ namespace IronSmarkets.Data
         public static bool operator!=(Price left, Price right)
         {
             return !left.Equals(right);
+        }
+
+        public static Price FromDecimal(decimal odds)
+        {
+            return new Price(
+                PriceType.PercentOdds,
+                EuropeanTable.DecimalToRaw(odds));
+        }
+
+        public static IEnumerable<decimal> ValidDecimals
+        {
+            get
+            {
+                return EuropeanTable.Odds.Select(x => x.Key);
+            }
         }
 
         internal static PriceType PriceTypeFromSeto(Proto.Seto.PriceType type)

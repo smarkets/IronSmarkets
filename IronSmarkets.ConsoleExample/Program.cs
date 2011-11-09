@@ -84,6 +84,16 @@ namespace IronSmarkets.ConsoleExample
             }
         }
 
+        static void PrintOrders(ISmarketsClient client)
+        {
+            var map = client.GetOrders().Data;
+            foreach (var order in map.Values)
+                Log.Debug(
+                    string.Format(
+                        "{0} => {1}@{2}",
+                        order.Uid, order.State.Quantity, order.Price));
+        }
+
         static IEventMap GetEvents(ISmarketsClient client)
         {
             var builder = new EventQueryBuilder();

@@ -31,12 +31,30 @@ namespace IronSmarkets.Data
         PercentOdds
     }
 
+    internal class BidOrder : IComparer<Price>
+    {
+        public int Compare(Price left, Price right)
+        {
+            return right.Raw.CompareTo(left.Raw);
+        }
+    }
+
+    internal class OfferOrder : IComparer<Price>
+    {
+        public int Compare(Price left, Price right)
+        {
+            return left.Raw.CompareTo(right.Raw);
+        }
+    }
+
     public struct Price : IEquatable<Price>
     {
         private static readonly IDictionary<Proto.Seto.PriceType, PriceType> PriceTypes =
             new Dictionary<Proto.Seto.PriceType, PriceType> {
             { Proto.Seto.PriceType.PRICEPERCENTODDS, PriceType.PercentOdds }
         };
+        internal static readonly IComparer<Price> BidOrder = new BidOrder();
+        internal static readonly IComparer<Price> OfferOrder = new OfferOrder();
 
         private const decimal Divisor = 10000m;
         private readonly uint _raw;

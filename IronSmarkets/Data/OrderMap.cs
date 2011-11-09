@@ -26,22 +26,22 @@ using IronSmarkets.Extensions;
 
 namespace IronSmarkets.Data
 {
-    public interface IOrderMap : IReadOnlyMap<Uid, OrderState>
+    public interface IOrderMap : IReadOnlyMap<Uid, Order>
     {
-        void Merge(IEnumerable<KeyValuePair<Uid, OrderState>> orders);
+        void Merge(IEnumerable<KeyValuePair<Uid, Order>> orders);
     }
 
-    internal sealed class OrderMap : ReadOnlyDictionaryWrapper<Uid, OrderState>, IOrderMap
+    internal sealed class OrderMap : ReadOnlyDictionaryWrapper<Uid, Order>, IOrderMap
     {
-        private OrderMap() : base(new Dictionary<Uid, OrderState>())
+        private OrderMap() : base(new Dictionary<Uid, Order>())
         {
         }
 
-        private OrderMap(IDictionary<Uid, OrderState> orders) : base(orders)
+        private OrderMap(IDictionary<Uid, Order> orders) : base(orders)
         {
         }
 
-        public void Merge(IEnumerable<KeyValuePair<Uid, OrderState>> orders)
+        public void Merge(IEnumerable<KeyValuePair<Uid, Order>> orders)
         {
             orders.ForAll(Add);
         }
@@ -63,26 +63,21 @@ namespace IronSmarkets.Data
 
         private void Add(Proto.Seto.OrdersForMarket orders)
         {
-            orders.Contracts.ForAll(Add);
+            orders.Contracts.ForAll(x => Add(x, orders.PriceType));
         }
 
-        private void Add(Proto.Seto.OrdersForPrice orders)
+        private void Add(Proto.Seto.OrdersForContract orders, Proto.Seto.PriceType priceType)
         {
-            orders.Orders.ForAll(Add);
+            orders.Bids.ForAll(x => Add(x, priceType));
+            orders.Offers.ForAll(x => Add(x, priceType));
         }
 
-        private void Add(Proto.Seto.OrdersForContract orders)
+        private void Add(Proto.Seto.OrdersForPrice orders, Proto.Seto.PriceType priceType)
         {
-            orders.Bids.ForAll(Add);
-            orders.Offers.ForAll(Add);
+            orders.Orders.ForAll(x => Add(Order.FromSeto(x, priceType, orders.Price)));
         }
 
-        private void Add(Proto.Seto.OrderState state)
-        {
-            Add(OrderState.FromSeto(state));
-        }
-
-        private void Add(OrderState order)
+        private void Add(Order order)
         {
             _inner.Add(order.Uid, order);
         }

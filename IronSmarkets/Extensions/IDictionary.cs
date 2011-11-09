@@ -40,7 +40,7 @@ namespace IronSmarkets.Extensions
     internal class ReadOnlyDictionaryWrapper<TKey, TValue> :
         IDictionary<TKey, TValue>, IReadOnlyMap<TKey, TValue>
     {
-        private readonly IDictionary<TKey, TValue> _inner;
+        protected readonly IDictionary<TKey, TValue> _inner;
 
         public ReadOnlyDictionaryWrapper(IDictionary<TKey, TValue> inner)
         {

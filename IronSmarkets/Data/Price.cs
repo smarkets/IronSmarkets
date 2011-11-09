@@ -70,6 +70,11 @@ namespace IronSmarkets.Data
             _raw = raw;
         }
 
+        internal Price(Proto.Seto.PriceType type, uint raw)
+            : this(PriceTypes[type], raw)
+        {
+        }
+
         public override int GetHashCode()
         {
             return _type.GetHashCode() ^ _raw.GetHashCode();

@@ -20,7 +20,6 @@
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -34,14 +33,14 @@ namespace IronSmarkets.Data
         ICollection<Event> Roots { get; }
     }
 
-    internal class EventMap : IEventMap
+    internal class EventMap : ReadOnlyDictionaryWrapper<Uid, Event>, IEventMap
     {
-        private readonly IDictionary<Uid, Event> _events;
         private readonly IList<Event> _roots;
 
-        private EventMap(IDictionary<Uid, Event> events)
+        public ICollection<Event> Roots { get { return _roots; } }
+
+        private EventMap(IDictionary<Uid, Event> events) : base(events)
         {
-            _events = events;
             _roots = new List<Event>(
                 Values.Where(ev => !ev.Info.ParentUid.HasValue)).AsReadOnly();
             Values
@@ -65,58 +64,6 @@ namespace IronSmarkets.Data
                         dict[ev.Info.Uid] = ev;
                         return dict;
                     }));
-        }
-
-        public ICollection<Event> Roots { get { return _roots; } }
-
-        public IEnumerator<KeyValuePair<Uid, Event>> GetEnumerator()
-        {
-            return _events.GetEnumerator();
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
-
-        public bool Contains(KeyValuePair<Uid, Event> item)
-        {
-            return _events.Contains(item);
-        }
-
-        public void CopyTo(KeyValuePair<Uid, Event>[] array, int arrayIndex)
-        {
-            _events.CopyTo(array, arrayIndex);
-        }
-
-        public int Count
-        {
-            get { return _events.Count; }
-        }
-
-        public bool ContainsKey(Uid key)
-        {
-            return _events.ContainsKey(key);
-        }
-
-        public bool TryGetValue(Uid key, out Event value)
-        {
-            return _events.TryGetValue(key, out value);
-        }
-
-        public Event this[Uid key]
-        {
-            get { return _events[key]; }
-        }
-
-        public ICollection<Uid> Keys
-        {
-            get { return _events.Keys; }
-        }
-
-        public ICollection<Event> Values
-        {
-            get { return _events.Values; }
         }
     }
 }

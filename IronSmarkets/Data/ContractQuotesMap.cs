@@ -20,9 +20,10 @@
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+
+using IronSmarkets.Extensions;
 
 namespace IronSmarkets.Data
 {
@@ -30,13 +31,10 @@ namespace IronSmarkets.Data
     {
     }
 
-    internal class ContractQuotesMap : IContractQuotesMap
+    internal class ContractQuotesMap : ReadOnlyDictionaryWrapper<Uid, ContractQuotes>, IContractQuotesMap
     {
-        private readonly IDictionary<Uid, ContractQuotes> _contractQuotes;
-
-        private ContractQuotesMap(IDictionary<Uid, ContractQuotes> contractQuotes)
+        private ContractQuotesMap(IDictionary<Uid, ContractQuotes> contractQuotes) : base(contractQuotes)
         {
-            _contractQuotes = contractQuotes;
         }
 
         internal static IContractQuotesMap FromSeto(
@@ -53,57 +51,6 @@ namespace IronSmarkets.Data
                         dict[cq.Uid] = cq;
                         return dict;
                     }));
-        }
-
-        public IEnumerator<KeyValuePair<Uid, ContractQuotes>> GetEnumerator()
-        {
-            return _contractQuotes.GetEnumerator();
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
-
-        public bool Contains(KeyValuePair<Uid, ContractQuotes> item)
-        {
-            return _contractQuotes.Contains(item);
-        }
-
-        public void CopyTo(KeyValuePair<Uid, ContractQuotes>[] array, int arrayIndex)
-        {
-            _contractQuotes.CopyTo(array, arrayIndex);
-        }
-
-        public int Count
-        {
-            get { return _contractQuotes.Count; }
-        }
-
-        public bool ContainsKey(Uid key)
-        {
-            return _contractQuotes.ContainsKey(key);
-        }
-
-        public bool TryGetValue(Uid key, out ContractQuotes value)
-        {
-            return _contractQuotes.TryGetValue(key, out value);
-        }
-
-        public ContractQuotes this[Uid key]
-        {
-            get { return _contractQuotes[key]; }
-            set { _contractQuotes[key] = value; }
-        }
-
-        public ICollection<Uid> Keys
-        {
-            get { return _contractQuotes.Keys; }
-        }
-
-        public ICollection<ContractQuotes> Values
-        {
-            get { return _contractQuotes.Values; }
         }
     }
 }

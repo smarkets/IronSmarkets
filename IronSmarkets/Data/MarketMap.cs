@@ -20,9 +20,10 @@
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+
+using IronSmarkets.Extensions;
 
 namespace IronSmarkets.Data
 {
@@ -30,13 +31,10 @@ namespace IronSmarkets.Data
     {
     }
 
-    internal class MarketMap : IMarketMap
+    internal class MarketMap : ReadOnlyDictionaryWrapper<Uid, Market>, IMarketMap
     {
-        private readonly IDictionary<Uid, Market> _markets;
-
-        private MarketMap(IDictionary<Uid, Market> markets)
+        private MarketMap(IDictionary<Uid, Market> markets) : base(markets)
         {
-            _markets = markets;
         }
 
         public static IMarketMap FromMarkets(IEnumerable<Proto.Seto.MarketInfo> setoMarkets)
@@ -49,56 +47,6 @@ namespace IronSmarkets.Data
                         dict[market.Info.Uid] = market;
                         return dict;
                     }));
-        }
-
-        public IEnumerator<KeyValuePair<Uid, Market>> GetEnumerator()
-        {
-            return _markets.GetEnumerator();
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
-
-        public bool Contains(KeyValuePair<Uid, Market> item)
-        {
-            return _markets.Contains(item);
-        }
-
-        public void CopyTo(KeyValuePair<Uid, Market>[] array, int arrayIndex)
-        {
-            _markets.CopyTo(array, arrayIndex);
-        }
-
-        public int Count
-        {
-            get { return _markets.Count; }
-        }
-
-        public bool ContainsKey(Uid key)
-        {
-            return _markets.ContainsKey(key);
-        }
-
-        public bool TryGetValue(Uid key, out Market value)
-        {
-            return _markets.TryGetValue(key, out value);
-        }
-
-        public Market this[Uid key]
-        {
-            get { return _markets[key]; }
-        }
-
-        public ICollection<Uid> Keys
-        {
-            get { return _markets.Keys; }
-        }
-
-        public ICollection<Market> Values
-        {
-            get { return _markets.Values; }
         }
     }
 }

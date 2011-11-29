@@ -71,7 +71,9 @@
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ClientTests.cs" />
+    <Compile Include="CurrencyTests.cs" />
     <Compile Include="DecimalOddsTests.cs" />
+    <Compile Include="MoneyTests.cs" />
     <Compile Include="UidTests.cs" />
   </ItemGroup>
   <ItemGroup>

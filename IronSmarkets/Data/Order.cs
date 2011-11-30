@@ -34,6 +34,16 @@ namespace IronSmarkets.Data
         public Price Price { get { return _price; } }
         public OrderState State { get { return _state; } }
 
+        public bool Cancellable
+        {
+            get
+            {
+                return State.Status == OrderStatus.Pending
+                    || State.Status == OrderStatus.Live
+                    || State.Status == OrderStatus.PartiallyFilled;
+            }
+        }
+
         private Order(Price price, OrderState state)
         {
             _price = price;

@@ -320,6 +320,20 @@ namespace IronSmarkets.Sessions
                     _inSequence++;
                     if (payload.IsLogoutConfirmation())
                         _logoutReceived.Set();
+
+                    if (payload.EtoPayload.Type == Eto.PayloadType.PAYLOADHEARTBEAT)
+                    {
+                        if (Log.IsDebugEnabled) Log.Debug(
+                            string.Format(
+                                "Received heartbeat, sending heartbeat"));
+                        Send(new Payload {
+                                Type = PayloadType.PAYLOADETO,
+                                EtoPayload = new Eto.Payload {
+                                    Type = Eto.PayloadType.PAYLOADHEARTBEAT
+                                }
+                            });
+                    }
+
                     return payload;
                 }
 

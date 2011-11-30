@@ -52,6 +52,8 @@ namespace IronSmarkets.Clients
 
         Response<IOrderMap> GetOrders();
         Response<IOrderMap> GetOrdersByMarket(Uid market);
+
+        void CancelOrder(Order order);
     }
 
     public sealed class SmarketsClient : ISmarketsClient
@@ -368,6 +370,27 @@ namespace IronSmarkets.Clients
                     Type = Proto.Seto.PayloadType.PAYLOADORDERSFORMARKETREQUEST,
                         OrdersForMarketRequest = new Proto.Seto.OrdersForMarketRequest {
                         Market = market.ToUuid128()
+                    }
+                });
+        }
+
+        public void CancelOrder(Order order)
+        {
+            if (IsDisposed)
+                throw new ObjectDisposedException(
+                    "SmarketsClient",
+                    "Called CancelOrder on disposed object");
+
+            if (!order.Cancellable)
+                throw new InvalidOperationException(
+                    string.Format(
+                        "Order cannot be cancelled: {0}", order.State.Status));
+
+            SendPayload(
+                new Proto.Seto.Payload {
+                    Type = Proto.Seto.PayloadType.PAYLOADORDERCANCEL,
+                        OrderCancel = new Proto.Seto.OrderCancel {
+                        Order = order.Uid.ToUuid128()
                     }
                 });
         }

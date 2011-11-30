@@ -26,46 +26,46 @@ using System.Diagnostics;
 
 namespace IronSmarkets.Data
 {
-    public enum QuantityType
+    public struct CurrencyQuantity : IEquatable<CurrencyQuantity>
     {
-        PayoffCurrency
-    }
+        private readonly Quantity _quantity;
+        private readonly Currency _currency;
 
-    public struct Quantity : IEquatable<Quantity>
-    {
-        private static readonly IDictionary<Proto.Seto.QuantityType, QuantityType> QuantityTypes =
-            new Dictionary<Proto.Seto.QuantityType, QuantityType>
-            {
-                { Proto.Seto.QuantityType.QUANTITYPAYOFFCURRENCY, QuantityType.PayoffCurrency }
-            };
+        public Quantity Quantity { get { return _quantity; } }
+        public Currency Currency { get { return _currency; } }
 
-        private const decimal Divisor = 10000.0000m;
-        private readonly uint _raw;
-        private readonly QuantityType _type;
-
-        public uint Raw { get { return _raw; } }
-        public decimal MoneyUnits { get { return _raw / Divisor; } }
-        public QuantityType Type { get { return _type; } }
-
-        public Quantity(QuantityType type, uint raw)
+        public CurrencyQuantity(Quantity quantity, Currency currency)
         {
-            Debug.Assert(type == QuantityType.PayoffCurrency);
-            _type = type;
-            _raw = raw;
+            if (quantity.Type != QuantityType.PayoffCurrency)
+                throw new ArgumentException(
+                    "Quantity must be of type PayoffCurrency");
+            _quantity = quantity;
+            _currency = currency;
         }
 
-        public Quantity(QuantityType type, decimal currency) : this(type, (uint)(currency * Divisor))
+        /// <summary>
+        ///   Calculates the buyer's liability for this quantity.
+        /// </summary>
+        public Money BuyLiability(Price price)
         {
+            return new Money(price.Percent * _quantity.MoneyUnits, _currency);
+        }
+
+        public Money SellLiability(Price price)
+        {
+            var moneyUnits = new Money(_quantity.MoneyUnits, _currency);
+            var buyLiability = BuyLiability(price);
+            return moneyUnits  - buyLiability;
         }
 
         public override int GetHashCode()
         {
-            return _type.GetHashCode() ^ _raw.GetHashCode();
+            return _quantity.GetHashCode() ^ _currency.GetHashCode();
         }
 
         public override string ToString()
         {
-            return MoneyUnits.ToString("#,#.00#");
+            return new Money(_quantity.MoneyUnits, _currency).ToString();
         }
 
         public override bool Equals(object right)
@@ -76,27 +76,23 @@ namespace IronSmarkets.Data
             if (GetType() != right.GetType())
                 return false;
 
-            return Equals((Quantity)right);
+            return Equals((CurrencyQuantity)right);
         }
 
-        public bool Equals(Quantity other)
+        public bool Equals(CurrencyQuantity other)
         {
-            return _type == other._type && _raw == other._raw;
+            return _quantity == other._quantity
+                && _currency == other._currency;
         }
 
-        public static bool operator==(Quantity left, Quantity right)
+        public static bool operator==(CurrencyQuantity left, CurrencyQuantity right)
         {
             return left.Equals(right);
         }
 
-        public static bool operator!=(Quantity left, Quantity right)
+        public static bool operator!=(CurrencyQuantity left, CurrencyQuantity right)
         {
             return !left.Equals(right);
-        }
-
-        internal static QuantityType QuantityTypeFromSeto(Proto.Seto.QuantityType type)
-        {
-            return QuantityTypes[type];
         }
     }
 }

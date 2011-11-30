@@ -88,10 +88,17 @@ namespace IronSmarkets.ConsoleExample
         {
             var map = client.GetOrders().Data;
             foreach (var order in map.Values)
+            {
+                var cqty = new CurrencyQuantity(order.State.Quantity, Currency.Gbp);
                 Log.Debug(
                     string.Format(
-                        "{0} => {1}@{2}",
-                        order.Uid, order.State.Quantity, order.Price));
+                        "{0} => {1}@{2} ({3} buyer liability, {4} seller liability)",
+                        order.Uid,
+                        order.State.Quantity,
+                        order.Price,
+                        cqty.BuyLiability(order.Price),
+                        cqty.SellLiability(order.Price)));
+            }
         }
 
         static IEventMap GetEvents(ISmarketsClient client)

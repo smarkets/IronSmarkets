@@ -28,6 +28,8 @@ namespace IronSmarkets.Data
 {
     internal abstract class SetoMap
     {
+        private const long SinceGregorian = 621355968000000000;
+
         public static DateTime? FromDateTime(Date date, Time time)
         {
             if (date == null)
@@ -55,8 +57,13 @@ namespace IronSmarkets.Data
 
         public static DateTime FromMicroseconds(ulong erlangTicks)
         {
-            const long sinceGregorian = 621355968000000000;
-            return new DateTime((long)erlangTicks * 10 + sinceGregorian, DateTimeKind.Utc);
+            return new DateTime((long)erlangTicks * 10 + SinceGregorian, DateTimeKind.Utc);
+        }
+
+        public static ulong ToMicroseconds(DateTime dateTime)
+        {
+            var utc = dateTime.ToUniversalTime();
+            return (ulong)((utc.Ticks - SinceGregorian) / 10);
         }
     }
 }

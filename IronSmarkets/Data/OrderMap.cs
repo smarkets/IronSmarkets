@@ -63,18 +63,23 @@ namespace IronSmarkets.Data
 
         private void Add(Proto.Seto.OrdersForMarket orders)
         {
-            orders.Contracts.ForAll(x => Add(x, orders.PriceType));
+            orders.Contracts.ForAll(x => Add(x, orders.Market, orders.PriceType));
         }
 
-        private void Add(Proto.Seto.OrdersForContract orders, Proto.Seto.PriceType priceType)
+        private void Add(Proto.Seto.OrdersForContract orders, Proto.Seto.Uuid128 market, Proto.Seto.PriceType priceType)
         {
-            orders.Bids.ForAll(x => Add(x, priceType));
-            orders.Offers.ForAll(x => Add(x, priceType));
+            orders.Bids.ForAll(x => Add(x, market, orders.Contract, Proto.Seto.Side.SIDEBUY, priceType));
+            orders.Offers.ForAll(x => Add(x, market, orders.Contract, Proto.Seto.Side.SIDESELL, priceType));
         }
 
-        private void Add(Proto.Seto.OrdersForPrice orders, Proto.Seto.PriceType priceType)
+        private void Add(
+            Proto.Seto.OrdersForPrice orders,
+            Proto.Seto.Uuid128 market,
+            Proto.Seto.Uuid128 contract,
+            Proto.Seto.Side side,
+            Proto.Seto.PriceType priceType)
         {
-            orders.Orders.ForAll(x => Add(Order.FromSeto(x, priceType, orders.Price)));
+            orders.Orders.ForAll(x => Add(Order.FromSeto(x, priceType, orders.Price, market, contract, side)));
         }
 
         private void Add(Order order)

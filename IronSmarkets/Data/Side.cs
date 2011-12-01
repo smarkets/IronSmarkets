@@ -67,6 +67,11 @@ namespace IronSmarkets.Data
             return _side == "buy" ? Proto.Seto.Side.SIDEBUY : Proto.Seto.Side.SIDESELL;
         }
 
+        internal static Side FromSeto(Proto.Seto.Side side)
+        {
+            return side == Proto.Seto.Side.SIDEBUY ? Buy : Sell;
+        }
+
         public static bool operator==(Side left, Side right)
         {
             return left.Equals(right);

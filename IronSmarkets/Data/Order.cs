@@ -27,6 +27,9 @@ namespace IronSmarkets.Data
         public Uid Uid { get { return State.Uid; } }
         public Price Price { get; private set; }
         public OrderState State { get; private set; }
+        public Uid Market { get; private set; }
+        public Uid Contract { get; private set; }
+        public Side Side { get; private set; }
 
         public bool Cancellable
         {
@@ -38,20 +41,30 @@ namespace IronSmarkets.Data
             }
         }
 
-        internal Order(Price price, OrderState state)
+        internal Order(
+            Price price, OrderState state, Uid market, Uid contract, Side side)
         {
             Price = price;
             State = state;
+            Market = market;
+            Contract = contract;
+            Side = side;
         }
 
         internal static Order FromSeto(
             Proto.Seto.OrderState state,
             Proto.Seto.PriceType priceType,
-            uint price)
+            uint price,
+            Proto.Seto.Uuid128 market,
+            Proto.Seto.Uuid128 contract,
+            Proto.Seto.Side side)
         {
             return new Order(
                 new Price(priceType, price),
-                OrderState.FromSeto(state));
+                OrderState.FromSeto(state),
+                Uid.FromUuid128(market),
+                Uid.FromUuid128(contract),
+                Side.FromSeto(side));
         }
     }
 }

@@ -56,7 +56,8 @@ namespace IronSmarkets.Data
                     OrderStatus.Pending,
                     Quantity,
                     SetoMap.ToMicroseconds(DateTime.UtcNow),
-                    new Quantity(Quantity.Type, 0)));
+                    new Quantity(Quantity.Type, 0)),
+                Market, Contract, Side);
         }
     }
 }

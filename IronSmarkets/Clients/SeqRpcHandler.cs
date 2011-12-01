@@ -27,7 +27,7 @@ using log4net;
 
 namespace IronSmarkets.Clients
 {
-    internal sealed class SeqRpcHandler<TPayload, TResponse>
+    internal class SeqRpcHandler<TPayload, TResponse>
     {
         private static readonly ILog Log = LogManager.GetLogger(
             System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);

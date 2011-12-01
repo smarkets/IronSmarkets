@@ -108,6 +108,8 @@
     <Compile Include="Events\IPayloadEvents.cs" />
     <Compile Include="Exceptions\ConnectionException.cs" />
     <Compile Include="Exceptions\LoginFailedException.cs" />
+    <Compile Include="Exceptions\OrderInvalidException.cs" />
+    <Compile Include="Exceptions\OrderRejectedException.cs" />
     <Compile Include="Exceptions\MessageStreamException.cs" />
     <Compile Include="Exceptions\NoHandlerException.cs" />
     <Compile Include="Exceptions\NotLoggedInException.cs" />

@@ -50,7 +50,7 @@ namespace IronSmarkets.Clients
             _extract = extract;
         }
 
-        public Response<TResponse> Request(Proto.Seto.Payload payload)
+        public SyncRequest<TPayload> BeginRequest(Proto.Seto.Payload payload)
         {
             var req = new SyncRequest<TPayload>();
             lock (_lock)
@@ -69,6 +69,12 @@ namespace IronSmarkets.Clients
                 _client.SendPayload(payload);
                 _requests[payload.EtoPayload.Seq] = req;
             }
+            return req;
+        }
+
+        public Response<TResponse> Request(Proto.Seto.Payload payload)
+        {
+            var req = BeginRequest(payload);
             return new Response<TResponse>(
                 payload.EtoPayload.Seq,
                 _map(req.Response));

@@ -54,6 +54,7 @@ namespace IronSmarkets.Clients
         Response<IOrderMap> GetOrdersByMarket(Uid market);
 
         void CancelOrder(Order order);
+        Response<Order> CreateOrder(NewOrder order);
     }
 
     public sealed class SmarketsClient : ISmarketsClient
@@ -70,6 +71,7 @@ namespace IronSmarkets.Clients
         private readonly UidQueueRpcHandler<Proto.Seto.MarketQuotes, MarketQuotes> _marketQuotesRequestHandler;
         private readonly SeqRpcHandler<Proto.Seto.OrdersForAccount, IOrderMap> _ordersByAccountRequestHandler;
         private readonly UidQueueRpcHandler<Proto.Seto.OrdersForMarket, IOrderMap> _ordersByMarketRequestHandler;
+        private readonly OrderCreateRequestHandler _orderCreateRequestHandler;
         private readonly HttpFoundHandler<Proto.Seto.Events> _httpHandler;
 
         private readonly QuoteHandler<Proto.Seto.MarketQuotes> _marketQuotesHandler =
@@ -108,6 +110,7 @@ namespace IronSmarkets.Clients
                 this, OrderMap.FromSeto, (req, payload) => { req.Response = payload.OrdersForAccount; });
             _ordersByMarketRequestHandler = new UidQueueRpcHandler<Proto.Seto.OrdersForMarket, IOrderMap>(
                 this, OrderMap.FromSeto, (req, payload) => { req.Response = payload.OrdersForMarket; });
+            _orderCreateRequestHandler = new OrderCreateRequestHandler(this);
         }
 
         public static ISmarketsClient Create(IClientSettings settings)
@@ -395,6 +398,16 @@ namespace IronSmarkets.Clients
                 });
         }
 
+        public Response<Order> CreateOrder(NewOrder order)
+        {
+            if (IsDisposed)
+                throw new ObjectDisposedException(
+                    "SmarketsClient",
+                    "Called CreateOrder on disposed object");
+
+            return _orderCreateRequestHandler.Request(order);
+        }
+
         private void OnPayloadReceived(Proto.Seto.Payload payload)
         {
             EventHandler<PayloadReceivedEventArgs<Proto.Seto.Payload>> ev = PayloadReceived;
@@ -441,6 +454,11 @@ namespace IronSmarkets.Clients
                     break;
                 case Proto.Seto.PayloadType.PAYLOADORDERSFORACCOUNT:
                     _ordersByAccountRequestHandler.Handle(payload);
+                    break;
+                case Proto.Seto.PayloadType.PAYLOADORDERACCEPTED:
+                case Proto.Seto.PayloadType.PAYLOADORDERREJECTED:
+                case Proto.Seto.PayloadType.PAYLOADORDERINVALID:
+                    _orderCreateRequestHandler.Handle(payload);
                     break;
             }
 

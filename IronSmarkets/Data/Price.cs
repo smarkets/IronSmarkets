@@ -50,8 +50,8 @@ namespace IronSmarkets.Data
 
     public struct Price : IEquatable<Price>
     {
-        private static readonly IDictionary<Proto.Seto.PriceType, PriceType> PriceTypes =
-            new Dictionary<Proto.Seto.PriceType, PriceType> {
+        private static readonly BiDictionary<Proto.Seto.PriceType, PriceType> PriceTypes =
+            new BiDictionary<Proto.Seto.PriceType, PriceType> {
             { Proto.Seto.PriceType.PRICEPERCENTODDS, PriceType.PercentOdds }
         };
         internal static readonly IComparer<Price> BidOrder = new BidOrder();
@@ -64,6 +64,14 @@ namespace IronSmarkets.Data
         public uint Raw { get { return _raw; } }
         public decimal Percent { get { return _raw / Divisor; } }
         public decimal Decimal { get { return EuropeanTable.RawToDecimal(_raw); } }
+
+        internal Proto.Seto.PriceType SetoType
+        {
+            get
+            {
+                return PriceTypes[_type];
+            }
+        }
 
         public Price(PriceType type, uint raw)
         {

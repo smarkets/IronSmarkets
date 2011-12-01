@@ -96,6 +96,7 @@
     <Compile Include="Data\MarketMap.cs" />
     <Compile Include="Data\MarketQuotes.cs" />
     <Compile Include="Data\Money.cs" />
+    <Compile Include="Data\NewOrder.cs" />
     <Compile Include="Data\Order.cs" />
     <Compile Include="Data\OrderMap.cs" />
     <Compile Include="Data\OrderState.cs" />

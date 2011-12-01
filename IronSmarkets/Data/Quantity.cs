@@ -33,8 +33,8 @@ namespace IronSmarkets.Data
 
     public struct Quantity : IEquatable<Quantity>
     {
-        private static readonly IDictionary<Proto.Seto.QuantityType, QuantityType> QuantityTypes =
-            new Dictionary<Proto.Seto.QuantityType, QuantityType>
+        private static readonly BiDictionary<Proto.Seto.QuantityType, QuantityType> QuantityTypes =
+            new BiDictionary<Proto.Seto.QuantityType, QuantityType>
             {
                 { Proto.Seto.QuantityType.QUANTITYPAYOFFCURRENCY, QuantityType.PayoffCurrency }
             };
@@ -46,6 +46,14 @@ namespace IronSmarkets.Data
         public uint Raw { get { return _raw; } }
         public decimal MoneyUnits { get { return _raw / Divisor; } }
         public QuantityType Type { get { return _type; } }
+
+        internal Proto.Seto.QuantityType SetoType
+        {
+            get
+            {
+                return QuantityTypes[Type];
+            }
+        }
 
         public Quantity(QuantityType type, uint raw)
         {

@@ -20,38 +20,43 @@
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+using System;
+
 namespace IronSmarkets.Data
 {
-    public class Order
+    public struct NewOrder
     {
-        public Uid Uid { get { return State.Uid; } }
-        public Price Price { get; private set; }
-        public OrderState State { get; private set; }
+        public OrderCreateType Type { get; set; }
+        public Uid Market { get; set; }
+        public Uid Contract { get; set; }
+        public Side Side { get; set; }
+        public Quantity Quantity { get; set; }
+        public Price Price { get; set; }
 
-        public bool Cancellable
+        internal Proto.Seto.OrderCreate ToOrderCreate()
         {
-            get
-            {
-                return State.Status == OrderStatus.Pending
-                    || State.Status == OrderStatus.Live
-                    || State.Status == OrderStatus.PartiallyFilled;
-            }
+            return new Proto.Seto.OrderCreate {
+                Type = OrderState.FromOrderCreateType(Type),
+                    Market = Market.ToUuid128(),
+                    Contract = Contract.ToUuid128(),
+                    Side = Side.ToSeto(),
+                    QuantityType = Quantity.SetoType,
+                    Quantity = Quantity.Raw,
+                    PriceType = Price.SetoType,
+                    Price = Price.Raw
+            };
         }
 
-        internal Order(Price price, OrderState state)
-        {
-            Price = price;
-            State = state;
-        }
-
-        internal static Order FromSeto(
-            Proto.Seto.OrderState state,
-            Proto.Seto.PriceType priceType,
-            uint price)
+        public Order ToOrder(Uid orderUid)
         {
             return new Order(
-                new Price(priceType, price),
-                OrderState.FromSeto(state));
+                Price, new OrderState(
+                    orderUid,
+                    Type,
+                    OrderStatus.Pending,
+                    Quantity,
+                    SetoMap.ToMicroseconds(DateTime.UtcNow),
+                    new Quantity(Quantity.Type, 0)));
         }
     }
 }

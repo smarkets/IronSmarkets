@@ -42,8 +42,8 @@ namespace IronSmarkets.Data
 
     public class OrderState
     {
-        private static readonly IDictionary<Proto.Seto.OrderCreateType, OrderCreateType> OrderCreateTypes =
-            new Dictionary<Proto.Seto.OrderCreateType, OrderCreateType>
+        private static readonly BiDictionary<Proto.Seto.OrderCreateType, OrderCreateType> OrderCreateTypes =
+            new BiDictionary<Proto.Seto.OrderCreateType, OrderCreateType>
             {
                 { Proto.Seto.OrderCreateType.ORDERCREATELIMIT, OrderCreateType.Limit }
             };
@@ -71,7 +71,7 @@ namespace IronSmarkets.Data
         public DateTime Created { get { return SetoMap.FromMicroseconds(_created); } }
         public Quantity QuantityFilled { get { return _quantityFilled; } }
 
-        private OrderState(
+        internal OrderState(
             Uid uid,
             OrderCreateType type,
             OrderStatus status,
@@ -97,6 +97,11 @@ namespace IronSmarkets.Data
                 new Quantity(quantityType, state.Quantity),
                 state.CreatedMicroseconds,
                 new Quantity(quantityType, state.QuantityFilled));
+        }
+
+        internal static Proto.Seto.OrderCreateType FromOrderCreateType(OrderCreateType type)
+        {
+            return OrderCreateTypes[type];
         }
     }
 }

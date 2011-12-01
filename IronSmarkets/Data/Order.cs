@@ -20,19 +20,13 @@
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-using System;
-using System.Collections.Generic;
-
 namespace IronSmarkets.Data
 {
     public class Order
     {
-        private Price _price;
-        private OrderState _state;
-
-        public Uid Uid { get { return _state.Uid; } }
-        public Price Price { get { return _price; } }
-        public OrderState State { get { return _state; } }
+        public Uid Uid { get { return State.Uid; } }
+        public Price Price { get; private set; }
+        public OrderState State { get; private set; }
 
         public bool Cancellable
         {
@@ -46,8 +40,8 @@ namespace IronSmarkets.Data
 
         private Order(Price price, OrderState state)
         {
-            _price = price;
-            _state = state;
+            Price = price;
+            State = state;
         }
 
         internal static Order FromSeto(

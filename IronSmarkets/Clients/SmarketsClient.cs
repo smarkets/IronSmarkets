@@ -27,6 +27,7 @@ using log4net;
 
 using IronSmarkets.Data;
 using IronSmarkets.Events;
+using IronSmarkets.Exceptions;
 using IronSmarkets.Sessions;
 
 namespace IronSmarkets.Clients
@@ -101,7 +102,7 @@ namespace IronSmarkets.Clients
             _httpHandler = new HttpFoundHandler<Proto.Seto.Events>(_settings.HttpRequestTimeout);
 
             _eventsRequestHandler = new SeqRpcHandler<Proto.Seto.Events, IEventMap>(
-                this, EventMap.FromSeto, _httpHandler.BeginFetchHttpFound);
+                this, EventMap.FromSeto, ExtractEventResponse);
             _accountStateRequestHandler = new SeqRpcHandler<Proto.Seto.AccountState, AccountState>(
                 this, AccountState.FromSeto, (req, payload) => { req.Response = payload.AccountState; });
             _marketQuotesRequestHandler = new UidQueueRpcHandler<Proto.Seto.MarketQuotes, MarketQuotes>(
@@ -111,6 +112,20 @@ namespace IronSmarkets.Clients
             _ordersByMarketRequestHandler = new UidQueueRpcHandler<Proto.Seto.OrdersForMarket, IOrderMap>(
                 this, OrderMap.FromSeto, (req, payload) => { req.Response = payload.OrdersForMarket; });
             _orderCreateRequestHandler = new OrderCreateRequestHandler(this);
+        }
+
+        private void ExtractEventResponse(
+            SyncRequest<Proto.Seto.Events> request, Proto.Seto.Payload payload)
+        {
+            switch (payload.Type)
+            {
+                case Proto.Seto.PayloadType.PAYLOADINVALIDREQUEST:
+                    request.SetException(InvalidRequestException.FromSeto(payload.InvalidRequest));
+                    break;
+                case Proto.Seto.PayloadType.PAYLOADHTTPFOUND:
+                    _httpHandler.BeginFetchHttpFound(request, payload);
+                    break;
+            }
         }
 
         public static ISmarketsClient Create(IClientSettings settings)
@@ -430,6 +445,7 @@ namespace IronSmarkets.Clients
         {
             switch (payload.Type)
             {
+                case Proto.Seto.PayloadType.PAYLOADINVALIDREQUEST:
                 case Proto.Seto.PayloadType.PAYLOADHTTPFOUND:
                     _eventsRequestHandler.Handle(payload);
                     break;

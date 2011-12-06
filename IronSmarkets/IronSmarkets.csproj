@@ -109,6 +109,7 @@
     <Compile Include="Data\Uid.cs" />
     <Compile Include="Events\IPayloadEvents.cs" />
     <Compile Include="Exceptions\ConnectionException.cs" />
+    <Compile Include="Exceptions\InvalidRequestException.cs" />
     <Compile Include="Exceptions\LoginFailedException.cs" />
     <Compile Include="Exceptions\OrderInvalidException.cs" />
     <Compile Include="Exceptions\OrderRejectedException.cs" />

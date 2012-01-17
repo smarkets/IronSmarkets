@@ -30,12 +30,15 @@ using IronSmarkets.Events;
 using IronSmarkets.Exceptions;
 using IronSmarkets.Sessions;
 
+using PS = IronSmarkets.Proto.Seto;
+using PE = IronSmarkets.Proto.Eto;
+
 namespace IronSmarkets.Clients
 {
     public interface ISmarketsClient :
         IDisposable,
-        IPayloadEvents<Proto.Seto.Payload>,
-        IPayloadEndpoint<Proto.Seto.Payload>,
+        IPayloadEvents<PS.Payload>,
+        IPayloadEndpoint<PS.Payload>,
         IQuoteSink
     {
         bool IsDisposed { get; }
@@ -64,25 +67,25 @@ namespace IronSmarkets.Clients
             System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         private readonly IClientSettings _settings;
-        private readonly ISession<Proto.Seto.Payload> _session;
-        private readonly Receiver<Proto.Seto.Payload> _receiver;
+        private readonly ISession<PS.Payload> _session;
+        private readonly Receiver<PS.Payload> _receiver;
 
-        private readonly SeqRpcHandler<Proto.Seto.Events, IEventMap> _eventsRequestHandler;
-        private readonly SeqRpcHandler<Proto.Seto.AccountState, AccountState> _accountStateRequestHandler;
-        private readonly UidQueueRpcHandler<Proto.Seto.MarketQuotes, MarketQuotes> _marketQuotesRequestHandler;
-        private readonly SeqRpcHandler<Proto.Seto.OrdersForAccount, IOrderMap> _ordersByAccountRequestHandler;
-        private readonly UidQueueRpcHandler<Proto.Seto.OrdersForMarket, IOrderMap> _ordersByMarketRequestHandler;
+        private readonly SeqRpcHandler<PS.Events, IEventMap> _eventsRequestHandler;
+        private readonly SeqRpcHandler<PS.AccountState, AccountState> _accountStateRequestHandler;
+        private readonly UidQueueRpcHandler<PS.MarketQuotes, MarketQuotes> _marketQuotesRequestHandler;
+        private readonly SeqRpcHandler<PS.OrdersForAccount, IOrderMap> _ordersByAccountRequestHandler;
+        private readonly UidQueueRpcHandler<PS.OrdersForMarket, IOrderMap> _ordersByMarketRequestHandler;
         private readonly OrderCreateRequestHandler _orderCreateRequestHandler;
-        private readonly HttpFoundHandler<Proto.Seto.Events> _httpHandler;
+        private readonly HttpFoundHandler<PS.Events> _httpHandler;
 
-        private readonly QuoteHandler<Proto.Seto.MarketQuotes> _marketQuotesHandler =
-            new QuoteHandler<Proto.Seto.MarketQuotes>(
-                payload => new UidPair<Proto.Seto.MarketQuotes>(
+        private readonly QuoteHandler<PS.MarketQuotes> _marketQuotesHandler =
+            new QuoteHandler<PS.MarketQuotes>(
+                payload => new UidPair<PS.MarketQuotes>(
                     Uid.FromUuid128(payload.MarketQuotes.Market), payload.MarketQuotes));
 
-        private readonly QuoteHandler<Proto.Seto.ContractQuotes> _contractQuotesHandler =
-            new QuoteHandler<Proto.Seto.ContractQuotes>(
-                payload => new UidPair<Proto.Seto.ContractQuotes>(
+        private readonly QuoteHandler<PS.ContractQuotes> _contractQuotesHandler =
+            new QuoteHandler<PS.ContractQuotes>(
+                payload => new UidPair<PS.ContractQuotes>(
                     Uid.FromUuid128(payload.ContractQuotes.Contract), payload.ContractQuotes));
 
         private int _disposed;
@@ -98,31 +101,31 @@ namespace IronSmarkets.Clients
             _session.PayloadSent += (sender, args) =>
                 OnPayloadSent(args.Payload);
             AddPayloadHandler(HandlePayload);
-            _receiver = new Receiver<Proto.Seto.Payload>(_session);
-            _httpHandler = new HttpFoundHandler<Proto.Seto.Events>(_settings.HttpRequestTimeout);
+            _receiver = new Receiver<PS.Payload>(_session);
+            _httpHandler = new HttpFoundHandler<PS.Events>(_settings.HttpRequestTimeout);
 
-            _eventsRequestHandler = new SeqRpcHandler<Proto.Seto.Events, IEventMap>(
+            _eventsRequestHandler = new SeqRpcHandler<PS.Events, IEventMap>(
                 this, EventMap.FromSeto, ExtractEventResponse);
-            _accountStateRequestHandler = new SeqRpcHandler<Proto.Seto.AccountState, AccountState>(
+            _accountStateRequestHandler = new SeqRpcHandler<PS.AccountState, AccountState>(
                 this, AccountState.FromSeto, (req, payload) => { req.Response = payload.AccountState; });
-            _marketQuotesRequestHandler = new UidQueueRpcHandler<Proto.Seto.MarketQuotes, MarketQuotes>(
+            _marketQuotesRequestHandler = new UidQueueRpcHandler<PS.MarketQuotes, MarketQuotes>(
                 this, MarketQuotes.FromSeto, (req, payload) => { req.Response = payload.MarketQuotes; });
-            _ordersByAccountRequestHandler = new SeqRpcHandler<Proto.Seto.OrdersForAccount, IOrderMap>(
+            _ordersByAccountRequestHandler = new SeqRpcHandler<PS.OrdersForAccount, IOrderMap>(
                 this, OrderMap.FromSeto, (req, payload) => { req.Response = payload.OrdersForAccount; });
-            _ordersByMarketRequestHandler = new UidQueueRpcHandler<Proto.Seto.OrdersForMarket, IOrderMap>(
+            _ordersByMarketRequestHandler = new UidQueueRpcHandler<PS.OrdersForMarket, IOrderMap>(
                 this, OrderMap.FromSeto, (req, payload) => { req.Response = payload.OrdersForMarket; });
             _orderCreateRequestHandler = new OrderCreateRequestHandler(this);
         }
 
         private void ExtractEventResponse(
-            SyncRequest<Proto.Seto.Events> request, Proto.Seto.Payload payload)
+            SyncRequest<PS.Events> request, PS.Payload payload)
         {
             switch (payload.Type)
             {
-                case Proto.Seto.PayloadType.PAYLOADINVALIDREQUEST:
+                case PS.PayloadType.PAYLOADINVALIDREQUEST:
                     request.SetException(InvalidRequestException.FromSeto(payload.InvalidRequest));
                     break;
-                case Proto.Seto.PayloadType.PAYLOADHTTPFOUND:
+                case PS.PayloadType.PAYLOADHTTPFOUND:
                     _httpHandler.BeginFetchHttpFound(request, payload);
                     break;
             }
@@ -141,15 +144,15 @@ namespace IronSmarkets.Clients
             }
         }
 
-        public event EventHandler<PayloadReceivedEventArgs<Proto.Seto.Payload>> PayloadReceived;
-        public event EventHandler<PayloadReceivedEventArgs<Proto.Seto.Payload>> PayloadSent;
+        public event EventHandler<PayloadReceivedEventArgs<PS.Payload>> PayloadReceived;
+        public event EventHandler<PayloadReceivedEventArgs<PS.Payload>> PayloadSent;
 
         ~SmarketsClient()
         {
             Dispose(false);
         }
 
-        public void AddPayloadHandler(Predicate<Proto.Seto.Payload> predicate)
+        public void AddPayloadHandler(Predicate<PS.Payload> predicate)
         {
             if (IsDisposed)
                 throw new ObjectDisposedException(
@@ -159,7 +162,7 @@ namespace IronSmarkets.Clients
             _session.AddPayloadHandler(predicate);
         }
 
-        public void RemovePayloadHandler(Predicate<Proto.Seto.Payload> predicate)
+        public void RemovePayloadHandler(Predicate<PS.Payload> predicate)
         {
             if (IsDisposed)
                 throw new ObjectDisposedException(
@@ -169,7 +172,7 @@ namespace IronSmarkets.Clients
             _session.RemovePayloadHandler(predicate);
         }
 
-        public void AddMarketQuotesHandler(Uid uid, EventHandler<QuotesReceivedEventArgs<Proto.Seto.MarketQuotes>> handler)
+        public void AddMarketQuotesHandler(Uid uid, EventHandler<QuotesReceivedEventArgs<PS.MarketQuotes>> handler)
         {
             if (IsDisposed)
                 throw new ObjectDisposedException(
@@ -179,7 +182,7 @@ namespace IronSmarkets.Clients
             _marketQuotesHandler.AddHandler(uid, handler);
         }
 
-        public void RemoveMarketQuotesHandler(Uid uid, EventHandler<QuotesReceivedEventArgs<Proto.Seto.MarketQuotes>> handler)
+        public void RemoveMarketQuotesHandler(Uid uid, EventHandler<QuotesReceivedEventArgs<PS.MarketQuotes>> handler)
         {
             if (IsDisposed)
                 throw new ObjectDisposedException(
@@ -189,7 +192,7 @@ namespace IronSmarkets.Clients
             _marketQuotesHandler.RemoveHandler(uid, handler);
         }
 
-        public void AddContractQuotesHandler(Uid uid, EventHandler<QuotesReceivedEventArgs<Proto.Seto.ContractQuotes>> handler)
+        public void AddContractQuotesHandler(Uid uid, EventHandler<QuotesReceivedEventArgs<PS.ContractQuotes>> handler)
         {
             if (IsDisposed)
                 throw new ObjectDisposedException(
@@ -199,7 +202,7 @@ namespace IronSmarkets.Clients
             _contractQuotesHandler.AddHandler(uid, handler);
         }
 
-        public void RemoveContractQuotesHandler(Uid uid, EventHandler<QuotesReceivedEventArgs<Proto.Seto.ContractQuotes>> handler)
+        public void RemoveContractQuotesHandler(Uid uid, EventHandler<QuotesReceivedEventArgs<PS.ContractQuotes>> handler)
         {
             if (IsDisposed)
                 throw new ObjectDisposedException(
@@ -209,7 +212,7 @@ namespace IronSmarkets.Clients
             _contractQuotesHandler.RemoveHandler(uid, handler);
         }
 
-        public void SendPayload(Proto.Seto.Payload payload)
+        public void SendPayload(PS.Payload payload)
         {
             if (IsDisposed)
                 throw new ObjectDisposedException(
@@ -250,10 +253,10 @@ namespace IronSmarkets.Clients
                     "SmarketsClient",
                     "Called Ping on disposed object");
 
-            var payload = new Proto.Seto.Payload {
-                Type = Proto.Seto.PayloadType.PAYLOADETO,
-                EtoPayload = new Proto.Eto.Payload {
-                    Type = Proto.Eto.PayloadType.PAYLOADPING
+            var payload = new PS.Payload {
+                Type = PS.PayloadType.PAYLOADETO,
+                EtoPayload = new PE.Payload {
+                    Type = PE.PayloadType.PAYLOADPING
                 }
             };
 
@@ -268,9 +271,9 @@ namespace IronSmarkets.Clients
                     "SmarketsClient",
                     "Called SubscribeMarket on disposed object");
 
-            var payload = new Proto.Seto.Payload {
-                Type = Proto.Seto.PayloadType.PAYLOADMARKETSUBSCRIBE,
-                MarketSubscribe = new Proto.Seto.MarketSubscribe {
+            var payload = new PS.Payload {
+                Type = PS.PayloadType.PAYLOADMARKETSUBSCRIBE,
+                MarketSubscribe = new PS.MarketSubscribe {
                     Market = market.ToUuid128()
                 }
             };
@@ -286,9 +289,9 @@ namespace IronSmarkets.Clients
                     "SmarketsClient",
                     "Called UnsubscribeMarket on disposed object");
 
-            var payload = new Proto.Seto.Payload {
-                Type = Proto.Seto.PayloadType.PAYLOADMARKETUNSUBSCRIBE,
-                MarketUnsubscribe = new Proto.Seto.MarketUnsubscribe {
+            var payload = new PS.Payload {
+                Type = PS.PayloadType.PAYLOADMARKETUNSUBSCRIBE,
+                MarketUnsubscribe = new PS.MarketUnsubscribe {
                     Market = market.ToUuid128()
                 }
             };
@@ -305,8 +308,8 @@ namespace IronSmarkets.Clients
                     "Called GetEvents on disposed object");
 
             return _eventsRequestHandler.Request(
-                new Proto.Seto.Payload {
-                    Type = Proto.Seto.PayloadType.PAYLOADEVENTSREQUEST,
+                new PS.Payload {
+                    Type = PS.PayloadType.PAYLOADEVENTSREQUEST,
                         EventsRequest = query.ToEventsRequest()
                         });
         }
@@ -318,7 +321,7 @@ namespace IronSmarkets.Clients
                     "SmarketsClient",
                     "Called GetAccountState on disposed object");
 
-            return GetAccountState(new Proto.Seto.AccountStateRequest());
+            return GetAccountState(new PS.AccountStateRequest());
         }
 
         public Response<AccountState> GetAccountState(Uid account)
@@ -329,17 +332,17 @@ namespace IronSmarkets.Clients
                     "Called GetAccountState on disposed object");
 
             return GetAccountState(
-                new Proto.Seto.AccountStateRequest {
+                new PS.AccountStateRequest {
                     Account = account.ToUuid128()
                 });
         }
 
         private Response<AccountState> GetAccountState(
-            Proto.Seto.AccountStateRequest request)
+            PS.AccountStateRequest request)
         {
             return _accountStateRequestHandler.Request(
-                new Proto.Seto.Payload {
-                    Type = Proto.Seto.PayloadType.PAYLOADACCOUNTSTATEREQUEST,
+                new PS.Payload {
+                    Type = PS.PayloadType.PAYLOADACCOUNTSTATEREQUEST,
                         AccountStateRequest = request
                         });
         }
@@ -353,9 +356,9 @@ namespace IronSmarkets.Clients
 
             return _marketQuotesRequestHandler.Request(
                 market,
-                new Proto.Seto.Payload {
-                    Type = Proto.Seto.PayloadType.PAYLOADMARKETQUOTESREQUEST,
-                        MarketQuotesRequest = new Proto.Seto.MarketQuotesRequest {
+                new PS.Payload {
+                    Type = PS.PayloadType.PAYLOADMARKETQUOTESREQUEST,
+                        MarketQuotesRequest = new PS.MarketQuotesRequest {
                         Market = market.ToUuid128()
                     }
                 });
@@ -369,9 +372,9 @@ namespace IronSmarkets.Clients
                     "Called GetOrdersByAccount on disposed object");
 
             return _ordersByAccountRequestHandler.Request(
-                new Proto.Seto.Payload {
-                    Type = Proto.Seto.PayloadType.PAYLOADORDERSFORACCOUNTREQUEST,
-                    OrdersForAccountRequest = new Proto.Seto.OrdersForAccountRequest()
+                new PS.Payload {
+                    Type = PS.PayloadType.PAYLOADORDERSFORACCOUNTREQUEST,
+                    OrdersForAccountRequest = new PS.OrdersForAccountRequest()
                 });
         }
 
@@ -384,9 +387,9 @@ namespace IronSmarkets.Clients
 
             return _ordersByMarketRequestHandler.Request(
                 market,
-                new Proto.Seto.Payload {
-                    Type = Proto.Seto.PayloadType.PAYLOADORDERSFORMARKETREQUEST,
-                        OrdersForMarketRequest = new Proto.Seto.OrdersForMarketRequest {
+                new PS.Payload {
+                    Type = PS.PayloadType.PAYLOADORDERSFORMARKETREQUEST,
+                        OrdersForMarketRequest = new PS.OrdersForMarketRequest {
                         Market = market.ToUuid128()
                     }
                 });
@@ -405,9 +408,9 @@ namespace IronSmarkets.Clients
                         "Order cannot be cancelled: {0}", order.State.Status));
 
             SendPayload(
-                new Proto.Seto.Payload {
-                    Type = Proto.Seto.PayloadType.PAYLOADORDERCANCEL,
-                        OrderCancel = new Proto.Seto.OrderCancel {
+                new PS.Payload {
+                    Type = PS.PayloadType.PAYLOADORDERCANCEL,
+                        OrderCancel = new PS.OrderCancel {
                         Order = order.Uid.ToUuid128()
                     }
                 });
@@ -423,36 +426,36 @@ namespace IronSmarkets.Clients
             return _orderCreateRequestHandler.Request(order);
         }
 
-        private void OnPayloadReceived(Proto.Seto.Payload payload)
+        private void OnPayloadReceived(PS.Payload payload)
         {
-            EventHandler<PayloadReceivedEventArgs<Proto.Seto.Payload>> ev = PayloadReceived;
+            EventHandler<PayloadReceivedEventArgs<PS.Payload>> ev = PayloadReceived;
             if (ev != null)
-                ev(this, new PayloadReceivedEventArgs<Proto.Seto.Payload>(
+                ev(this, new PayloadReceivedEventArgs<PS.Payload>(
                        payload.EtoPayload.Seq,
                        payload));
         }
 
-        private void OnPayloadSent(Proto.Seto.Payload payload)
+        private void OnPayloadSent(PS.Payload payload)
         {
-            EventHandler<PayloadReceivedEventArgs<Proto.Seto.Payload>> ev = PayloadSent;
+            EventHandler<PayloadReceivedEventArgs<PS.Payload>> ev = PayloadSent;
             if (ev != null)
-                ev(this, new PayloadReceivedEventArgs<Proto.Seto.Payload>(
+                ev(this, new PayloadReceivedEventArgs<PS.Payload>(
                        payload.EtoPayload.Seq,
                        payload));
         }
 
-        private bool HandlePayload(Proto.Seto.Payload payload)
+        private bool HandlePayload(PS.Payload payload)
         {
             switch (payload.Type)
             {
-                case Proto.Seto.PayloadType.PAYLOADINVALIDREQUEST:
-                case Proto.Seto.PayloadType.PAYLOADHTTPFOUND:
+                case PS.PayloadType.PAYLOADINVALIDREQUEST:
+                case PS.PayloadType.PAYLOADHTTPFOUND:
                     _eventsRequestHandler.Handle(payload);
                     break;
-                case Proto.Seto.PayloadType.PAYLOADACCOUNTSTATE:
+                case PS.PayloadType.PAYLOADACCOUNTSTATE:
                     _accountStateRequestHandler.Handle(payload);
                     break;
-                case Proto.Seto.PayloadType.PAYLOADMARKETQUOTES:
+                case PS.PayloadType.PAYLOADMARKETQUOTES:
                     // First, respond to a possible synchronous request
                     _marketQuotesRequestHandler.Handle(
                         Uid.FromUuid128(payload.MarketQuotes.Market),
@@ -460,20 +463,20 @@ namespace IronSmarkets.Clients
                     // Dispatch updates to all listeners
                     _marketQuotesHandler.Handle(payload);
                     break;
-                case Proto.Seto.PayloadType.PAYLOADCONTRACTQUOTES:
+                case PS.PayloadType.PAYLOADCONTRACTQUOTES:
                     _contractQuotesHandler.Handle(payload);
                     break;
-                case Proto.Seto.PayloadType.PAYLOADORDERSFORMARKET:
+                case PS.PayloadType.PAYLOADORDERSFORMARKET:
                     _ordersByMarketRequestHandler.Handle(
                         Uid.FromUuid128(payload.OrdersForMarket.Market),
                         payload);
                     break;
-                case Proto.Seto.PayloadType.PAYLOADORDERSFORACCOUNT:
+                case PS.PayloadType.PAYLOADORDERSFORACCOUNT:
                     _ordersByAccountRequestHandler.Handle(payload);
                     break;
-                case Proto.Seto.PayloadType.PAYLOADORDERACCEPTED:
-                case Proto.Seto.PayloadType.PAYLOADORDERREJECTED:
-                case Proto.Seto.PayloadType.PAYLOADORDERINVALID:
+                case PS.PayloadType.PAYLOADORDERACCEPTED:
+                case PS.PayloadType.PAYLOADORDERREJECTED:
+                case PS.PayloadType.PAYLOADORDERINVALID:
                     _orderCreateRequestHandler.Handle(payload);
                     break;
             }

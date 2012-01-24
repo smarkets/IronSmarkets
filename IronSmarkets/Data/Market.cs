@@ -30,26 +30,24 @@ namespace IronSmarkets.Data
     public class Market
     {
         private readonly MarketInfo _info;
-        private readonly IContractMap _contracts;
 
+        private IContractMap _contracts;
         private MarketQuotes _quotes;
         private ulong _subscriptionSeq;
         private IQuoteSink _sink;
 
         public MarketInfo Info { get { return _info; } }
-        public IContractMap Contracts { get { return _contracts; } }
+        public IContractMap Contracts {
+            get { return _contracts; }
+            private set { _contracts = value; }
+        }
         public MarketQuotes Quotes { get { return _quotes; } }
 
         public EventHandler<QuotesUpdatedEventArgs<MarketQuotes>> MarketQuotesUpdated;
 
-        private Market(
-            MarketInfo info,
-            IContractMap contracts,
-            MarketQuotes quotes = null)
+        private Market(MarketInfo info)
         {
             _info = info;
-            _contracts = contracts;
-            _quotes = quotes;
         }
 
         public void SubscribeQuotes(IQuoteSink sink)
@@ -88,9 +86,9 @@ namespace IronSmarkets.Data
 
         internal static Market FromSeto(Proto.Seto.MarketInfo setoInfo)
         {
-            return new Market(
-                MarketInfo.FromSeto(setoInfo),
-                ContractMap.FromContracts(setoInfo.Contracts));
+            var market = new Market(MarketInfo.FromSeto(setoInfo));
+            market.Contracts = ContractMap.FromContracts(setoInfo.Contracts, market);
+            return market;
         }
     }
 }

@@ -30,18 +30,21 @@ namespace IronSmarkets.Data
     {
         private readonly ContractInfo _info;
 
-        private ContractQuotes _quotes;
         private IQuoteSink _sink;
+        private Market _parent;
 
         public ContractInfo Info { get { return _info; } }
-        public ContractQuotes Quotes { get { return _quotes; } }
+        public ContractQuotes Quotes {
+            get { return Parent.Quotes.ContractQuotes[Info.Uid]; }
+        }
+        public Market Parent { get { return _parent; } }
 
         public EventHandler<QuotesUpdatedEventArgs<ContractQuotes>> ContractQuotesUpdated;
 
-        private Contract(ContractInfo info, ContractQuotes quotes = null)
+        private Contract(ContractInfo info, Market parent)
         {
             _info = info;
-            _quotes = quotes;
+            _parent = parent;
         }
 
         internal void SubscribeQuotes(IQuoteSink sink)
@@ -62,7 +65,7 @@ namespace IronSmarkets.Data
 
         private void OnContractQuotesReceived(object sender, QuotesReceivedEventArgs<Proto.Seto.ContractQuotes> e)
         {
-            _quotes.UpdateFromSeto(e.Payload);
+            Quotes.UpdateFromSeto(e.Payload);
             OnContractQuotesUpdated(e.Sequence);
         }
 
@@ -70,12 +73,12 @@ namespace IronSmarkets.Data
         {
             var ev = ContractQuotesUpdated;
             if (ev != null)
-                ev(this, new QuotesUpdatedEventArgs<ContractQuotes>(seq, _quotes));
+                ev(this, new QuotesUpdatedEventArgs<ContractQuotes>(seq, Quotes));
         }
 
-        internal static Contract FromSeto(Proto.Seto.ContractInfo setoInfo)
+        internal static Contract FromSeto(Proto.Seto.ContractInfo setoInfo, Market parent)
         {
-            return new Contract(ContractInfo.FromSeto(setoInfo));
+            return new Contract(ContractInfo.FromSeto(setoInfo), parent);
         }
     }
 }

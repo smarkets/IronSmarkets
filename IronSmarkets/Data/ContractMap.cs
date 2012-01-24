@@ -38,13 +38,14 @@ namespace IronSmarkets.Data
         }
 
         public static IContractMap FromContracts(
-            IEnumerable<Proto.Seto.ContractInfo> setoContracts)
+            IEnumerable<Proto.Seto.ContractInfo> setoContracts,
+            Market market)
         {
             return new ContractMap(
                 setoContracts.Aggregate(
                     new Dictionary<Uid, Contract>(),
                     (dict, contractInfo) => {
-                        var contract = Contract.FromSeto(contractInfo);
+                        var contract = Contract.FromSeto(contractInfo, market);
                         dict[contract.Info.Uid] = contract;
                         return dict;
                     }));

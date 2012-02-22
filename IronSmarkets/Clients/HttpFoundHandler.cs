@@ -1,4 +1,4 @@
-// Copyright (c) 2011 Smarkets Limited
+// Copyright (c) 2011-2012 Smarkets Limited
 //
 // Permission is hereby granted, free of charge, to any person
 // obtaining a copy of this software and associated documentation
@@ -32,17 +32,17 @@ using IronSmarkets.Exceptions;
 
 namespace IronSmarkets.Clients
 {
-    internal sealed class RequestState<T> : Tuple<HttpWebRequest, SyncRequest<T>>
+    internal sealed class RequestState<T> : Tuple<HttpWebRequest, ISyncRequest<T>>
     {
         public HttpWebRequest WebRequest { get { return Item1; } }
-        public SyncRequest<T> Request { get { return Item2; } }
+        public ISyncRequest<T> Request { get { return Item2; } }
 
-        public RequestState(HttpWebRequest webRequest, SyncRequest<T> request) : base(webRequest, request)
+        public RequestState(HttpWebRequest webRequest, ISyncRequest<T> request) : base(webRequest, request)
         {
         }
     }
 
-    internal sealed class HttpFoundHandler<T>
+    internal sealed class HttpFoundHandler<T> : IAsyncHttpFoundHandler<T>
     {
         private static readonly ILog Log = LogManager.GetLogger(
             System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
@@ -55,7 +55,7 @@ namespace IronSmarkets.Clients
         }
 
         public void BeginFetchHttpFound(
-            SyncRequest<T> syncRequest, Proto.Seto.Payload payload)
+            ISyncRequest<T> syncRequest, Proto.Seto.Payload payload)
         {
             var url = payload.HttpFound.Url;
             if (Log.IsDebugEnabled) Log.Debug(

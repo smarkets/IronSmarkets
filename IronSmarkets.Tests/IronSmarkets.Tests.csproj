@@ -76,6 +76,9 @@
     <Compile Include="DecimalOddsTests.cs" />
     <Compile Include="MoneyTests.cs" />
     <Compile Include="UidTests.cs" />
+    <Compile Include="Mocks\MockHttpFoundHandler.cs" />
+    <Compile Include="Mocks\MockSessionSocket.cs" />
+    <Compile Include="Mocks\MockUrls.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\Metadata\IronSmarkets.snk">

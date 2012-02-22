@@ -65,6 +65,8 @@
     </Compile>
     <Compile Include="Clients\OrderCreateRequestHandler.cs" />
     <Compile Include="Clients\HttpFoundHandler.cs" />
+    <Compile Include="Clients\IAsyncHttpFoundHandler.cs" />
+    <Compile Include="Clients\ISyncRequest.cs" />
     <Compile Include="Clients\IQuoteSink.cs" />
     <Compile Include="Clients\QuoteHandler.cs" />
     <Compile Include="Clients\Response.cs" />

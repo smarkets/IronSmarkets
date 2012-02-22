@@ -26,9 +26,6 @@ namespace IronSmarkets.Sockets
 {
     public interface ISocket<T>
     {
-        Stream TcpStream { get; }
-        bool IsConnected { get; }
-
         void Connect();
         void Disconnect();
         void Write(T payload);

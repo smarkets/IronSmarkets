@@ -1,4 +1,4 @@
-// Copyright (c) 2011 Smarkets Limited
+// Copyright (c) 2011-2012 Smarkets Limited
 //
 // Permission is hereby granted, free of charge, to any person
 // obtaining a copy of this software and associated documentation
@@ -29,6 +29,7 @@ using IronSmarkets.Data;
 using IronSmarkets.Events;
 using IronSmarkets.Exceptions;
 using IronSmarkets.Sessions;
+using IronSmarkets.Sockets;
 
 using PS = IronSmarkets.Proto.Seto;
 using PE = IronSmarkets.Proto.Eto;
@@ -76,7 +77,7 @@ namespace IronSmarkets.Clients
         private readonly SeqRpcHandler<PS.OrdersForAccount, IOrderMap> _ordersByAccountRequestHandler;
         private readonly UidQueueRpcHandler<PS.OrdersForMarket, IOrderMap> _ordersByMarketRequestHandler;
         private readonly OrderCreateRequestHandler _orderCreateRequestHandler;
-        private readonly HttpFoundHandler<PS.Events> _httpHandler;
+        private readonly IAsyncHttpFoundHandler<PS.Events> _httpHandler;
 
         private readonly QuoteHandler<PS.MarketQuotes> _marketQuotesHandler =
             new QuoteHandler<PS.MarketQuotes>(
@@ -90,19 +91,20 @@ namespace IronSmarkets.Clients
 
         private int _disposed;
 
-        private SmarketsClient(IClientSettings settings)
+        private SmarketsClient(
+            IClientSettings settings,
+            ISession<PS.Payload> session,
+            IAsyncHttpFoundHandler<PS.Events> httpHandler)
         {
             _settings = settings;
-            _session = new SeqSession(
-                _settings.SocketSettings,
-                _settings.SessionSettings);
+            _session = session;
             _session.PayloadReceived += (sender, args) =>
                 OnPayloadReceived(args.Payload);
             _session.PayloadSent += (sender, args) =>
                 OnPayloadSent(args.Payload);
             AddPayloadHandler(HandlePayload);
             _receiver = new Receiver<PS.Payload>(_session);
-            _httpHandler = new HttpFoundHandler<PS.Events>(_settings.HttpRequestTimeout);
+            _httpHandler = httpHandler;
 
             _eventsRequestHandler = new SeqRpcHandler<PS.Events, IEventMap>(
                 this, EventMap.FromSeto, ExtractEventResponse);
@@ -131,9 +133,20 @@ namespace IronSmarkets.Clients
             }
         }
 
-        public static ISmarketsClient Create(IClientSettings settings)
+        public static ISmarketsClient Create(
+            IClientSettings settings,
+            ISession<PS.Payload> session = null,
+            IAsyncHttpFoundHandler<PS.Events> httpHandler = null)
         {
-            return new SmarketsClient(settings);
+            if (session == null)
+                session = new SeqSession(
+                    new SessionSocket(settings.SocketSettings),
+                    settings.SessionSettings);
+
+            if (httpHandler == null)
+                httpHandler = new HttpFoundHandler<PS.Events>(
+                    settings.HttpRequestTimeout);
+            return new SmarketsClient(settings, session, httpHandler);
         }
 
         public bool IsDisposed

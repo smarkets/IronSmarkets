@@ -10,7 +10,7 @@ clean:
 	rm -rf IronSmarkets.Tests/bin IronSmarkets.Tests/obj
 	rm -rf IronSmarkets.ConsoleExample/bin IronSmarkets.ConsoleExample/obj
 
-distclean: clean 
+distclean: clean
 	git clean -f -x -d
 
 test: all

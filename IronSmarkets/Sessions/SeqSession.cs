@@ -37,7 +37,7 @@ using Eto = IronSmarkets.Proto.Eto;
 
 namespace IronSmarkets.Sessions
 {
-    internal sealed class SeqSession : IDisposable, ISession<Payload>
+    public sealed class SeqSession : IDisposable, ISession<Payload>
     {
         private static readonly ILog Log = LogManager.GetLogger(
             System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
@@ -68,10 +68,10 @@ namespace IronSmarkets.Sessions
         public event EventHandler<PayloadReceivedEventArgs<Payload>> PayloadSent;
 
         public SeqSession(
-            ISocketSettings socketSettings,
+            ISocket<Payload> socket,
             ISessionSettings sessionSettings)
         {
-            _socket = new SessionSocket(socketSettings);
+            _socket = socket;
             _settings = sessionSettings;
             _inSequence = _settings.InSequence;
             _outSequence = _settings.OutSequence;
@@ -107,7 +107,7 @@ namespace IronSmarkets.Sessions
             if (Log.IsDebugEnabled) Log.Debug("Opening socket connection");
             _socket.Connect();
 
-            // Construct the login payload protobfuinter
+            // Construct the login payload protobuf
             // TODO: Create some message factories so this is less ugly
             var loginPayload = new Payload {
                 Type = PayloadType.PAYLOADLOGIN,

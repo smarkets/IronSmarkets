@@ -35,8 +35,8 @@ namespace IronSmarkets.Data
         public ulong High { get { return _high; } }
         public ulong Low { get { return _low; } }
 
-        internal Uid(ulong low) : this(0, low) {}
-        internal Uid(ulong high, ulong low)
+        public Uid(ulong low) : this(0, low) {}
+        public Uid(ulong high, ulong low)
         {
             _high = high;
             _low = low;

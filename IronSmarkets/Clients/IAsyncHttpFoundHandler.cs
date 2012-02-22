@@ -1,4 +1,4 @@
-// Copyright (c) 2011-2012 Smarkets Limited
+// Copyright (c) 2012 Smarkets Limited
 //
 // Permission is hereby granted, free of charge, to any person
 // obtaining a copy of this software and associated documentation
@@ -20,40 +20,10 @@
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-using System;
-using System.Threading;
-
 namespace IronSmarkets.Clients
 {
-    internal sealed class SyncRequest<T> : ISyncRequest<T>
+    public interface IAsyncHttpFoundHandler<T>
     {
-        private readonly ManualResetEvent _replied =
-            new ManualResetEvent(false);
-
-        private T _response;
-        private Exception _responseException;
-
-        public T Response {
-            get
-            {
-                _replied.WaitOne();
-                if (_responseException != null)
-                {
-                    throw _responseException;
-                }
-                return _response;
-            }
-            set
-            {
-                _response = value;
-                _replied.Set();
-            }
-        }
-
-        public void SetException(Exception exception)
-        {
-            _responseException = exception;
-            _replied.Set();
-        }
+        void BeginFetchHttpFound(ISyncRequest<T> syncRequest, Proto.Seto.Payload payload);
     }
 }

@@ -35,6 +35,18 @@ namespace IronSmarkets.Extensions
         {
             return new ReadOnlyDictionaryWrapper<TKey, TValue>(dictionary);
         }
+
+        public static void MergeLeft<T, TKey, TValue>(this T me, params IDictionary<TKey, TValue>[] others)
+            where T : IDictionary<TKey, TValue>
+        {
+            foreach (IDictionary<TKey, TValue> src in others)
+            {
+                foreach (KeyValuePair<TKey, TValue> p in src)
+                {
+                    me[p.Key] = p.Value;
+                }
+            }
+        }
     }
 
     internal class ReadOnlyDictionaryWrapper<TKey, TValue> :

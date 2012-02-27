@@ -33,7 +33,7 @@ namespace IronSmarkets.Data
 
     internal sealed class OrderMap : ReadOnlyDictionaryWrapper<Uid, Order>, IOrderMap
     {
-        private OrderMap() : base(new Dictionary<Uid, Order>())
+        public OrderMap() : base(new Dictionary<Uid, Order>())
         {
         }
 

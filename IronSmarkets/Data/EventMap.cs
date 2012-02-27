@@ -39,6 +39,10 @@ namespace IronSmarkets.Data
 
         public ICollection<Event> Roots { get { return _roots; } }
 
+        public EventMap() : base(new Dictionary<Uid, Event>())
+        {
+        }
+
         private EventMap(IDictionary<Uid, Event> events) : base(events)
         {
             _roots = new List<Event>(

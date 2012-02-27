@@ -49,6 +49,9 @@ namespace IronSmarkets.Clients
 
         ulong Ping();
 
+        IEventMap EventMap { get; }
+        IOrderMap OrderMap { get; }
+
         Response<IEventMap> GetEvents(EventQuery query);
         Response<AccountState> GetAccountState();
         Response<AccountState> GetAccountState(Uid account);
@@ -70,6 +73,9 @@ namespace IronSmarkets.Clients
         private readonly IClientSettings _settings;
         private readonly ISession<PS.Payload> _session;
         private readonly Receiver<PS.Payload> _receiver;
+
+        private readonly IEventMap _eventMap = new EventMap();
+        private readonly IOrderMap _orderMap = new OrderMap();
 
         private readonly SeqRpcHandler<PS.Events, IEventMap> _eventsRequestHandler;
         private readonly SeqRpcHandler<PS.AccountState, AccountState> _accountStateRequestHandler;
@@ -107,15 +113,15 @@ namespace IronSmarkets.Clients
             _httpHandler = httpHandler;
 
             _eventsRequestHandler = new SeqRpcHandler<PS.Events, IEventMap>(
-                this, EventMap.FromSeto, ExtractEventResponse);
+                this, Data.EventMap.FromSeto, ExtractEventResponse);
             _accountStateRequestHandler = new SeqRpcHandler<PS.AccountState, AccountState>(
                 this, AccountState.FromSeto, (req, payload) => { req.Response = payload.AccountState; });
             _marketQuotesRequestHandler = new UidQueueRpcHandler<PS.MarketQuotes, MarketQuotes>(
                 this, MarketQuotes.FromSeto, (req, payload) => { req.Response = payload.MarketQuotes; });
             _ordersByAccountRequestHandler = new SeqRpcHandler<PS.OrdersForAccount, IOrderMap>(
-                this, OrderMap.FromSeto, (req, payload) => { req.Response = payload.OrdersForAccount; });
+                this, Data.OrderMap.FromSeto, (req, payload) => { req.Response = payload.OrdersForAccount; });
             _ordersByMarketRequestHandler = new UidQueueRpcHandler<PS.OrdersForMarket, IOrderMap>(
-                this, OrderMap.FromSeto, (req, payload) => { req.Response = payload.OrdersForMarket; });
+                this, Data.OrderMap.FromSeto, (req, payload) => { req.Response = payload.OrdersForMarket; });
             _orderCreateRequestHandler = new OrderCreateRequestHandler(this);
         }
 
@@ -154,6 +160,22 @@ namespace IronSmarkets.Clients
             get
             {
                 return Thread.VolatileRead(ref _disposed) == 1;
+            }
+        }
+
+        public IEventMap EventMap
+        {
+            get
+            {
+                return _eventMap;
+            }
+        }
+
+        public IOrderMap OrderMap
+        {
+            get
+            {
+                return _orderMap;
             }
         }
 

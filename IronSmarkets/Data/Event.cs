@@ -38,6 +38,7 @@ namespace IronSmarkets.Data
 
         // Optional
         public Event Parent { get; set; }
+        public bool HasParent { get { return Parent != null; } }
 
         private Event(EventInfo info, IMarketMap markets)
         {

@@ -56,6 +56,18 @@ namespace IronSmarkets.Data
             return new OrderMap { orders };
         }
 
+        public OrderMap MergeFromSeto(Proto.Seto.OrdersForAccount orders)
+        {
+            Add(orders);
+            return this;
+        }
+
+        public OrderMap MergeFromSeto(Proto.Seto.OrdersForMarket orders)
+        {
+            Add(orders);
+            return this;
+        }
+
         private void Add(Proto.Seto.OrdersForAccount orders)
         {
             orders.Markets.ForAll(Add);
@@ -84,7 +96,7 @@ namespace IronSmarkets.Data
 
         private void Add(Order order)
         {
-            _inner.Add(order.Uid, order);
+            _inner[order.Uid] = order;
         }
     }
 }

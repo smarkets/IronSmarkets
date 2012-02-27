@@ -35,9 +35,20 @@ namespace IronSmarkets.Data
 
     internal class EventMap : ReadOnlyDictionaryWrapper<Uid, Event>, IEventMap
     {
-        private readonly IList<Event> _roots;
+        private IList<Event> _roots = null;
 
-        public ICollection<Event> Roots { get { return _roots; } }
+        public ICollection<Event> Roots
+        {
+            get
+            {
+                if (null == _roots)
+                {
+                    _roots = new List<Event>(
+                        Values.Where(ev => !ev.Info.ParentUid.HasValue)).AsReadOnly();
+                }
+                return _roots;
+            }
+        }
 
         public EventMap() : base(new Dictionary<Uid, Event>())
         {
@@ -45,29 +56,35 @@ namespace IronSmarkets.Data
 
         private EventMap(IDictionary<Uid, Event> events) : base(events)
         {
-            _roots = new List<Event>(
-                Values.Where(ev => !ev.Info.ParentUid.HasValue)).AsReadOnly();
-            Values
+        }
+
+        public EventMap MergeFromSeto(Proto.Seto.Events setoEvents)
+        {
+            // XXX: This kind of breaks the encapsulation of a read-only
+            // dictionary
+            _inner.MergeLeft(FromSeto(setoEvents));
+            return this;
+        }
+
+        public static EventMap FromSeto(Proto.Seto.Events setoEvents)
+        {
+            var eventDict = setoEvents.WithMarkets.Concat(setoEvents.Parents).Aggregate(
+                new Dictionary<Uid, Event>(),
+                (dict, eventInfo) => {
+                    var ev = Event.FromSeto(eventInfo);
+                    dict[ev.Info.Uid] = ev;
+                    return dict;
+                });
+            eventDict.Values
                 .Where(childEvent => childEvent.Info.ParentUid.HasValue)
                 .ForAll(childEvent => {
                         Debug.Assert(
                             childEvent.Info.ParentUid != null,
                             "childEvent.Info.ParentUid != null");
-                        var parent = this[childEvent.Info.ParentUid.Value];
+                        var parent = eventDict[childEvent.Info.ParentUid.Value];
                         parent.AddChild(childEvent);
                     });
-        }
-
-        public static EventMap FromSeto(Proto.Seto.Events setoEvents)
-        {
-            return new EventMap(
-                setoEvents.WithMarkets.Concat(setoEvents.Parents).Aggregate(
-                    new Dictionary<Uid, Event>(),
-                    (dict, eventInfo) => {
-                        var ev = Event.FromSeto(eventInfo);
-                        dict[ev.Info.Uid] = ev;
-                        return dict;
-                    }));
+            return new EventMap(eventDict);
         }
     }
 }

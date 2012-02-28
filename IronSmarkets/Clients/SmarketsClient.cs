@@ -85,7 +85,7 @@ namespace IronSmarkets.Clients
         private readonly SeqRpcHandler<PS.AccountState, AccountState> _accountStateRequestHandler;
         private readonly UidQueueRpcHandler<PS.MarketQuotes, MarketQuotes> _marketQuotesRequestHandler;
         private readonly SeqRpcHandler<PS.OrdersForAccount, IOrderMap> _ordersForAccountRequestHandler;
-        private readonly UidQueueRpcHandler<PS.OrdersForMarket, IOrderMap> _ordersByMarketRequestHandler;
+        private readonly UidQueueRpcHandler<PS.OrdersForMarket, IOrderMap> _ordersForMarketRequestHandler;
         private readonly OrderCreateRequestHandler _orderCreateRequestHandler;
         private readonly IAsyncHttpFoundHandler<PS.Events> _httpHandler;
 
@@ -120,8 +120,7 @@ namespace IronSmarkets.Clients
             _accountStateRequestHandler = new AccountStateRequestHandler(this);
             _marketQuotesRequestHandler = new MarketQuotesRequestHandler(this);
             _ordersForAccountRequestHandler = new OrdersForAccountRequestHandler(this, _orderMap);
-            _ordersByMarketRequestHandler = new UidQueueRpcHandler<PS.OrdersForMarket, IOrderMap>(
-                this, _orderMap.MergeFromSeto, (req, payload) => { req.Response = payload.OrdersForMarket; });
+            _ordersForMarketRequestHandler = new OrdersForMarketRequestHandler(this, _orderMap);
             _orderCreateRequestHandler = new OrderCreateRequestHandler(this);
         }
 
@@ -422,7 +421,7 @@ namespace IronSmarkets.Clients
                     "SmarketsClient",
                     "Called GetOrdersByMarket on disposed object");
 
-            return _ordersByMarketRequestHandler.Request(
+            return _ordersForMarketRequestHandler.Request(
                 market,
                 new PS.Payload {
                     Type = PS.PayloadType.PAYLOADORDERSFORMARKETREQUEST,
@@ -504,7 +503,7 @@ namespace IronSmarkets.Clients
                     _contractQuotesHandler.Handle(payload);
                     break;
                 case PS.PayloadType.PAYLOADORDERSFORMARKET:
-                    _ordersByMarketRequestHandler.Handle(
+                    _ordersForMarketRequestHandler.Handle(
                         Uid.FromUuid128(payload.OrdersForMarket.Market),
                         payload);
                     break;

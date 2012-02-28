@@ -84,7 +84,7 @@ namespace IronSmarkets.Clients
         private readonly SeqRpcHandler<PS.Events, IEventMap> _eventsRequestHandler;
         private readonly SeqRpcHandler<PS.AccountState, AccountState> _accountStateRequestHandler;
         private readonly UidQueueRpcHandler<PS.MarketQuotes, MarketQuotes> _marketQuotesRequestHandler;
-        private readonly SeqRpcHandler<PS.OrdersForAccount, IOrderMap> _ordersByAccountRequestHandler;
+        private readonly SeqRpcHandler<PS.OrdersForAccount, IOrderMap> _ordersForAccountRequestHandler;
         private readonly UidQueueRpcHandler<PS.OrdersForMarket, IOrderMap> _ordersByMarketRequestHandler;
         private readonly OrderCreateRequestHandler _orderCreateRequestHandler;
         private readonly IAsyncHttpFoundHandler<PS.Events> _httpHandler;
@@ -119,8 +119,7 @@ namespace IronSmarkets.Clients
             _eventsRequestHandler = new EventsRequestHandler(this, _eventMap, _httpHandler);
             _accountStateRequestHandler = new AccountStateRequestHandler(this);
             _marketQuotesRequestHandler = new MarketQuotesRequestHandler(this);
-            _ordersByAccountRequestHandler = new SeqRpcHandler<PS.OrdersForAccount, IOrderMap>(
-                this, _orderMap.MergeFromSeto, (req, payload) => { req.Response = payload.OrdersForAccount; });
+            _ordersForAccountRequestHandler = new OrdersForAccountRequestHandler(this, _orderMap);
             _ordersByMarketRequestHandler = new UidQueueRpcHandler<PS.OrdersForMarket, IOrderMap>(
                 this, _orderMap.MergeFromSeto, (req, payload) => { req.Response = payload.OrdersForMarket; });
             _orderCreateRequestHandler = new OrderCreateRequestHandler(this);
@@ -409,7 +408,7 @@ namespace IronSmarkets.Clients
                     "SmarketsClient",
                     "Called GetOrdersByAccount on disposed object");
 
-            return _ordersByAccountRequestHandler.Request(
+            return _ordersForAccountRequestHandler.Request(
                 new PS.Payload {
                     Type = PS.PayloadType.PAYLOADORDERSFORACCOUNTREQUEST,
                     OrdersForAccountRequest = new PS.OrdersForAccountRequest()
@@ -510,7 +509,7 @@ namespace IronSmarkets.Clients
                         payload);
                     break;
                 case PS.PayloadType.PAYLOADORDERSFORACCOUNT:
-                    _ordersByAccountRequestHandler.Handle(payload);
+                    _ordersForAccountRequestHandler.Handle(payload);
                     break;
                 case PS.PayloadType.PAYLOADORDERACCEPTED:
                 case PS.PayloadType.PAYLOADORDERREJECTED:

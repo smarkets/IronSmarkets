@@ -67,6 +67,7 @@
     <Compile Include="Clients\EventsRequestHandler.cs" />
     <Compile Include="Clients\OrderCreateRequestHandler.cs" />
     <Compile Include="Clients\MarketQuotesRequestHandler.cs" />
+    <Compile Include="Clients\OrdersForAccountRequestHandler.cs" />
     <Compile Include="Clients\HttpFoundHandler.cs" />
     <Compile Include="Clients\IAsyncHttpFoundHandler.cs" />
     <Compile Include="Clients\ISyncRequest.cs" />

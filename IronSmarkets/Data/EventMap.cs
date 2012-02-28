@@ -30,14 +30,14 @@ namespace IronSmarkets.Data
 {
     public interface IEventMap : IReadOnlyMap<Uid, Event>
     {
-        ICollection<Event> Roots { get; }
+        IEnumerable<Event> Roots { get; }
     }
 
     internal class EventMap : ReadOnlyDictionaryWrapper<Uid, Event>, IEventMap
     {
         private IList<Event> _roots = null;
 
-        public ICollection<Event> Roots
+        public IEnumerable<Event> Roots
         {
             get
             {

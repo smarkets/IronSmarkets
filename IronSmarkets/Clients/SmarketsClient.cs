@@ -117,8 +117,7 @@ namespace IronSmarkets.Clients
             _httpHandler = httpHandler;
 
             _eventsRequestHandler = new EventsRequestHandler(this, _eventMap, _httpHandler);
-            _accountStateRequestHandler = new SeqRpcHandler<PS.AccountState, AccountState>(
-                this, AccountState.FromSeto, (req, payload) => { req.Response = payload.AccountState; });
+            _accountStateRequestHandler = new AccountStateRequestHandler(this);
             _marketQuotesRequestHandler = new UidQueueRpcHandler<PS.MarketQuotes, MarketQuotes>(
                 this, MarketQuotes.FromSeto, (req, payload) => { req.Response = payload.MarketQuotes; });
             _ordersByAccountRequestHandler = new SeqRpcHandler<PS.OrdersForAccount, IOrderMap>(

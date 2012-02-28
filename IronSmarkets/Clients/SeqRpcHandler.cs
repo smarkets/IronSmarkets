@@ -27,31 +27,20 @@ using log4net;
 
 namespace IronSmarkets.Clients
 {
-    internal class SeqRpcHandler<TPayload, TResponse>
+    internal abstract class SeqRpcHandler<TPayload, TResponse>
     {
         private static readonly ILog Log = LogManager.GetLogger(
             System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         private readonly ISmarketsClient _client;
-        private readonly Func<ISmarketsClient, TPayload, TResponse> _map;
-        private readonly Action<SyncRequest<TPayload>, Proto.Seto.Payload> _extract;
 
         private readonly IDictionary<ulong, SyncRequest<TPayload>> _requests =
             new Dictionary<ulong, SyncRequest<TPayload>>();
         private readonly object _lock = new object();
 
-        public SeqRpcHandler(
-            ISmarketsClient client,
-            Func<ISmarketsClient, TPayload, TResponse> map,
-            Action<SyncRequest<TPayload>, Proto.Seto.Payload> extract)
+        public SeqRpcHandler(ISmarketsClient client)
         {
             _client = client;
-            _map = map;
-            _extract = extract;
-        }
-
-        public SeqRpcHandler(ISmarketsClient client) : this(client, null, null)
-        {
         }
 
         public SyncRequest<TPayload> BeginRequest(Proto.Seto.Payload payload)
@@ -105,14 +94,7 @@ namespace IronSmarkets.Clients
             }
         }
 
-        protected virtual TResponse Map(ISmarketsClient client, TPayload payload)
-        {
-            return _map(client, payload);
-        }
-
-        protected virtual void Extract(SyncRequest<TPayload> request, Proto.Seto.Payload payload)
-        {
-            _extract(request, payload);
-        }
+        protected abstract TResponse Map(ISmarketsClient client, TPayload payload);
+        protected abstract void Extract(SyncRequest<TPayload> request, Proto.Seto.Payload payload);
     }
 }

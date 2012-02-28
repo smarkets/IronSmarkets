@@ -1,4 +1,4 @@
-// Copyright (c) 2011 Smarkets Limited
+// Copyright (c) 2011-2012 Smarkets Limited
 //
 // Permission is hereby granted, free of charge, to any person
 // obtaining a copy of this software and associated documentation
@@ -29,7 +29,7 @@ using IronSmarkets.Data;
 
 namespace IronSmarkets.Clients
 {
-    internal sealed class UidQueueRpcHandler<TPayload, TResponse>
+    internal class UidQueueRpcHandler<TPayload, TResponse>
     {
         private static readonly ILog Log = LogManager.GetLogger(
             System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
@@ -50,6 +50,10 @@ namespace IronSmarkets.Clients
             _client = client;
             _map = map;
             _extract = extract;
+        }
+
+        public UidQueueRpcHandler(ISmarketsClient client) : this(client, null, null)
+        {
         }
 
         public Response<TResponse> Request(Uid uid, Proto.Seto.Payload payload)
@@ -78,7 +82,7 @@ namespace IronSmarkets.Clients
             }
             return new Response<TResponse>(
                 payload.EtoPayload.Seq,
-                _map(_client, req.Response));
+                Map(_client, req.Response));
         }
 
         public void Handle(Uid uid, Proto.Seto.Payload payload)
@@ -98,7 +102,17 @@ namespace IronSmarkets.Clients
                 }
             }
             if (req != null)
-                _extract(req, payload);
+                Extract(req, payload);
+        }
+
+        protected virtual TResponse Map(ISmarketsClient client, TPayload payload)
+        {
+            return _map(client, payload);
+        }
+
+        protected virtual void Extract(SyncRequest<TPayload> request, Proto.Seto.Payload payload)
+        {
+            _extract(request, payload);
         }
     }
 }

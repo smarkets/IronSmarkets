@@ -29,31 +29,20 @@ using IronSmarkets.Data;
 
 namespace IronSmarkets.Clients
 {
-    internal class UidQueueRpcHandler<TPayload, TResponse>
+    internal abstract class UidQueueRpcHandler<TPayload, TResponse>
     {
         private static readonly ILog Log = LogManager.GetLogger(
             System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         private readonly ISmarketsClient _client;
-        private readonly Func<ISmarketsClient, TPayload, TResponse> _map;
-        private readonly Action<SyncRequest<TPayload>, Proto.Seto.Payload> _extract;
 
         private readonly IDictionary<Uid, Queue<SyncRequest<TPayload>>> _requests =
             new Dictionary<Uid, Queue<SyncRequest<TPayload>>>();
         private readonly object _lock = new object();
 
-        public UidQueueRpcHandler(
-            ISmarketsClient client,
-            Func<ISmarketsClient, TPayload, TResponse> map,
-            Action<SyncRequest<TPayload>, Proto.Seto.Payload> extract)
+        public UidQueueRpcHandler(ISmarketsClient client)
         {
             _client = client;
-            _map = map;
-            _extract = extract;
-        }
-
-        public UidQueueRpcHandler(ISmarketsClient client) : this(client, null, null)
-        {
         }
 
         public Response<TResponse> Request(Uid uid, Proto.Seto.Payload payload)
@@ -105,14 +94,7 @@ namespace IronSmarkets.Clients
                 Extract(req, payload);
         }
 
-        protected virtual TResponse Map(ISmarketsClient client, TPayload payload)
-        {
-            return _map(client, payload);
-        }
-
-        protected virtual void Extract(SyncRequest<TPayload> request, Proto.Seto.Payload payload)
-        {
-            _extract(request, payload);
-        }
+        protected abstract TResponse Map(ISmarketsClient client, TPayload payload);
+        protected abstract void Extract(SyncRequest<TPayload> request, Proto.Seto.Payload payload);
     }
 }

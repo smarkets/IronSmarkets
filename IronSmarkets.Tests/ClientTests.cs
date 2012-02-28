@@ -22,6 +22,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 
 using IronSmarkets.Clients;
@@ -220,23 +221,44 @@ namespace IronSmarkets.Tests
                 builder.SetCategory("sport");
                 builder.SetSport("football");
                 builder.SetDateTime(new DateTime(2012,2,21));
+                var mockEventUid = new Uid(247001);
+                var mockMarketUid = new Uid(317002);
+                var mockContractUid = new Uid(608008);
                 var mockMap = client.GetEvents(builder.GetResult()).Data;
-                var mockEvent = mockMap[new Uid(247001)];
-                var mockMarket = mockEvent.Markets[new Uid(317002)];
+                var mockEvent = mockMap[mockEventUid];
+                var mockMarket = client.MarketMap[mockMarketUid];
                 mockMarket.SubscribeQuotes(client);
                 var updatedEvent = new ManualResetEvent(false);
+                MarketQuotes mockQuotes = null;
                 mockMarket.MarketQuotesUpdated += (sender, args) => {
+                    mockQuotes = args.Quotes;
                     updatedEvent.Set();
                 };
                 var mockOrder = new NewOrder();
+                var mockMarketUid = new Uid(317002);
+                var mockContractUid = new Uid(608008);
                 mockOrder.Type = OrderCreateType.Limit;
-                mockOrder.Market = new Uid(317002);
-                mockOrder.Contract = new Uid(608008);
+                mockOrder.Market = mockMarketUid;
+                mockOrder.Contract = mockContractUid;
                 mockOrder.Side = Side.Buy;
                 mockOrder.Quantity = new Quantity(QuantityType.PayoffCurrency, 60000);
                 mockOrder.Price = new Price(PriceType.PercentOdds, 5714);
                 var mockOrderResponse = client.CreateOrder(mockOrder).Data;
                 Assert.True(updatedEvent.WaitOne(1000));
+                Assert.Equal(mockQuotes.QuantityType, QuantityType.PayoffCurrency);
+                Assert.Equal(mockQuotes.PriceType, PriceType.PercentOdds);
+                Assert.Equal(mockQuotes.Uid, mockMarketUid);
+                Assert.True(mockQuotes.ContractQuotes.ContainsKey(mockContractUid));
+                var mockContractQuotes = mockQuotes.ContractQuotes[mockContractUid];
+                Assert.Equal(mockContractQuotes.Bids.Count(), 1);
+                var mockBid = mockContractQuotes.Bids.First();
+                Assert.Equal<uint>(mockBid.Price.Raw, 5714);
+                Assert.Equal<uint>(mockBid.Quantity.Raw, 60000);
+                Assert.Equal(mockContractQuotes.Offers.Count(), 0);
+                Assert.Equal(mockContractQuotes.Executions.Count(), 0);
+                Assert.Equal(mockContractQuotes.QuantityType, QuantityType.PayoffCurrency);
+                Assert.Equal(mockContractQuotes.PriceType, PriceType.PercentOdds);
+                Assert.Equal(mockContractQuotes.Uid, mockContractUid);
             }
         }
     }

@@ -37,8 +37,7 @@ namespace IronSmarkets.Clients
 	private static readonly ILog Log = LogManager.GetLogger(
 	    System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-	public OrderCreateRequestHandler(ISmarketsClient client)
-            : base(client, Map, Extract)
+	public OrderCreateRequestHandler(ISmarketsClient client) : base(client)
 	{
 	}
 
@@ -54,13 +53,13 @@ namespace IronSmarkets.Clients
                 request.ToOrder(Uid.FromUuid128(req.Response.Order)));
 	}
 
-        public static Order Map(ISmarketsClient client, Proto.Seto.OrderAccepted message)
+        protected override Order Map(ISmarketsClient client, Proto.Seto.OrderAccepted message)
         {
             // Ok, this class hierarchy needs some refactoring...
             throw new NotImplementedException();
         }
 
-        public static void Extract(
+        protected override void Extract(
             SyncRequest<Proto.Seto.OrderAccepted> request,
             Proto.Seto.Payload payload)
         {

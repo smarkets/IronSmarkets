@@ -116,8 +116,7 @@ namespace IronSmarkets.Clients
             _receiver = new Receiver<PS.Payload>(_session);
             _httpHandler = httpHandler;
 
-            _eventsRequestHandler = new SeqRpcHandler<PS.Events, IEventMap>(
-                this, _eventMap.MergeFromSeto, ExtractEventResponse);
+            _eventsRequestHandler = new EventsRequestHandler(this, _eventMap, _httpHandler);
             _accountStateRequestHandler = new SeqRpcHandler<PS.AccountState, AccountState>(
                 this, AccountState.FromSeto, (req, payload) => { req.Response = payload.AccountState; });
             _marketQuotesRequestHandler = new UidQueueRpcHandler<PS.MarketQuotes, MarketQuotes>(
@@ -127,20 +126,6 @@ namespace IronSmarkets.Clients
             _ordersByMarketRequestHandler = new UidQueueRpcHandler<PS.OrdersForMarket, IOrderMap>(
                 this, _orderMap.MergeFromSeto, (req, payload) => { req.Response = payload.OrdersForMarket; });
             _orderCreateRequestHandler = new OrderCreateRequestHandler(this);
-        }
-
-        private void ExtractEventResponse(
-            SyncRequest<PS.Events> request, PS.Payload payload)
-        {
-            switch (payload.Type)
-            {
-                case PS.PayloadType.PAYLOADINVALIDREQUEST:
-                    request.SetException(InvalidRequestException.FromSeto(payload.InvalidRequest));
-                    break;
-                case PS.PayloadType.PAYLOADHTTPFOUND:
-                    _httpHandler.BeginFetchHttpFound(request, payload);
-                    break;
-            }
         }
 
         public static ISmarketsClient Create(

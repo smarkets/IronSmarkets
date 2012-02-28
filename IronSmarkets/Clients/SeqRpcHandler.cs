@@ -1,4 +1,4 @@
-// Copyright (c) 2011 Smarkets Limited
+// Copyright (c) 2011-2012 Smarkets Limited
 //
 // Permission is hereby granted, free of charge, to any person
 // obtaining a copy of this software and associated documentation
@@ -50,6 +50,10 @@ namespace IronSmarkets.Clients
             _extract = extract;
         }
 
+        public SeqRpcHandler(ISmarketsClient client) : this(client, null, null)
+        {
+        }
+
         public SyncRequest<TPayload> BeginRequest(Proto.Seto.Payload payload)
         {
             var req = new SyncRequest<TPayload>();
@@ -77,7 +81,7 @@ namespace IronSmarkets.Clients
             var req = BeginRequest(payload);
             return new Response<TResponse>(
                 payload.EtoPayload.Seq,
-                _map(_client, req.Response));
+                Map(_client, req.Response));
         }
 
         public void Handle(Proto.Seto.Payload payload)
@@ -92,13 +96,23 @@ namespace IronSmarkets.Clients
                 }
             }
             if (req != null)
-                _extract(req, payload);
+                Extract(req, payload);
             else
             {
                 Log.Warn(
                     "Received payload " +
                     "but could not find original request");
             }
+        }
+
+        protected virtual TResponse Map(ISmarketsClient client, TPayload payload)
+        {
+            return _map(client, payload);
+        }
+
+        protected virtual void Extract(SyncRequest<TPayload> request, Proto.Seto.Payload payload)
+        {
+            _extract(request, payload);
         }
     }
 }

@@ -63,6 +63,7 @@ namespace IronSmarkets.Data
             // XXX: This kind of breaks the encapsulation of a read-only
             // dictionary
             _inner.MergeLeft(FromSeto(setoEvents));
+            _roots = null;
             return this;
         }
 

@@ -35,7 +35,7 @@ namespace IronSmarkets.Clients
             System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         private readonly ISmarketsClient _client;
-        private readonly Func<TPayload, TResponse> _map;
+        private readonly Func<ISmarketsClient, TPayload, TResponse> _map;
         private readonly Action<SyncRequest<TPayload>, Proto.Seto.Payload> _extract;
 
         private readonly IDictionary<Uid, Queue<SyncRequest<TPayload>>> _requests =
@@ -44,7 +44,7 @@ namespace IronSmarkets.Clients
 
         public UidQueueRpcHandler(
             ISmarketsClient client,
-            Func<TPayload, TResponse> map,
+            Func<ISmarketsClient, TPayload, TResponse> map,
             Action<SyncRequest<TPayload>, Proto.Seto.Payload> extract)
         {
             _client = client;
@@ -78,7 +78,7 @@ namespace IronSmarkets.Clients
             }
             return new Response<TResponse>(
                 payload.EtoPayload.Seq,
-                _map(req.Response));
+                _map(_client, req.Response));
         }
 
         public void Handle(Uid uid, Proto.Seto.Payload payload)

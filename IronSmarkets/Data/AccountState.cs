@@ -22,6 +22,8 @@
 
 using System;
 
+using IronSmarkets.Clients;
+
 namespace IronSmarkets.Data
 {
     public struct AccountState : IEquatable<AccountState>
@@ -103,7 +105,7 @@ namespace IronSmarkets.Data
             return !left.Equals(right);
         }
 
-        internal static AccountState FromSeto(Proto.Seto.AccountState info)
+        internal static AccountState FromSeto(ISmarketsClient client, Proto.Seto.AccountState info)
         {
             return new AccountState(
                 Uid.FromUuid128(info.Account),

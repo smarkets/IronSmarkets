@@ -54,7 +54,7 @@ namespace IronSmarkets.Clients
                 request.ToOrder(Uid.FromUuid128(req.Response.Order)));
 	}
 
-        public static Order Map(Proto.Seto.OrderAccepted message)
+        public static Order Map(ISmarketsClient client, Proto.Seto.OrderAccepted message)
         {
             // Ok, this class hierarchy needs some refactoring...
             throw new NotImplementedException();

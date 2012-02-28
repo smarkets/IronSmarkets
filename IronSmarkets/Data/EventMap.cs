@@ -24,6 +24,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 
+using IronSmarkets.Clients;
 using IronSmarkets.Extensions;
 
 namespace IronSmarkets.Data
@@ -58,7 +59,7 @@ namespace IronSmarkets.Data
         {
         }
 
-        public EventMap MergeFromSeto(Proto.Seto.Events setoEvents)
+        public EventMap MergeFromSeto(ISmarketsClient client, Proto.Seto.Events setoEvents)
         {
             // XXX: This kind of breaks the encapsulation of a read-only
             // dictionary

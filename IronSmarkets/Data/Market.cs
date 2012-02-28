@@ -73,7 +73,7 @@ namespace IronSmarkets.Data
 
         private void OnMarketQuotesReceived(object sender, QuotesReceivedEventArgs<Proto.Seto.MarketQuotes> e)
         {
-            _quotes = MarketQuotes.FromSeto(e.Payload);
+            _quotes = MarketQuotes.FromSeto(null, e.Payload);
             OnMarketQuotesUpdated(e.Sequence);
         }
 

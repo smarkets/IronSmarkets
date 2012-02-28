@@ -22,6 +22,8 @@
 
 using System.Collections.Generic;
 
+using IronSmarkets.Clients;
+
 namespace IronSmarkets.Data
 {
     public class MarketQuotes
@@ -48,7 +50,7 @@ namespace IronSmarkets.Data
             _quantityType = quantityType;
         }
 
-        internal static MarketQuotes FromSeto(Proto.Seto.MarketQuotes setoQuotes)
+        internal static MarketQuotes FromSeto(ISmarketsClient client, Proto.Seto.MarketQuotes setoQuotes)
         {
             var quantityType = Quantity.QuantityTypeFromSeto(setoQuotes.QuantityType);
             var priceType = Price.PriceTypeFromSeto(setoQuotes.PriceType);

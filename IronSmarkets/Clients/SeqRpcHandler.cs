@@ -33,7 +33,7 @@ namespace IronSmarkets.Clients
             System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         private readonly ISmarketsClient _client;
-        private readonly Func<TPayload, TResponse> _map;
+        private readonly Func<ISmarketsClient, TPayload, TResponse> _map;
         private readonly Action<SyncRequest<TPayload>, Proto.Seto.Payload> _extract;
 
         private readonly IDictionary<ulong, SyncRequest<TPayload>> _requests =
@@ -42,7 +42,7 @@ namespace IronSmarkets.Clients
 
         public SeqRpcHandler(
             ISmarketsClient client,
-            Func<TPayload, TResponse> map,
+            Func<ISmarketsClient, TPayload, TResponse> map,
             Action<SyncRequest<TPayload>, Proto.Seto.Payload> extract)
         {
             _client = client;
@@ -77,7 +77,7 @@ namespace IronSmarkets.Clients
             var req = BeginRequest(payload);
             return new Response<TResponse>(
                 payload.EtoPayload.Seq,
-                _map(req.Response));
+                _map(_client, req.Response));
         }
 
         public void Handle(Proto.Seto.Payload payload)

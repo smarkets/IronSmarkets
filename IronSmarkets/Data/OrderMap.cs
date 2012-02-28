@@ -22,6 +22,7 @@
 
 using System.Collections.Generic;
 
+using IronSmarkets.Clients;
 using IronSmarkets.Extensions;
 
 namespace IronSmarkets.Data
@@ -56,13 +57,13 @@ namespace IronSmarkets.Data
             return new OrderMap { orders };
         }
 
-        public OrderMap MergeFromSeto(Proto.Seto.OrdersForAccount orders)
+        public OrderMap MergeFromSeto(ISmarketsClient client, Proto.Seto.OrdersForAccount orders)
         {
             Add(orders);
             return this;
         }
 
-        public OrderMap MergeFromSeto(Proto.Seto.OrdersForMarket orders)
+        public OrderMap MergeFromSeto(ISmarketsClient client, Proto.Seto.OrdersForMarket orders)
         {
             Add(orders);
             return this;

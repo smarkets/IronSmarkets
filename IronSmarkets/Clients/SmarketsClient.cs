@@ -51,6 +51,8 @@ namespace IronSmarkets.Clients
 
         IEventMap EventMap { get; }
         IOrderMap OrderMap { get; }
+        IMarketMap MarketMap { get; }
+        IContractMap ContractMap { get; }
 
         Response<IEventMap> GetEvents(EventQuery query);
         Response<AccountState> GetAccountState();
@@ -76,6 +78,8 @@ namespace IronSmarkets.Clients
 
         private readonly EventMap _eventMap = new EventMap();
         private readonly OrderMap _orderMap = new OrderMap();
+        private readonly MarketMap _marketMap = new MarketMap();
+        private readonly ContractMap _contractMap = new ContractMap();
 
         private readonly SeqRpcHandler<PS.Events, IEventMap> _eventsRequestHandler;
         private readonly SeqRpcHandler<PS.AccountState, AccountState> _accountStateRequestHandler;
@@ -176,6 +180,22 @@ namespace IronSmarkets.Clients
             get
             {
                 return _orderMap;
+            }
+        }
+
+        public IMarketMap MarketMap
+        {
+            get
+            {
+                return _marketMap;
+            }
+        }
+
+        public IContractMap ContractMap
+        {
+            get
+            {
+                return _contractMap;
             }
         }
 

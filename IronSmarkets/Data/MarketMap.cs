@@ -33,6 +33,10 @@ namespace IronSmarkets.Data
 
     internal class MarketMap : ReadOnlyDictionaryWrapper<Uid, Market>, IMarketMap
     {
+        public MarketMap() : base(new Dictionary<Uid, Market>())
+        {
+        }
+
         private MarketMap(IDictionary<Uid, Market> markets) : base(markets)
         {
         }

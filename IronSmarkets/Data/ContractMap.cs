@@ -33,6 +33,10 @@ namespace IronSmarkets.Data
 
     internal class ContractMap : ReadOnlyDictionaryWrapper<Uid, Contract>, IContractMap
     {
+        public ContractMap() : base(new Dictionary<Uid, Contract>())
+        {
+        }
+
         private ContractMap(IDictionary<Uid, Contract> contracts) : base(contracts)
         {
         }

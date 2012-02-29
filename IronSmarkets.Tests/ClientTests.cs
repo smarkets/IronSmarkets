@@ -21,7 +21,6 @@
 // SOFTWARE.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 
@@ -33,21 +32,19 @@ using IronSmarkets.Tests.Mocks;
 
 using Eto = IronSmarkets.Proto.Eto;
 using Seto = IronSmarkets.Proto.Seto;
-
-using Moq;
 using Xunit;
 
 namespace IronSmarkets.Tests
 {
     public class ClientTests
     {
-        private static readonly SocketSettings socketSettings = new SocketSettings("mock", 3701);
-        private static readonly SessionSettings sessionSettings = new SessionSettings("mockuser", "mockpassword");
+        private static readonly SocketSettings SocketSettings = new SocketSettings("mock", 3701);
+        private static readonly SessionSettings SessionSettings = new SessionSettings("mockuser", "mockpassword");
 
         [Fact]
         public void HandleQuotes()
         {
-            var socket = new MockSessionSocket(socketSettings);
+            var socket = new MockSessionSocket(SocketSettings);
 
             socket.Expect(
                 new Seto.Payload {
@@ -209,8 +206,8 @@ namespace IronSmarkets.Tests
                     }
                 });
 
-            var session = new SeqSession(socket, sessionSettings);
-            IClientSettings mockSettings = new ClientSettings(socketSettings, sessionSettings);
+            var session = new SeqSession(socket, SessionSettings);
+            IClientSettings mockSettings = new ClientSettings(SocketSettings, SessionSettings);
 
             var mockHttpHandler = new MockHttpFoundHandler<Proto.Seto.Events>();
             mockHttpHandler.AddDocument(MockUrls.Football20120221);
@@ -234,15 +231,14 @@ namespace IronSmarkets.Tests
                     mockQuotes = args.Quotes;
                     updatedEvent.Set();
                 };
-                var mockOrder = new NewOrder();
-                var mockMarketUid = new Uid(317002);
-                var mockContractUid = new Uid(608008);
-                mockOrder.Type = OrderCreateType.Limit;
-                mockOrder.Market = mockMarketUid;
-                mockOrder.Contract = mockContractUid;
-                mockOrder.Side = Side.Buy;
-                mockOrder.Quantity = new Quantity(QuantityType.PayoffCurrency, 60000);
-                mockOrder.Price = new Price(PriceType.PercentOdds, 5714);
+                var mockOrder = new NewOrder {
+                    Type = OrderCreateType.Limit,
+                    Market = mockMarketUid,
+                    Contract = mockContractUid,
+                    Side = Side.Buy,
+                    Quantity = new Quantity(QuantityType.PayoffCurrency, 60000),
+                    Price = new Price(PriceType.PercentOdds, 5714)
+                };
                 var mockOrderResponse = client.CreateOrder(mockOrder).Data;
                 Assert.True(updatedEvent.WaitOne(1000));
                 Assert.Equal(mockQuotes.QuantityType, QuantityType.PayoffCurrency);

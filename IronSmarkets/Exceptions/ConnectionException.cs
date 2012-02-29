@@ -23,14 +23,23 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
+using System.Security.Permissions;
 
 namespace IronSmarkets.Exceptions
 {
+    [Serializable]
     public class ConnectionException : Exception
     {
         private readonly string _errorMessage;
 
         public string ErrorMessage { get { return _errorMessage; } }
+
+        [SecurityPermission(SecurityAction.Demand, SerializationFormatter = true)]
+        protected ConnectionException(SerializationInfo info, StreamingContext ctxt) : base(info, ctxt)
+        {
+            _errorMessage = info.GetString("ErrorMessage");
+        }
 
         public ConnectionException(string errorMessage)
         {
@@ -49,6 +58,18 @@ namespace IronSmarkets.Exceptions
                     { "ErrorMessage", ErrorMessage }
                 };
             }
+        }
+
+        [SecurityPermissionAttribute(SecurityAction.Demand, SerializationFormatter = true)]
+        public override void GetObjectData(SerializationInfo info, StreamingContext context)
+        {
+            if (info == null)
+            {
+                throw new ArgumentNullException("info");
+            }
+
+            info.AddValue("ErrorMessage", ErrorMessage);
+            base.GetObjectData(info, context);
         }
     }
 }

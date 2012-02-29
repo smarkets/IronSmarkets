@@ -21,14 +21,26 @@
 // SOFTWARE.
 
 using System;
+using System.Runtime.Serialization;
+using System.Security.Permissions;
 
 namespace IronSmarkets.Exceptions
 {
+    [Serializable]
     public class NotLoggedInException : Exception
     {
         private const string DefaultMessage =
             "Session not currently logged in";
 
         public override string Message { get { return DefaultMessage; } }
+
+        [SecurityPermission(SecurityAction.Demand, SerializationFormatter = true)]
+        protected NotLoggedInException(SerializationInfo info, StreamingContext ctxt) : base(info, ctxt)
+        {
+        }
+
+        public NotLoggedInException()
+        {
+        }
     }
 }

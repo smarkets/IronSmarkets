@@ -21,14 +21,26 @@
 // SOFTWARE.
 
 using System;
+using System.Runtime.Serialization;
+using System.Security.Permissions;
 
 namespace IronSmarkets.Exceptions
 {
+    [Serializable]
     public class NoHandlerException : Exception
     {
         private const string DefaultMessage =
             "No payload handler was registered; aborting";
 
         public override string Message { get { return DefaultMessage; } }
+
+        [SecurityPermission(SecurityAction.Demand, SerializationFormatter = true)]
+        protected NoHandlerException(SerializationInfo info, StreamingContext ctxt) : base(info, ctxt)
+        {
+        }
+
+        public NoHandlerException()
+        {
+        }
     }
 }

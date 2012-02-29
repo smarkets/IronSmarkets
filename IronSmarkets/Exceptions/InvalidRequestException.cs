@@ -23,10 +23,12 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
+using System.Runtime.Serialization;
+using System.Security.Permissions;
 
 namespace IronSmarkets.Exceptions
 {
+    [Serializable]
     public class InvalidRequestException : Exception
     {
         private static readonly IDictionary<Proto.Seto.InvalidRequestType, string> Messages =
@@ -37,6 +39,12 @@ namespace IronSmarkets.Exceptions
         private readonly string _errorMessage;
 
         public string ErrorMessage { get { return _errorMessage; } }
+
+        [SecurityPermission(SecurityAction.Demand, SerializationFormatter = true)]
+        protected InvalidRequestException(SerializationInfo info, StreamingContext ctxt) : base(info, ctxt)
+        {
+            _errorMessage = info.GetString("ErrorMessage");
+        }
 
         private InvalidRequestException(string errorMessage)
         {
@@ -60,6 +68,18 @@ namespace IronSmarkets.Exceptions
         internal static InvalidRequestException FromSeto(Proto.Seto.InvalidRequest seto)
         {
             return new InvalidRequestException(Messages[seto.Type]);
+        }
+
+        [SecurityPermissionAttribute(SecurityAction.Demand, SerializationFormatter = true)]
+        public override void GetObjectData(SerializationInfo info, StreamingContext context)
+        {
+            if (info == null)
+            {
+                throw new ArgumentNullException("info");
+            }
+
+            info.AddValue("ErrorMessage", ErrorMessage);
+            base.GetObjectData(info, context);
         }
     }
 }

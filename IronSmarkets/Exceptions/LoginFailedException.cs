@@ -23,11 +23,14 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
+using System.Security.Permissions;
 
 using IronSmarkets.Proto.Eto;
 
 namespace IronSmarkets.Exceptions
 {
+    [Serializable]
     public class LoginFailedException : Exception
     {
         private readonly string _errorMessage;
@@ -35,6 +38,13 @@ namespace IronSmarkets.Exceptions
 
         public string ErrorMessage { get { return _errorMessage; } }
         public LogoutReason LogoutReason { get { return _logoutReason; } }
+
+        [SecurityPermission(SecurityAction.Demand, SerializationFormatter = true)]
+        protected LoginFailedException(SerializationInfo info, StreamingContext ctxt) : base(info, ctxt)
+        {
+            _errorMessage = info.GetString("ErrorMessage");
+            _logoutReason = (LogoutReason)info.GetValue("LogoutReason", typeof(LogoutReason));
+        }
 
         public LoginFailedException(string errorMessage, LogoutReason logoutReason)
         {
@@ -55,6 +65,19 @@ namespace IronSmarkets.Exceptions
                     { "LogoutReason", LogoutReason }
                 };
             }
+        }
+
+        [SecurityPermissionAttribute(SecurityAction.Demand, SerializationFormatter = true)]
+        public override void GetObjectData(SerializationInfo info, StreamingContext context)
+        {
+            if (info == null)
+            {
+                throw new ArgumentNullException("info");
+            }
+
+            info.AddValue("ErrorMessage", ErrorMessage);
+            info.AddValue("LogoutReason", LogoutReason, typeof(LogoutReason));
+            base.GetObjectData(info, context);
         }
     }
 }

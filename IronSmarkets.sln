@@ -1,48 +1,54 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IronSmarkets", "IronSmarkets\IronSmarkets.csproj", "{077CDC78-FA2C-4E1B-954B-693A7BDC3353}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IronSmarkets", "IronSmarkets\IronSmarkets.csproj", "{8AAB17E9-6976-4543-ADB4-F2690E316768}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IronSmarkets.ConsoleExample", "IronSmarkets.ConsoleExample\IronSmarkets.ConsoleExample.csproj", "{17117DC1-19F3-4E91-A89B-0351162D4BD1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IronSmarkets.Tests", "IronSmarkets.Tests\IronSmarkets.Tests.csproj", "{6B52FA13-0C70-43CD-90EB-C6A411D31406}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IronSmarkets.Tests", "IronSmarkets.Tests\IronSmarkets.Tests.csproj", "{99BE1B06-8880-40C4-A52F-5B69D60DA49B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IronSmarkets.ConsoleExample", "IronSmarkets.ConsoleExample\IronSmarkets.ConsoleExample.csproj", "{894B25EA-51F2-42C7-8A8E-B836B8E68D46}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
+		Debug|Mixed Platforms = Debug|Mixed Platforms
+		Debug|x86 = Debug|x86
 		Release|Any CPU = Release|Any CPU
+		Release|Mixed Platforms = Release|Mixed Platforms
+		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{077CDC78-FA2C-4E1B-954B-693A7BDC3353}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{077CDC78-FA2C-4E1B-954B-693A7BDC3353}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{17117DC1-19F3-4E91-A89B-0351162D4BD1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{17117DC1-19F3-4E91-A89B-0351162D4BD1}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{99BE1B06-8880-40C4-A52F-5B69D60DA49B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{99BE1B06-8880-40C4-A52F-5B69D60DA49B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8AAB17E9-6976-4543-ADB4-F2690E316768}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8AAB17E9-6976-4543-ADB4-F2690E316768}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8AAB17E9-6976-4543-ADB4-F2690E316768}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{8AAB17E9-6976-4543-ADB4-F2690E316768}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{8AAB17E9-6976-4543-ADB4-F2690E316768}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{8AAB17E9-6976-4543-ADB4-F2690E316768}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8AAB17E9-6976-4543-ADB4-F2690E316768}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8AAB17E9-6976-4543-ADB4-F2690E316768}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{8AAB17E9-6976-4543-ADB4-F2690E316768}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{8AAB17E9-6976-4543-ADB4-F2690E316768}.Release|x86.ActiveCfg = Release|Any CPU
+		{6B52FA13-0C70-43CD-90EB-C6A411D31406}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6B52FA13-0C70-43CD-90EB-C6A411D31406}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6B52FA13-0C70-43CD-90EB-C6A411D31406}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{6B52FA13-0C70-43CD-90EB-C6A411D31406}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{6B52FA13-0C70-43CD-90EB-C6A411D31406}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{6B52FA13-0C70-43CD-90EB-C6A411D31406}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6B52FA13-0C70-43CD-90EB-C6A411D31406}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6B52FA13-0C70-43CD-90EB-C6A411D31406}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{6B52FA13-0C70-43CD-90EB-C6A411D31406}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{6B52FA13-0C70-43CD-90EB-C6A411D31406}.Release|x86.ActiveCfg = Release|Any CPU
+		{894B25EA-51F2-42C7-8A8E-B836B8E68D46}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{894B25EA-51F2-42C7-8A8E-B836B8E68D46}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{894B25EA-51F2-42C7-8A8E-B836B8E68D46}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{894B25EA-51F2-42C7-8A8E-B836B8E68D46}.Debug|x86.ActiveCfg = Debug|x86
+		{894B25EA-51F2-42C7-8A8E-B836B8E68D46}.Debug|x86.Build.0 = Debug|x86
+		{894B25EA-51F2-42C7-8A8E-B836B8E68D46}.Release|Any CPU.ActiveCfg = Release|x86
+		{894B25EA-51F2-42C7-8A8E-B836B8E68D46}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{894B25EA-51F2-42C7-8A8E-B836B8E68D46}.Release|Mixed Platforms.Build.0 = Release|x86
+		{894B25EA-51F2-42C7-8A8E-B836B8E68D46}.Release|x86.ActiveCfg = Release|x86
+		{894B25EA-51F2-42C7-8A8E-B836B8E68D46}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(MonoDevelopProperties) = preSolution
-		StartupItem = IronSmarkets\IronSmarkets.csproj
-		Policies = $0
-		$0.TextStylePolicy = $1
-		$1.inheritsSet = null
-		$1.scope = text/x-csharp
-		$0.CSharpFormattingPolicy = $2
-		$2.inheritsSet = Mono
-		$2.inheritsScope = text/x-csharp
-		$2.scope = text/x-csharp
-		$0.TextStylePolicy = $3
-		$3.EolMarker = Windows
-		$3.inheritsSet = VisualStudio
-		$3.inheritsScope = text/plain
-		$3.scope = text/plain
-		$0.StandardHeader = $4
-		$4.Text = Copyright (c) 2011 Smarkets Limited\r\n\r\n Permission is hereby granted, free of charge, to any person\r\n obtaining a copy of this software and associated documentation\r\n files (the "Software"), to deal in the Software without\r\n restriction, including without limitation the rights to use,\r\n copy, modify, merge, publish, distribute, sublicense, and/or sell\r\n copies of the Software, and to permit persons to whom the\r\n Software is furnished to do so, subject to the following\r\n conditions:\r\n\r\n The above copyright notice and this permission notice shall be\r\n included in all copies or substantial portions of the Software.\r\n\r\n THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,\r\n EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES\r\n OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND\r\n NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT\r\n HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,\r\n WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING\r\n FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR\r\n OTHER DEALINGS IN THE SOFTWARE.
-		$4.IncludeInNewFiles = True
-		$0.DotNetNamingPolicy = $5
-		$5.DirectoryNamespaceAssociation = None
-		$5.ResourceNamePolicy = FileFormatDefault
 	EndGlobalSection
 EndGlobal

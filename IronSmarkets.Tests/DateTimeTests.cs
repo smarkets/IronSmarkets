@@ -33,13 +33,23 @@ namespace IronSmarkets.Tests
 	[Fact]
 	public void MicrosecondsRoundtrip()
 	{
-            var dt = DateTime.UtcNow;
-            var dt2 = DateTime.UtcNow.AddDays(1);
+            var dt = MicrosecondNow();
+            var dt2 = MicrosecondNow().AddDays(1);
             Assert.Equal(dt, SetoMap.FromMicroseconds(SetoMap.ToMicroseconds(dt)));
             Assert.NotEqual(dt2, SetoMap.FromMicroseconds(SetoMap.ToMicroseconds(dt)));
             Assert.Equal((ulong)9800, SetoMap.ToMicroseconds(SetoMap.FromMicroseconds(9800)));
             Assert.Equal((ulong)1, SetoMap.ToMicroseconds(SetoMap.FromMicroseconds(1)));
             Assert.NotEqual((ulong)1, SetoMap.ToMicroseconds(SetoMap.FromMicroseconds(2)));
 	}
+
+        /// <summary>
+        ///   Provides a DateTime with microsecond resolution (instead
+        ///   of 100-nanoseconds by default)
+        /// </summary>
+        private DateTime MicrosecondNow()
+        {
+            var dt = DateTime.UtcNow;
+            return new DateTime(dt.Ticks - (dt.Ticks % 10));
+        }
     }
 }

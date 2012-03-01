@@ -25,6 +25,7 @@ using System.Threading;
 
 using log4net;
 
+using IronSmarkets.Exceptions;
 using IronSmarkets.Sessions;
 
 namespace IronSmarkets.Clients
@@ -77,6 +78,12 @@ namespace IronSmarkets.Clients
                 catch (IOException ex)
                 {
                     Log.Warn("Receiving socket timed out", ex);
+                    _complete = true;
+                }
+                catch (ConnectionException cex)
+                {
+                    Log.Warn("Caught connection exceptions", cex);
+                    _complete = true;
                 }
             }
         }

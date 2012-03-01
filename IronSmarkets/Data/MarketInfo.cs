@@ -1,4 +1,4 @@
-// Copyright (c) 2011 Smarkets Limited
+// Copyright (c) 2011-2012 Smarkets Limited
 //
 // Permission is hereby granted, free of charge, to any person
 // obtaining a copy of this software and associated documentation
@@ -22,6 +22,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace IronSmarkets.Data
 {
@@ -34,6 +35,7 @@ namespace IronSmarkets.Data
         private readonly DateTime? _startDateTime;
         private readonly DateTime? _endDateTime;
         private readonly IEnumerable<KeyValuePair<Uid, string>> _entities;
+        private readonly IEnumerable<Uid> _contracts;
 
         public Uid Uid { get { return _uid; } }
         public string Slug { get { return _slug; } }
@@ -42,6 +44,7 @@ namespace IronSmarkets.Data
         public DateTime? StartDateTime { get { return _startDateTime; } }
         public DateTime? EndDateTime { get { return _endDateTime; } }
         public IEnumerable<KeyValuePair<Uid, string>> Entities { get { return _entities; } }
+        public IEnumerable<Uid> Contracts { get { return _contracts; } }
 
         private MarketInfo(
             Uid uid,
@@ -50,7 +53,8 @@ namespace IronSmarkets.Data
             string shortname,
             DateTime? startDateTime,
             DateTime? endDateTime,
-            IEnumerable<KeyValuePair<Uid, string>> entities)
+            IEnumerable<KeyValuePair<Uid, string>> entities,
+            IEnumerable<Uid> contracts)
         {
             _uid = uid;
             _slug = slug;
@@ -59,6 +63,7 @@ namespace IronSmarkets.Data
             _startDateTime = startDateTime;
             _endDateTime = endDateTime;
             _entities = entities;
+            _contracts = contracts;
         }
 
         internal static MarketInfo FromSeto(Proto.Seto.MarketInfo info)
@@ -70,7 +75,8 @@ namespace IronSmarkets.Data
                 info.Shortname,
                 SetoMap.FromDateTime(info.StartDate, info.StartTime),
                 SetoMap.FromDateTime(info.EndDate, info.EndTime),
-                EntityRelationships.FromEntities(info.Entities));
+                EntityRelationships.FromEntities(info.Entities),
+                from c in info.Contracts select Uid.FromUuid128(c.Contract));
         }
     }
 }

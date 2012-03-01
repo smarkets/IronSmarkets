@@ -32,7 +32,7 @@ using Seto = IronSmarkets.Proto.Seto;
 
 namespace IronSmarkets.Clients
 {
-    internal class OrdersForMarketRequestHandler : UidQueueRpcHandler<Seto.OrdersForMarket, IOrderMap>
+    internal class OrdersForMarketRequestHandler : KeyQueueRpcHandler<Uid, Seto.OrdersForMarket, IOrderMap>
     {
         private readonly OrderMap _orderMap;
 
@@ -49,6 +49,16 @@ namespace IronSmarkets.Clients
         protected override void Extract(SyncRequest<Seto.OrdersForMarket> request, Seto.Payload payload)
         {
             request.Response = payload.OrdersForMarket;
+        }
+
+        protected override Uid ExtractRequestKey(Seto.Payload payload)
+        {
+            return Uid.FromUuid128(payload.OrdersForMarketRequest.Market);
+        }
+
+        protected override Uid ExtractResponseKey(Seto.Payload payload)
+        {
+            return Uid.FromUuid128(payload.OrdersForMarket.Market);
         }
     }
 }

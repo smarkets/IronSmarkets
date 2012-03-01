@@ -81,23 +81,17 @@ namespace IronSmarkets.Clients
         private readonly MarketMap _marketMap = new MarketMap();
         private readonly ContractMap _contractMap = new ContractMap();
 
-        private readonly SeqRpcHandler<PS.Events, IEventMap> _eventsRequestHandler;
-        private readonly SeqRpcHandler<PS.AccountState, AccountState> _accountStateRequestHandler;
-        private readonly UidQueueRpcHandler<PS.MarketQuotes, MarketQuotes> _marketQuotesRequestHandler;
-        private readonly SeqRpcHandler<PS.OrdersForAccount, IOrderMap> _ordersForAccountRequestHandler;
-        private readonly UidQueueRpcHandler<PS.OrdersForMarket, IOrderMap> _ordersForMarketRequestHandler;
-        private readonly OrderCreateRequestHandler _orderCreateRequestHandler;
+        private readonly IRpcHandler<PS.Events, IEventMap> _eventsRequestHandler;
+        private readonly IRpcHandler<PS.AccountState, AccountState> _accountStateRequestHandler;
+        private readonly IRpcHandler<PS.MarketQuotes, MarketQuotes> _marketQuotesRequestHandler;
+        private readonly IRpcHandler<PS.OrdersForAccount, IOrderMap> _ordersForAccountRequestHandler;
+        private readonly IRpcHandler<PS.OrdersForMarket, IOrderMap> _ordersForMarketRequestHandler;
+        private readonly IOrderCreateRpcHandler _orderCreateRequestHandler;
         private readonly IAsyncHttpFoundHandler<PS.Events> _httpHandler;
 
-        private readonly QuoteHandler<PS.MarketQuotes> _marketQuotesHandler =
-            new QuoteHandler<PS.MarketQuotes>(
-                payload => new UidPair<PS.MarketQuotes>(
-                    Uid.FromUuid128(payload.MarketQuotes.Market), payload.MarketQuotes));
+        private readonly QuoteHandler<PS.MarketQuotes> _marketQuotesHandler = new MarketQuoteHandler();
 
-        private readonly QuoteHandler<PS.ContractQuotes> _contractQuotesHandler =
-            new QuoteHandler<PS.ContractQuotes>(
-                payload => new UidPair<PS.ContractQuotes>(
-                    Uid.FromUuid128(payload.ContractQuotes.Contract), payload.ContractQuotes));
+        private readonly QuoteHandler<PS.ContractQuotes> _contractQuotesHandler = new ContractQuoteHandler();
 
         private int _disposed;
 
@@ -391,7 +385,6 @@ namespace IronSmarkets.Clients
                     "Called GetQuotesByMarket on disposed object");
 
             return _marketQuotesRequestHandler.Request(
-                market,
                 new PS.Payload {
                     Type = PS.PayloadType.PAYLOADMARKETQUOTESREQUEST,
                         MarketQuotesRequest = new PS.MarketQuotesRequest {
@@ -422,7 +415,6 @@ namespace IronSmarkets.Clients
                     "Called GetOrdersByMarket on disposed object");
 
             return _ordersForMarketRequestHandler.Request(
-                market,
                 new PS.Payload {
                     Type = PS.PayloadType.PAYLOADORDERSFORMARKETREQUEST,
                         OrdersForMarketRequest = new PS.OrdersForMarketRequest {
@@ -493,19 +485,34 @@ namespace IronSmarkets.Clients
                     break;
                 case PS.PayloadType.PAYLOADMARKETQUOTES:
                     // First, respond to a possible synchronous request
-                    _marketQuotesRequestHandler.Handle(
-                        Uid.FromUuid128(payload.MarketQuotes.Market),
-                        payload);
+                    var marketUid = Uid.FromUuid128(payload.MarketQuotes.Market);
+                    _marketQuotesRequestHandler.Handle(payload);
+                    // Dispatch updates to markets in identity map
+                    var marketPair = _marketQuotesHandler.Extract(payload);
+                    Market market;
+                    if (_marketMap.TryGetValue(marketUid, out market))
+                    {
+                        var args = QuoteHandler<PS.MarketQuotes>.PayloadArgs(marketPair, payload);
+                        market.OnMarketQuotesReceived(this, args);
+                    }
                     // Dispatch updates to all listeners
-                    _marketQuotesHandler.Handle(payload);
+                    _marketQuotesHandler.Handle(marketPair, payload);
                     break;
                 case PS.PayloadType.PAYLOADCONTRACTQUOTES:
-                    _contractQuotesHandler.Handle(payload);
+                    var contractUid = Uid.FromUuid128(payload.ContractQuotes.Contract);
+                    // Dispatch updates to markets in identity map
+                    var contractPair = _contractQuotesHandler.Extract(payload);
+                    Contract contract;
+                    if (_contractMap.TryGetValue(contractUid, out contract))
+                    {
+                        var args = QuoteHandler<PS.ContractQuotes>.PayloadArgs(contractPair, payload);
+                        contract.OnContractQuotesReceived(this, args);
+                    }
+                    // Dispatch to all other listeners
+                    _contractQuotesHandler.Handle(contractPair, payload);
                     break;
                 case PS.PayloadType.PAYLOADORDERSFORMARKET:
-                    _ordersForMarketRequestHandler.Handle(
-                        Uid.FromUuid128(payload.OrdersForMarket.Market),
-                        payload);
+                    _ordersForMarketRequestHandler.Handle(payload);
                     break;
                 case PS.PayloadType.PAYLOADORDERSFORACCOUNT:
                     _ordersForAccountRequestHandler.Handle(payload);

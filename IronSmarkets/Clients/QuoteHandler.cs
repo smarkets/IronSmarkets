@@ -1,4 +1,4 @@
-// Copyright (c) 2011 Smarkets Limited
+// Copyright (c) 2011-2012 Smarkets Limited
 //
 // Permission is hereby granted, free of charge, to any person
 // obtaining a copy of this software and associated documentation
@@ -27,6 +27,8 @@ using log4net;
 
 using IronSmarkets.Data;
 
+using Seto = IronSmarkets.Proto.Seto;
+
 namespace IronSmarkets.Clients
 {
     internal sealed class UidPair<T> : Tuple<Uid, T>
@@ -39,21 +41,14 @@ namespace IronSmarkets.Clients
         }
     }
 
-    internal sealed class QuoteHandler<T>
+    internal abstract class QuoteHandler<T>
     {
         private static readonly ILog Log = LogManager.GetLogger(
             System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-        private readonly Func<Proto.Seto.Payload, UidPair<T>> _payloadExtractor;
-
         private readonly IDictionary<Uid, EventHandler<QuotesReceivedEventArgs<T>>> _handlers =
             new Dictionary<Uid, EventHandler<QuotesReceivedEventArgs<T>>>();
         private readonly object _lock = new object();
-
-        public QuoteHandler(Func<Proto.Seto.Payload, UidPair<T>> payloadExtractor)
-        {
-            _payloadExtractor = payloadExtractor;
-        }
 
         public void AddHandler(Uid uid, EventHandler<QuotesReceivedEventArgs<T>> handler)
         {
@@ -88,18 +83,27 @@ namespace IronSmarkets.Clients
             }
         }
 
-        public void Handle(Proto.Seto.Payload payload)
+        public void Handle(Seto.Payload payload)
         {
-            var pair = _payloadExtractor(payload);
+            Handle(Extract(payload), payload);
+        }
+
+        public void Handle(UidPair<T> pair, Seto.Payload payload)
+        {
             EventHandler<QuotesReceivedEventArgs<T>> handler;
             lock (_lock)
             {
                 _handlers.TryGetValue(pair.Uid, out handler);
             }
             if (handler != null)
-                handler(this, new QuotesReceivedEventArgs<T>(
-                       payload.EtoPayload.Seq,
-                       pair.Payload));
+                handler(this, PayloadArgs(pair, payload));
         }
+
+        public static QuotesReceivedEventArgs<T> PayloadArgs(UidPair<T> pair, Seto.Payload payload)
+        {
+            return new QuotesReceivedEventArgs<T>(payload.EtoPayload.Seq, pair.Payload);
+        }
+
+        public abstract UidPair<T> Extract(Seto.Payload payload);
     }
 }

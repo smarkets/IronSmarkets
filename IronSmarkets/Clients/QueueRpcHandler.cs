@@ -1,4 +1,4 @@
-// Copyright (c) 2011-2012 Smarkets Limited
+// Copyright (c) 2012 Smarkets Limited
 //
 // Permission is hereby granted, free of charge, to any person
 // obtaining a copy of this software and associated documentation
@@ -20,37 +20,41 @@
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Diagnostics;
+using log4net;
 
-using IronSmarkets.Clients;
-using IronSmarkets.Extensions;
+using IronSmarkets.Data;
 
-namespace IronSmarkets.Data
+namespace IronSmarkets.Clients
 {
-    public interface IMarketMap : IReadOnlyMap<Uid, Market>
+    internal abstract class QueueRpcHandler<TPayload, TResponse> : RpcHandler<TPayload, TResponse>
     {
-        void MergeFromMarkets(
-            ISmarketsClient client,
-            IEnumerable<Proto.Seto.MarketInfo> markets,
-            Event parent);
-    }
+        private static readonly ILog Log = LogManager.GetLogger(
+            System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-    internal class MarketMap : ReadOnlyDictionaryWrapper<Uid, Market>, IMarketMap
-    {
-        public MarketMap() : base(new Dictionary<Uid, Market>())
+        private readonly Queue<SyncRequest<TPayload>> _requests =
+            new Queue<SyncRequest<TPayload>>();
+
+        public QueueRpcHandler(ISmarketsClient client) : base(client)
         {
         }
 
-        public void MergeFromMarkets(
-            ISmarketsClient client,
-            IEnumerable<Proto.Seto.MarketInfo> setoMarkets,
-            Event parent)
+        protected override void AddRequest(Proto.Seto.Payload payload, SyncRequest<TPayload> request)
         {
-            var markets = from m in setoMarkets select Market.FromSeto(client, m, parent);
-            foreach (var market in markets)
+            _requests.Enqueue(request);
+        }
+
+        protected override SyncRequest<TPayload> GetRequest(Proto.Seto.Payload payload)
+        {
+            try
             {
-                _inner[market.Info.Uid] = market;
+                return _requests.Dequeue();
+            }
+            catch (InvalidOperationException)
+            {
+                return null;
             }
         }
     }

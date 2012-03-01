@@ -1,4 +1,4 @@
-// Copyright (c) 2011-2012 Smarkets Limited
+// Copyright (c) 2012 Smarkets Limited
 //
 // Permission is hereby granted, free of charge, to any person
 // obtaining a copy of this software and associated documentation
@@ -20,38 +20,26 @@
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+using System;
 using System.Collections.Generic;
-using System.Linq;
 
-using IronSmarkets.Clients;
-using IronSmarkets.Extensions;
+using log4net;
 
-namespace IronSmarkets.Data
+using IronSmarkets.Data;
+
+using Seto = IronSmarkets.Proto.Seto;
+
+namespace IronSmarkets.Clients
 {
-    public interface IMarketMap : IReadOnlyMap<Uid, Market>
+    internal sealed class MarketQuoteHandler : QuoteHandler<Seto.MarketQuotes>
     {
-        void MergeFromMarkets(
-            ISmarketsClient client,
-            IEnumerable<Proto.Seto.MarketInfo> markets,
-            Event parent);
-    }
+        private static readonly ILog Log = LogManager.GetLogger(
+            System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-    internal class MarketMap : ReadOnlyDictionaryWrapper<Uid, Market>, IMarketMap
-    {
-        public MarketMap() : base(new Dictionary<Uid, Market>())
+        public override UidPair<Seto.MarketQuotes> Extract(Seto.Payload payload)
         {
-        }
-
-        public void MergeFromMarkets(
-            ISmarketsClient client,
-            IEnumerable<Proto.Seto.MarketInfo> setoMarkets,
-            Event parent)
-        {
-            var markets = from m in setoMarkets select Market.FromSeto(client, m, parent);
-            foreach (var market in markets)
-            {
-                _inner[market.Info.Uid] = market;
-            }
+            return new UidPair<Seto.MarketQuotes>(
+                Uid.FromUuid128(payload.MarketQuotes.Market), payload.MarketQuotes);
         }
     }
 }

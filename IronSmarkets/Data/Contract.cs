@@ -1,4 +1,4 @@
-// Copyright (c) 2011 Smarkets Limited
+// Copyright (c) 2011-2012 Smarkets Limited
 //
 // Permission is hereby granted, free of charge, to any person
 // obtaining a copy of this software and associated documentation
@@ -29,15 +29,18 @@ namespace IronSmarkets.Data
     public class Contract
     {
         private readonly ContractInfo _info;
-
-        private IQuoteSink _sink;
-        private Market _parent;
+        private readonly Market _parent;
 
         public ContractInfo Info { get { return _info; } }
-        public ContractQuotes Quotes {
-            get { return Parent.Quotes.ContractQuotes[Info.Uid]; }
-        }
         public Market Parent { get { return _parent; } }
+
+        public ContractQuotes Quotes
+        {
+            get
+            {
+                return Parent.Quotes.GetContract(_info.Uid);
+            }
+        }
 
         public EventHandler<QuotesUpdatedEventArgs<ContractQuotes>> ContractQuotesUpdated;
 
@@ -47,23 +50,7 @@ namespace IronSmarkets.Data
             _parent = parent;
         }
 
-        internal void SubscribeQuotes(IQuoteSink sink)
-        {
-            if (_sink != null)
-                throw new InvalidOperationException("Already subscribed");
-            _sink = sink;
-            _sink.AddContractQuotesHandler(_info.Uid, OnContractQuotesReceived);
-        }
-
-        internal void UnsubscribeQuotes()
-        {
-            if (_sink == null)
-                throw new InvalidOperationException("Not subscribed");
-            _sink.RemoveContractQuotesHandler(_info.Uid, OnContractQuotesReceived);
-            _sink = null;
-        }
-
-        private void OnContractQuotesReceived(object sender, QuotesReceivedEventArgs<Proto.Seto.ContractQuotes> e)
+        internal void OnContractQuotesReceived(object sender, QuotesReceivedEventArgs<Proto.Seto.ContractQuotes> e)
         {
             Quotes.UpdateFromSeto(e.Payload);
             OnContractQuotesUpdated(e.Sequence);

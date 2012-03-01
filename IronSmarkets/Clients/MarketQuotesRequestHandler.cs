@@ -32,7 +32,7 @@ using Seto = IronSmarkets.Proto.Seto;
 
 namespace IronSmarkets.Clients
 {
-    internal class MarketQuotesRequestHandler : UidQueueRpcHandler<Seto.MarketQuotes, MarketQuotes>
+    internal class MarketQuotesRequestHandler : KeyQueueRpcHandler<Uid, Seto.MarketQuotes, MarketQuotes>
     {
         public MarketQuotesRequestHandler(ISmarketsClient client) : base(client)
         {
@@ -40,12 +40,22 @@ namespace IronSmarkets.Clients
 
         protected override MarketQuotes Map(ISmarketsClient client, Seto.MarketQuotes quotes)
         {
-            return MarketQuotes.FromSeto(client, quotes);
+            return MarketQuotes.FromSeto(quotes);
         }
 
         protected override void Extract(SyncRequest<Seto.MarketQuotes> request, Seto.Payload payload)
         {
             request.Response = payload.MarketQuotes;
+        }
+
+        protected override Uid ExtractRequestKey(Seto.Payload payload)
+        {
+            return Uid.FromUuid128(payload.MarketQuotesRequest.Market);
+        }
+
+        protected override Uid ExtractResponseKey(Seto.Payload payload)
+        {
+            return Uid.FromUuid128(payload.MarketQuotes.Market);
         }
     }
 }

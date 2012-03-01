@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -59,23 +59,27 @@
       <Link>Properties\VersionInfo.cs</Link>
     </Compile>
     <Compile Include="Clients\AccountStateRequestHandler.cs" />
+    <Compile Include="Clients\ContractQuoteHandler.cs" />
     <Compile Include="Clients\EventsRequestHandler.cs" />
-    <Compile Include="Clients\OrderCreateRequestHandler.cs" />
-    <Compile Include="Clients\MarketQuotesRequestHandler.cs" />
-    <Compile Include="Clients\OrdersForAccountRequestHandler.cs" />
-    <Compile Include="Clients\OrdersForMarketRequestHandler.cs" />
     <Compile Include="Clients\HttpFoundHandler.cs" />
     <Compile Include="Clients\IAsyncHttpFoundHandler.cs" />
-    <Compile Include="Clients\ISyncRequest.cs" />
     <Compile Include="Clients\IQuoteSink.cs" />
+    <Compile Include="Clients\ISyncRequest.cs" />
+    <Compile Include="Clients\KeyQueueRpcHandler.cs" />
+    <Compile Include="Clients\MarketQuoteHandler.cs" />
+    <Compile Include="Clients\MarketQuotesRequestHandler.cs" />
+    <Compile Include="Clients\OrderCreateRequestHandler.cs" />
+    <Compile Include="Clients\OrdersForAccountRequestHandler.cs" />
+    <Compile Include="Clients\OrdersForMarketRequestHandler.cs" />
+    <Compile Include="Clients\QueueRpcHandler.cs" />
     <Compile Include="Clients\QuoteHandler.cs" />
-    <Compile Include="Clients\Response.cs" />
     <Compile Include="Clients\Receiver.cs" />
+    <Compile Include="Clients\Response.cs" />
+    <Compile Include="Clients\RpcHandler.cs" />
     <Compile Include="Clients\SeqRpcHandler.cs" />
     <Compile Include="Clients\Settings.cs" />
     <Compile Include="Clients\SmarketsClient.cs" />
     <Compile Include="Clients\SyncRequest.cs" />
-    <Compile Include="Clients\UidQueueRpcHandler.cs" />
     <Compile Include="Data\AccountState.cs" />
     <Compile Include="Data\BiDictionary.cs" />
     <Compile Include="Data\Contract.cs" />
@@ -93,7 +97,6 @@
     <Compile Include="Data\EventQueryBuilder.cs" />
     <Compile Include="Data\Execution.cs" />
     <Compile Include="Data\IReadOnlyMap.cs" />
-    <Compile Include="Data\Price.cs" />
     <Compile Include="Data\Market.cs" />
     <Compile Include="Data\MarketInfo.cs" />
     <Compile Include="Data\MarketMap.cs" />
@@ -103,6 +106,7 @@
     <Compile Include="Data\Order.cs" />
     <Compile Include="Data\OrderMap.cs" />
     <Compile Include="Data\OrderState.cs" />
+    <Compile Include="Data\Price.cs" />
     <Compile Include="Data\Quantity.cs" />
     <Compile Include="Data\Quote.cs" />
     <Compile Include="Data\QuotesUpdatedEventArgs.cs" />
@@ -113,11 +117,11 @@
     <Compile Include="Exceptions\ConnectionException.cs" />
     <Compile Include="Exceptions\InvalidRequestException.cs" />
     <Compile Include="Exceptions\LoginFailedException.cs" />
-    <Compile Include="Exceptions\OrderInvalidException.cs" />
-    <Compile Include="Exceptions\OrderRejectedException.cs" />
     <Compile Include="Exceptions\MessageStreamException.cs" />
     <Compile Include="Exceptions\NoHandlerException.cs" />
     <Compile Include="Exceptions\NotLoggedInException.cs" />
+    <Compile Include="Exceptions\OrderInvalidException.cs" />
+    <Compile Include="Exceptions\OrderRejectedException.cs" />
     <Compile Include="Exceptions\RequestTimedOutException.cs" />
     <Compile Include="Extensions\IDictionary.cs" />
     <Compile Include="Extensions\IEnumerable.cs" />

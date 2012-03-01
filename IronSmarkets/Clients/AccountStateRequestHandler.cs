@@ -32,7 +32,7 @@ using Seto = IronSmarkets.Proto.Seto;
 
 namespace IronSmarkets.Clients
 {
-    internal class AccountStateRequestHandler : SeqRpcHandler<Seto.AccountState, AccountState>
+    internal class AccountStateRequestHandler : QueueRpcHandler<Seto.AccountState, AccountState>
     {
         public AccountStateRequestHandler(ISmarketsClient client) : base(client)
         {

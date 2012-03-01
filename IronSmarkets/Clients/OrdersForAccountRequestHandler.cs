@@ -32,7 +32,7 @@ using Seto = IronSmarkets.Proto.Seto;
 
 namespace IronSmarkets.Clients
 {
-    internal class OrdersForAccountRequestHandler : SeqRpcHandler<Seto.OrdersForAccount, IOrderMap>
+    internal class OrdersForAccountRequestHandler : QueueRpcHandler<Seto.OrdersForAccount, IOrderMap>
     {
         private readonly OrderMap _orderMap;
 

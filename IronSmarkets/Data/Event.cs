@@ -1,4 +1,4 @@
-// Copyright (c) 2011 Smarkets Limited
+// Copyright (c) 2011-2012 Smarkets Limited
 //
 // Permission is hereby granted, free of charge, to any person
 // obtaining a copy of this software and associated documentation
@@ -23,27 +23,26 @@
 using System;
 using System.Collections.Generic;
 
+using IronSmarkets.Clients;
+
 namespace IronSmarkets.Data
 {
     public class Event
     {
-        private readonly EventInfo _info;
-        private readonly IMarketMap _markets;
+        private EventInfo _info;
         private readonly List<Event> _children =
             new List<Event>();
 
         public EventInfo Info { get { return _info; } }
-        public IMarketMap Markets { get { return _markets; } }
         public ICollection<Event> Children { get { return _children.AsReadOnly(); } }
 
         // Optional
         public Event Parent { get; set; }
         public bool HasParent { get { return Parent != null; } }
 
-        private Event(EventInfo info, IMarketMap markets)
+        private Event(EventInfo info)
         {
             _info = info;
-            _markets = markets;
         }
 
         public void AddChild(Event child)
@@ -51,11 +50,16 @@ namespace IronSmarkets.Data
             _children.Add(child);
         }
 
-        internal static Event FromSeto(Proto.Seto.EventInfo info)
+        internal void UpdateInfo(EventInfo info)
         {
-            return new Event(
-                EventInfo.FromSeto(info),
-                MarketMap.FromMarkets(info.Markets));
+            _info = info;
+        }
+
+        internal static Event FromSeto(ISmarketsClient client, Proto.Seto.EventInfo info)
+        {
+            var newEvent = new Event(EventInfo.FromSeto(info));
+            client.MarketMap.MergeFromMarkets(client, info.Markets, newEvent);
+            return newEvent;
         }
     }
 }

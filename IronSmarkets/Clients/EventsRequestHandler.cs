@@ -65,5 +65,22 @@ namespace IronSmarkets.Clients
                     break;
             }
         }
+
+        protected override ulong ExtractSeq(Seto.Payload payload)
+        {
+            switch (payload.Type)
+            {
+                case Seto.PayloadType.PAYLOADINVALIDREQUEST:
+                    return payload.InvalidRequest.Seq;
+                case Seto.PayloadType.PAYLOADHTTPFOUND:
+                    return payload.HttpFound.Seq;
+                default:
+                    throw new InvalidOperationException(
+                        string.Format(
+                            "Somehow a payload of type {0}" +
+                            " was dispatched to an events request" +
+                            " handler.", payload.Type));
+            }
+        }
     }
 }

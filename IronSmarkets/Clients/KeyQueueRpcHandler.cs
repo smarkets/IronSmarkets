@@ -1,4 +1,4 @@
-// Copyright (c) 2011-2012 Smarkets Limited
+// Copyright (c) 2012 Smarkets Limited
 //
 // Permission is hereby granted, free of charge, to any person
 // obtaining a copy of this software and associated documentation
@@ -22,38 +22,53 @@
 
 using System;
 using System.Collections.Generic;
-
+using System.Diagnostics;
 using log4net;
+
+using IronSmarkets.Data;
 
 namespace IronSmarkets.Clients
 {
-    internal abstract class SeqRpcHandler<TPayload, TResponse> : RpcHandler<TPayload, TResponse>
+    internal abstract class KeyQueueRpcHandler<TKey, TPayload, TResponse> : RpcHandler<TPayload, TResponse>
     {
         private static readonly ILog Log = LogManager.GetLogger(
             System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-        private readonly IDictionary<ulong, SyncRequest<TPayload>> _requests =
-            new Dictionary<ulong, SyncRequest<TPayload>>();
+        private readonly IDictionary<TKey, Queue<SyncRequest<TPayload>>> _requests =
+            new Dictionary<TKey, Queue<SyncRequest<TPayload>>>();
 
-        public SeqRpcHandler(ISmarketsClient client) : base(client)
+        public KeyQueueRpcHandler(ISmarketsClient client) : base(client)
         {
         }
 
         protected override void AddRequest(Proto.Seto.Payload payload, SyncRequest<TPayload> request)
         {
-            _requests[payload.EtoPayload.Seq] = request;
+            var key = ExtractRequestKey(payload);
+            if (!_requests.ContainsKey(key))
+            {
+                _requests[key] = new Queue<SyncRequest<TPayload>>();
+            }
+            _requests[key].Enqueue(request);
         }
 
         protected override SyncRequest<TPayload> GetRequest(Proto.Seto.Payload payload)
         {
-            SyncRequest<TPayload> req;
-            var originalSeq = ExtractSeq(payload);
-            if (_requests.TryGetValue(originalSeq, out req)) {
-                _requests.Remove(originalSeq);
+            TKey key = ExtractResponseKey(payload);
+            SyncRequest<TPayload> req = null;
+            Queue<SyncRequest<TPayload>> queue;
+            if (_requests.TryGetValue(key, out queue))
+            {
+                Debug.Assert(queue.Count > 0);
+                req = queue.Dequeue();
+                if (queue.Count == 0)
+                {
+                    _requests.Remove(key);
+                }
             }
             return req;
         }
 
-        protected abstract ulong ExtractSeq(Proto.Seto.Payload payload);
+        protected abstract TKey ExtractResponseKey(Proto.Seto.Payload payload);
+        protected abstract TKey ExtractRequestKey(Proto.Seto.Payload payload);
     }
 }

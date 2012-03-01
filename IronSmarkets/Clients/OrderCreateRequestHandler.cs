@@ -31,27 +31,32 @@ using IronSmarkets.Exceptions;
 
 namespace IronSmarkets.Clients
 {
-    internal sealed class OrderCreateRequestHandler
-        : SeqRpcHandler<Proto.Seto.OrderAccepted, Order>
+    internal interface IOrderCreateRpcHandler : IRpcHandler<Proto.Seto.OrderAccepted, Order>
     {
-	private static readonly ILog Log = LogManager.GetLogger(
-	    System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        Response<Order> Request(NewOrder request);
+    }
 
-	public OrderCreateRequestHandler(ISmarketsClient client) : base(client)
-	{
-	}
+    internal sealed class OrderCreateRequestHandler
+        : SeqRpcHandler<Proto.Seto.OrderAccepted, Order>, IOrderCreateRpcHandler
+    {
+        private static readonly ILog Log = LogManager.GetLogger(
+            System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-	public Response<Order> Request(NewOrder request)
-	{
+        public OrderCreateRequestHandler(ISmarketsClient client) : base(client)
+        {
+        }
+
+        public Response<Order> Request(NewOrder request)
+        {
             var payload = new Proto.Seto.Payload {
                 Type = Proto.Seto.PayloadType.PAYLOADORDERCREATE,
                 OrderCreate = request.ToOrderCreate()
             };
-	    var req = BeginRequest(payload);
-	    return new Response<Order>(
+            var req = BeginRequest(payload);
+            return new Response<Order>(
                 payload.EtoPayload.Seq,
                 request.ToOrder(Uid.FromUuid128(req.Response.Order)));
-	}
+        }
 
         protected override Order Map(ISmarketsClient client, Proto.Seto.OrderAccepted message)
         {
@@ -82,6 +87,26 @@ namespace IronSmarkets.Clients
                             " was dispatched to an order create" +
                             " handler.", payload.Type));
                     break;
+            }
+        }
+
+        protected override ulong ExtractSeq(Proto.Seto.Payload payload)
+        {
+            switch (payload.Type)
+            {
+                case Proto.Seto.PayloadType.PAYLOADORDERACCEPTED:
+                    // Normal case
+                    return payload.OrderAccepted.Seq;
+                case Proto.Seto.PayloadType.PAYLOADORDERREJECTED:
+                    return payload.OrderRejected.Seq;
+                case Proto.Seto.PayloadType.PAYLOADORDERINVALID:
+                    return payload.OrderInvalid.Seq;
+                default:
+                    throw new InvalidOperationException(
+                        string.Format(
+                            "Somehow a payload of type {0}" +
+                            " was dispatched to an order create" +
+                            " handler.", payload.Type));
             }
         }
     }

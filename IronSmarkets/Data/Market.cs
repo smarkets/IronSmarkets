@@ -1,4 +1,4 @@
-// Copyright (c) 2011 Smarkets Limited
+// Copyright (c) 2011-2012 Smarkets Limited
 //
 // Permission is hereby granted, free of charge, to any person
 // obtaining a copy of this software and associated documentation
@@ -30,24 +30,22 @@ namespace IronSmarkets.Data
     public class Market
     {
         private readonly MarketInfo _info;
+        private readonly Event _parent;
 
-        private IContractMap _contracts;
         private MarketQuotes _quotes;
         private ulong _subscriptionSeq;
         private IQuoteSink _sink;
 
+        public Event Parent { get { return _parent; } }
         public MarketInfo Info { get { return _info; } }
-        public IContractMap Contracts {
-            get { return _contracts; }
-            private set { _contracts = value; }
-        }
         public MarketQuotes Quotes { get { return _quotes; } }
 
         public EventHandler<QuotesUpdatedEventArgs<MarketQuotes>> MarketQuotesUpdated;
 
-        private Market(MarketInfo info)
+        private Market(MarketInfo info, Event parent)
         {
             _info = info;
+            _parent = parent;
         }
 
         public void SubscribeQuotes(IQuoteSink sink)
@@ -55,8 +53,6 @@ namespace IronSmarkets.Data
             if (_sink != null)
                 throw new InvalidOperationException("Already subscribed");
             _sink = sink;
-            _sink.AddMarketQuotesHandler(_info.Uid, OnMarketQuotesReceived);
-            _contracts.Values.ForAll(contract => contract.SubscribeQuotes(_sink));
             _subscriptionSeq = _sink.SubscribeMarket(_info.Uid);
         }
 
@@ -65,15 +61,13 @@ namespace IronSmarkets.Data
             if (_sink == null)
                 throw new InvalidOperationException("Not subscribed");
             _sink.UnsubscribeMarket(_info.Uid);
-            _sink.RemoveMarketQuotesHandler(_info.Uid, OnMarketQuotesReceived);
-            _contracts.Values.ForAll(contract => contract.UnsubscribeQuotes());
             _sink = null;
             _subscriptionSeq = 0;
         }
 
-        private void OnMarketQuotesReceived(object sender, QuotesReceivedEventArgs<Proto.Seto.MarketQuotes> e)
+        internal void OnMarketQuotesReceived(object sender, QuotesReceivedEventArgs<Proto.Seto.MarketQuotes> e)
         {
-            _quotes = MarketQuotes.FromSeto(null, e.Payload);
+            _quotes = MarketQuotes.FromSeto(e.Payload);
             OnMarketQuotesUpdated(e.Sequence);
         }
 
@@ -84,10 +78,13 @@ namespace IronSmarkets.Data
                 ev(this, new QuotesUpdatedEventArgs<MarketQuotes>(seq, _quotes));
         }
 
-        internal static Market FromSeto(Proto.Seto.MarketInfo setoInfo)
+        internal static Market FromSeto(
+            ISmarketsClient client,
+            Proto.Seto.MarketInfo info,
+            Event parent)
         {
-            var market = new Market(MarketInfo.FromSeto(setoInfo));
-            market.Contracts = ContractMap.FromContracts(setoInfo.Contracts, market);
+            var market = new Market(MarketInfo.FromSeto(info), parent);
+            client.ContractMap.MergeFromContracts(client, info.Contracts, market);
             return market;
         }
     }

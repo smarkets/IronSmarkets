@@ -113,6 +113,18 @@ namespace IronSmarkets.Data
                 quantityType);
         }
 
+        internal static ContractQuotes Empty(Uid uid, PriceType priceType, QuantityType quantityType)
+        {
+            return new ContractQuotes(
+                uid,
+                Enumerable.Empty<Quote>(),
+                Enumerable.Empty<Quote>(),
+                Enumerable.Empty<Execution>(),
+                null,
+                priceType,
+                quantityType);
+        }
+
         /// <summary>
         ///   Returns a `SortedDictionary<Price, Quote>` of
         ///   `quotes`. We use a `SortedDictionary<TKey, TValue>` here

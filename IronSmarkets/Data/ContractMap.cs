@@ -1,4 +1,4 @@
-// Copyright (c) 2011 Smarkets Limited
+// Copyright (c) 2011-2012 Smarkets Limited
 //
 // Permission is hereby granted, free of charge, to any person
 // obtaining a copy of this software and associated documentation
@@ -23,12 +23,17 @@
 using System.Collections.Generic;
 using System.Linq;
 
+using IronSmarkets.Clients;
 using IronSmarkets.Extensions;
 
 namespace IronSmarkets.Data
 {
     public interface IContractMap : IReadOnlyMap<Uid, Contract>
     {
+        void MergeFromContracts(
+            ISmarketsClient client,
+            IEnumerable<Proto.Seto.ContractInfo> contracts,
+            Market market);
     }
 
     internal class ContractMap : ReadOnlyDictionaryWrapper<Uid, Contract>, IContractMap
@@ -41,18 +46,16 @@ namespace IronSmarkets.Data
         {
         }
 
-        public static IContractMap FromContracts(
+        public void MergeFromContracts(
+            ISmarketsClient client,
             IEnumerable<Proto.Seto.ContractInfo> setoContracts,
             Market market)
         {
-            return new ContractMap(
-                setoContracts.Aggregate(
-                    new Dictionary<Uid, Contract>(),
-                    (dict, contractInfo) => {
-                        var contract = Contract.FromSeto(contractInfo, market);
-                        dict[contract.Info.Uid] = contract;
-                        return dict;
-                    }));
+            var contracts = from c in setoContracts select Contract.FromSeto(c, market);
+            foreach (var contract in contracts)
+            {
+                _inner[contract.Info.Uid] = contract;
+            }
         }
     }
 }

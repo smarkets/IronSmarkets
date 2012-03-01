@@ -1,4 +1,4 @@
-// Copyright (c) 2011-2012 Smarkets Limited
+// Copyright (c) 2012 Smarkets Limited
 //
 // Permission is hereby granted, free of charge, to any person
 // obtaining a copy of this software and associated documentation
@@ -22,35 +22,37 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using log4net;
 
-using IronSmarkets.Data;
+using log4net;
 
 namespace IronSmarkets.Clients
 {
-    internal abstract class UidQueueRpcHandler<TPayload, TResponse>
+    internal interface IRpcHandler<TPayload, TResponse>
+    {
+        SyncRequest<TPayload> BeginRequest(Proto.Seto.Payload payload);
+        Response<TResponse> Request(Proto.Seto.Payload payload);
+        void Handle(Proto.Seto.Payload payload);
+    }
+    
+    internal abstract class RpcHandler<TPayload, TResponse> : IRpcHandler<TPayload, TResponse>
     {
         private static readonly ILog Log = LogManager.GetLogger(
             System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         private readonly ISmarketsClient _client;
 
-        private readonly IDictionary<Uid, Queue<SyncRequest<TPayload>>> _requests =
-            new Dictionary<Uid, Queue<SyncRequest<TPayload>>>();
         private readonly object _lock = new object();
 
-        public UidQueueRpcHandler(ISmarketsClient client)
+        public RpcHandler(ISmarketsClient client)
         {
             _client = client;
         }
 
-        public Response<TResponse> Request(Uid uid, Proto.Seto.Payload payload)
+        public SyncRequest<TPayload> BeginRequest(Proto.Seto.Payload payload)
         {
             var req = new SyncRequest<TPayload>();
             lock (_lock)
             {
-
                 // XXX: At the moment, SendPayload needs to be inside
                 // the lock because the receiver thread could
                 // theoretically receive the payload before the
@@ -62,39 +64,39 @@ namespace IronSmarkets.Clients
                 // a volatile long variable and spin-wait in the
                 // receiver where necessary.
                 _client.SendPayload(payload);
-                if (!_requests.ContainsKey(uid))
-                {
-                    _requests[uid] =
-                        new Queue<SyncRequest<TPayload>>();
-                }
-                _requests[uid].Enqueue(req);
+                AddRequest(payload, req);
             }
+            return req;
+        }
+
+        public Response<TResponse> Request(Proto.Seto.Payload payload)
+        {
+            var req = BeginRequest(payload);
             return new Response<TResponse>(
                 payload.EtoPayload.Seq,
                 Map(_client, req.Response));
         }
 
-        public void Handle(Uid uid, Proto.Seto.Payload payload)
+        public void Handle(Proto.Seto.Payload payload)
         {
-            SyncRequest<TPayload> req = null;
+            SyncRequest<TPayload> req;
             lock (_lock)
             {
-                Queue<SyncRequest<TPayload>> queue;
-                if (_requests.TryGetValue(uid, out queue))
-                {
-                    Debug.Assert(queue.Count > 0);
-                    req = queue.Dequeue();
-                    if (queue.Count == 0)
-                    {
-                        _requests.Remove(uid);
-                    }
-                }
+                req = GetRequest(payload);
             }
             if (req != null)
                 Extract(req, payload);
+            else
+            {
+                Log.Warn(
+                    "Received payload " +
+                    "but could not find original request");
+            }
         }
 
         protected abstract TResponse Map(ISmarketsClient client, TPayload payload);
         protected abstract void Extract(SyncRequest<TPayload> request, Proto.Seto.Payload payload);
+        protected abstract void AddRequest(Proto.Seto.Payload payload, SyncRequest<TPayload> request);
+        protected abstract SyncRequest<TPayload> GetRequest(Proto.Seto.Payload payload);
     }
 }

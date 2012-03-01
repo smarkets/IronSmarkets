@@ -226,12 +226,17 @@ namespace IronSmarkets.Tests
                 var mockMap = client.GetEvents(builder.GetResult()).Data;
                 var mockEvent = mockMap[mockEventUid];
                 var mockMarket = client.MarketMap[mockMarketUid];
+                var mockContract = client.ContractMap[mockContractUid];
                 mockMarket.SubscribeQuotes(client);
-                var updatedEvent = new ManualResetEvent(false);
+                var marketUpdatedEvent = new ManualResetEvent(false);
+                var contractUpdatedEvent = new ManualResetEvent(false);
                 MarketQuotes mockQuotes = null;
                 mockMarket.MarketQuotesUpdated += (sender, args) => {
                     mockQuotes = args.Quotes;
-                    updatedEvent.Set();
+                    marketUpdatedEvent.Set();
+                };
+                mockContract.ContractQuotesUpdated += (sender, args) => {
+                    contractUpdatedEvent.Set();
                 };
                 var mockOrder = new NewOrder {
                     Type = OrderCreateType.Limit,
@@ -242,10 +247,11 @@ namespace IronSmarkets.Tests
                     Price = new Price(PriceType.PercentOdds, 5714)
                 };
                 var mockOrderResponse = client.CreateOrder(mockOrder).Data;
-                Assert.True(updatedEvent.WaitOne(1000));
+                Assert.True(marketUpdatedEvent.WaitOne(1000));
                 Assert.Equal(mockQuotes.QuantityType, QuantityType.PayoffCurrency);
                 Assert.Equal(mockQuotes.PriceType, PriceType.PercentOdds);
                 Assert.Equal(mockQuotes.Uid, mockMarketUid);
+                Assert.True(contractUpdatedEvent.WaitOne(1000));
                 Assert.True(mockQuotes.ContractQuotes.ContainsKey(mockContractUid));
                 var mockContractQuotes = mockQuotes.ContractQuotes[mockContractUid];
                 Assert.Equal(mockContractQuotes.Bids.Count(), 1);

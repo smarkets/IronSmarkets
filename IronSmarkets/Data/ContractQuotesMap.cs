@@ -20,6 +20,7 @@
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -33,16 +34,26 @@ namespace IronSmarkets.Data
 
     internal class ContractQuotesMap : ReadOnlyDictionaryWrapper<Uid, ContractQuotes>, IContractQuotesMap
     {
-        private ContractQuotesMap(IDictionary<Uid, ContractQuotes> contractQuotes) : base(contractQuotes)
+        private readonly PriceType _priceType;
+        private readonly QuantityType _quantityType;
+
+        private ContractQuotesMap(
+            PriceType priceType,
+            QuantityType quantityType,
+            IDictionary<Uid, ContractQuotes> contractQuotes) : base(contractQuotes)
         {
+            _priceType = priceType;
+            _quantityType = quantityType;
         }
 
-        internal static IContractQuotesMap FromSeto(
+        internal static ContractQuotesMap FromSeto(
             IEnumerable<Proto.Seto.ContractQuotes> setoContractQuotes,
             PriceType priceType,
             QuantityType quantityType)
         {
             return new ContractQuotesMap(
+                priceType,
+                quantityType,
                 setoContractQuotes.Aggregate(
                     new Dictionary<Uid, ContractQuotes>(),
                     (dict, contractQuotes) => {
@@ -51,6 +62,17 @@ namespace IronSmarkets.Data
                         dict[cq.Uid] = cq;
                         return dict;
                     }));
+        }
+
+        public void Add(Uid uid)
+        {
+            if (_inner.ContainsKey(uid))
+            {
+                throw new ArgumentException(
+                    string.Format(
+                        "Uid {0} already exists in map", uid));
+            }
+            _inner[uid] = ContractQuotes.Empty(uid, _priceType, _quantityType);
         }
     }
 }

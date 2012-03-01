@@ -1,4 +1,4 @@
-// Copyright (c) 2011 Smarkets Limited
+// Copyright (c) 2011-2012 Smarkets Limited
 //
 // Permission is hereby granted, free of charge, to any person
 // obtaining a copy of this software and associated documentation
@@ -29,7 +29,7 @@ namespace IronSmarkets.Data
     public class MarketQuotes
     {
         private readonly Uid _uid;
-        private readonly IContractQuotesMap _contractQuotes;
+        private readonly ContractQuotesMap _contractQuotes;
         private readonly PriceType _priceType;
         private readonly QuantityType _quantityType;
 
@@ -40,7 +40,7 @@ namespace IronSmarkets.Data
 
         private MarketQuotes(
             Uid uid,
-            IContractQuotesMap contractQuotes,
+            ContractQuotesMap contractQuotes,
             PriceType priceType,
             QuantityType quantityType)
         {
@@ -50,7 +50,7 @@ namespace IronSmarkets.Data
             _quantityType = quantityType;
         }
 
-        internal static MarketQuotes FromSeto(ISmarketsClient client, Proto.Seto.MarketQuotes setoQuotes)
+        internal static MarketQuotes FromSeto(Proto.Seto.MarketQuotes setoQuotes)
         {
             var quantityType = Quantity.QuantityTypeFromSeto(setoQuotes.QuantityType);
             var priceType = Price.PriceTypeFromSeto(setoQuotes.PriceType);
@@ -60,6 +60,13 @@ namespace IronSmarkets.Data
                     setoQuotes.ContractQuotes, priceType, quantityType),
                 priceType,
                 quantityType);
+        }
+
+        internal ContractQuotes GetContract(Uid uid)
+        {
+            if (!_contractQuotes.ContainsKey(uid))
+                _contractQuotes.Add(uid);
+            return _contractQuotes[uid];
         }
     }
 }

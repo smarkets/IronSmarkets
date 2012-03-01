@@ -1,4 +1,4 @@
-// Copyright (c) 2011 Smarkets Limited
+// Copyright (c) 2011-2012 Smarkets Limited
 //
 // Permission is hereby granted, free of charge, to any person
 // obtaining a copy of this software and associated documentation
@@ -63,17 +63,17 @@ namespace IronSmarkets.Data
         {
             // XXX: This kind of breaks the encapsulation of a read-only
             // dictionary
-            _inner.MergeLeft(FromSeto(setoEvents));
+            _inner.MergeLeft(FromSeto(client, setoEvents));
             _roots = null;
             return this;
         }
 
-        public static EventMap FromSeto(Proto.Seto.Events setoEvents)
+        public static EventMap FromSeto(ISmarketsClient client, Proto.Seto.Events setoEvents)
         {
             var eventDict = setoEvents.WithMarkets.Concat(setoEvents.Parents).Aggregate(
                 new Dictionary<Uid, Event>(),
                 (dict, eventInfo) => {
-                    var ev = Event.FromSeto(eventInfo);
+                    var ev = Event.FromSeto(client, eventInfo);
                     dict[ev.Info.Uid] = ev;
                     return dict;
                 });

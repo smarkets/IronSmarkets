@@ -101,6 +101,7 @@ namespace IronSmarkets.Tests
                         Seq = 2
                     },
                     HttpFound = new Seto.HttpFound {
+                        Seq = 2,
                         Url = "http://mock/api/events/sport/football/20120221/2.pb"
                     }
                 });
@@ -188,6 +189,7 @@ namespace IronSmarkets.Tests
                         Seq = 5
                     },
                     OrderAccepted = new Seto.OrderAccepted {
+                        Seq = 4,
                         Order = new Seto.Uuid128 {
                             Low = 82892989397900053
                         }

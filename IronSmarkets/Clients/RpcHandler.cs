@@ -30,7 +30,7 @@ namespace IronSmarkets.Clients
     internal interface IRpcHandler<TPayload, TResponse>
     {
         SyncRequest<TPayload> BeginRequest(Proto.Seto.Payload payload);
-        Response<TResponse> Request(Proto.Seto.Payload payload);
+        IResponse<TResponse> Request(Proto.Seto.Payload payload);
         void Handle(Proto.Seto.Payload payload);
     }
     
@@ -69,7 +69,7 @@ namespace IronSmarkets.Clients
             return req;
         }
 
-        public Response<TResponse> Request(Proto.Seto.Payload payload)
+        public IResponse<TResponse> Request(Proto.Seto.Payload payload)
         {
             var req = BeginRequest(payload);
             return new Response<TResponse>(

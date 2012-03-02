@@ -54,17 +54,17 @@ namespace IronSmarkets.Clients
         IMarketMap MarketMap { get; }
         IContractMap ContractMap { get; }
 
-        Response<IEventMap> GetEvents(EventQuery query);
-        Response<AccountState> GetAccountState();
-        Response<AccountState> GetAccountState(Uid account);
+        IResponse<IEventMap> GetEvents(EventQuery query);
+        IResponse<AccountState> GetAccountState();
+        IResponse<AccountState> GetAccountState(Uid account);
 
-        Response<MarketQuotes> GetQuotesByMarket(Uid market);
+        IResponse<MarketQuotes> GetQuotesByMarket(Uid market);
 
-        Response<IOrderMap> GetOrders();
-        Response<IOrderMap> GetOrdersByMarket(Uid market);
+        IResponse<IOrderMap> GetOrders();
+        IResponse<IOrderMap> GetOrdersByMarket(Uid market);
 
         void CancelOrder(Order order);
-        Response<Order> CreateOrder(NewOrder order);
+        IResponse<Order> CreateOrder(NewOrder order);
     }
 
     public sealed class SmarketsClient : ISmarketsClient
@@ -330,7 +330,7 @@ namespace IronSmarkets.Clients
             return payload.EtoPayload.Seq;
         }
 
-        public Response<IEventMap> GetEvents(EventQuery query)
+        public IResponse<IEventMap> GetEvents(EventQuery query)
         {
             if (IsDisposed)
                 throw new ObjectDisposedException(
@@ -344,7 +344,7 @@ namespace IronSmarkets.Clients
                         });
         }
 
-        public Response<AccountState> GetAccountState()
+        public IResponse<AccountState> GetAccountState()
         {
             if (IsDisposed)
                 throw new ObjectDisposedException(
@@ -354,7 +354,7 @@ namespace IronSmarkets.Clients
             return GetAccountState(new PS.AccountStateRequest());
         }
 
-        public Response<AccountState> GetAccountState(Uid account)
+        public IResponse<AccountState> GetAccountState(Uid account)
         {
             if (IsDisposed)
                 throw new ObjectDisposedException(
@@ -367,7 +367,7 @@ namespace IronSmarkets.Clients
                 });
         }
 
-        private Response<AccountState> GetAccountState(
+        private IResponse<AccountState> GetAccountState(
             PS.AccountStateRequest request)
         {
             return _accountStateRequestHandler.Request(
@@ -377,7 +377,7 @@ namespace IronSmarkets.Clients
                         });
         }
 
-        public Response<MarketQuotes> GetQuotesByMarket(Uid market)
+        public IResponse<MarketQuotes> GetQuotesByMarket(Uid market)
         {
             if (IsDisposed)
                 throw new ObjectDisposedException(
@@ -393,7 +393,7 @@ namespace IronSmarkets.Clients
                 });
         }
 
-        public Response<IOrderMap> GetOrders()
+        public IResponse<IOrderMap> GetOrders()
         {
             if (IsDisposed)
                 throw new ObjectDisposedException(
@@ -407,7 +407,7 @@ namespace IronSmarkets.Clients
                 });
         }
 
-        public Response<IOrderMap> GetOrdersByMarket(Uid market)
+        public IResponse<IOrderMap> GetOrdersByMarket(Uid market)
         {
             if (IsDisposed)
                 throw new ObjectDisposedException(
@@ -444,7 +444,7 @@ namespace IronSmarkets.Clients
                 });
         }
 
-        public Response<Order> CreateOrder(NewOrder order)
+        public IResponse<Order> CreateOrder(NewOrder order)
         {
             if (IsDisposed)
                 throw new ObjectDisposedException(

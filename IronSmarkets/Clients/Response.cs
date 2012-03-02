@@ -30,13 +30,18 @@ namespace IronSmarkets.Clients
         T Data { get; }
     }
 
-    internal sealed class Response<T> : Tuple<ulong, T>, IResponse<T>
+    internal sealed class Response<T> : IResponse<T>
     {
-        public ulong Sequence { get { return Item1; } }
-        public T Data { get { return Item2; } }
+        private readonly ulong _sequence;
+        private readonly T _data;
 
-        internal Response(ulong sequence, T data) : base(sequence, data)
+        public ulong Sequence { get { return _sequence; } }
+        public T Data { get { return _data; } }
+
+        internal Response(ulong sequence, T data)
         {
+            _sequence = sequence;
+            _data = data;
         }
     }
 }

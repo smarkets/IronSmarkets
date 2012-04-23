@@ -49,7 +49,7 @@ namespace IronSmarkets.Tests
         private DateTime MicrosecondNow()
         {
             var dt = DateTime.UtcNow;
-            return new DateTime(dt.Ticks - (dt.Ticks % 10));
+            return new DateTime(dt.Ticks - (dt.Ticks % 10), DateTimeKind.Utc);
         }
     }
 }

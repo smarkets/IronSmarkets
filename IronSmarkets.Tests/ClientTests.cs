@@ -265,5 +265,147 @@ namespace IronSmarkets.Tests
                 Assert.Equal(mockContractQuotes.Uid, mockContractUid);
             }
         }
+
+        [Fact(Skip="Refactoring...")]
+        public void MultipleOrdersAcceptedAsynchronously()
+        {
+            var socket = new MockSessionSocket(SocketSettings);
+
+            socket.Expect(
+                new Seto.Payload {
+                    Type = Seto.PayloadType.PAYLOADLOGIN,
+                    EtoPayload = new Eto.Payload {
+                        Type = Eto.PayloadType.PAYLOADLOGIN,
+                        Seq = 1
+                    },
+                    Login = new Seto.Login {
+                        Username = "mockuser",
+                        Password = "mockpassword"
+                    }
+                });
+
+            socket.Next(
+                new Seto.Payload {
+                    Type = Seto.PayloadType.PAYLOADETO,
+                    EtoPayload = new Eto.Payload {
+                        Type = Eto.PayloadType.PAYLOADLOGINRESPONSE,
+                        Seq = 1,
+                        LoginResponse = new Eto.LoginResponse {
+                            Session = "00000000-0000-0000-0000-000000658a8",
+                            Reset = 2
+                        }
+                    }
+                });
+
+            socket.Expect(new Seto.Payload {
+                    Type = Seto.PayloadType.PAYLOADORDERCREATE,
+                    EtoPayload = new Eto.Payload {
+                        Type = Eto.PayloadType.PAYLOADNONE,
+                        Seq = 2
+                    },
+                    OrderCreate = new Seto.OrderCreate {
+                        Type = Seto.OrderCreateType.ORDERCREATELIMIT,
+                        Market = new Seto.Uuid128 {
+                            Low = 317002,
+                            High = 0
+                        },
+                        Contract = new Seto.Uuid128 {
+                            Low = 608008,
+                            High = 0
+                        },
+                        Side = Seto.Side.SIDEBUY,
+                        QuantityType = Seto.QuantityType.QUANTITYPAYOFFCURRENCY,
+                        Quantity = 60000,
+                        Price = 5714
+                    }
+                });
+
+            socket.Expect(new Seto.Payload {
+                    Type = Seto.PayloadType.PAYLOADORDERCREATE,
+                    EtoPayload = new Eto.Payload {
+                        Type = Eto.PayloadType.PAYLOADNONE,
+                        Seq = 3
+                    },
+                    OrderCreate = new Seto.OrderCreate {
+                        Type = Seto.OrderCreateType.ORDERCREATELIMIT,
+                        Market = new Seto.Uuid128 {
+                            Low = 317002,
+                            High = 0
+                        },
+                        Contract = new Seto.Uuid128 {
+                            Low = 608008,
+                            High = 0
+                        },
+                        Side = Seto.Side.SIDEBUY,
+                        QuantityType = Seto.QuantityType.QUANTITYPAYOFFCURRENCY,
+                        Quantity = 60000,
+                        Price = 5714
+                    }
+                });
+
+            socket.Next(
+                new Seto.Payload {
+                    Type = Seto.PayloadType.PAYLOADORDERACCEPTED,
+                    EtoPayload = new Eto.Payload {
+                        Type = Eto.PayloadType.PAYLOADNONE,
+                        Seq = 2
+                    },
+                    OrderAccepted = new Seto.OrderAccepted {
+                        Seq = 3,
+                        Order = new Seto.Uuid128 {
+                            Low = 82892989397900053
+                        }
+                    }
+                });
+
+            socket.Next(
+                new Seto.Payload {
+                    Type = Seto.PayloadType.PAYLOADORDERACCEPTED,
+                    EtoPayload = new Eto.Payload {
+                        Type = Eto.PayloadType.PAYLOADNONE,
+                        Seq = 3
+                    },
+                    OrderAccepted = new Seto.OrderAccepted {
+                        Seq = 2,
+                        Order = new Seto.Uuid128 {
+                            Low = 82892989397900054
+                        }
+                    }
+                });
+
+            socket.Next(
+                new Seto.Payload {
+                    Type = Seto.PayloadType.PAYLOADETO,
+                    EtoPayload = new Eto.Payload {
+                        Type = Eto.PayloadType.PAYLOADLOGOUT,
+                        Seq = 4,
+                        Logout = new Eto.Logout {
+                            Reason = Eto.LogoutReason.LOGOUTHEARTBEATTIMEOUT
+                        }
+                    }
+                });
+
+            var session = new SeqSession(socket, SessionSettings);
+            IClientSettings mockSettings = new ClientSettings(SocketSettings, SessionSettings);
+
+            using (var client = SmarketsClient.Create(mockSettings, session))
+            {
+                client.Login();
+                var mockMarketUid = new Uid(317002);
+                var mockContractUid = new Uid(608008);
+                var mockOrder = new NewOrder {
+                    Type = OrderCreateType.Limit,
+                    Market = mockMarketUid,
+                    Contract = mockContractUid,
+                    Side = Side.Buy,
+                    Quantity = new Quantity(QuantityType.PayoffCurrency, 60000),
+                    Price = new Price(PriceType.PercentOdds, 5714)
+                };
+                var mockOrderResponse1 = client.CreateOrder(mockOrder);
+                var mockOrderResponse2 = client.CreateOrder(mockOrder);
+                Assert.NotNull(mockOrderResponse1.Data);
+                Assert.NotNull(mockOrderResponse2.Data);
+            }
+        }
     }
 }

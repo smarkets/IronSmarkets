@@ -20,6 +20,8 @@
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+using System;
+
 namespace IronSmarkets.Data
 {
     public class Order
@@ -30,6 +32,8 @@ namespace IronSmarkets.Data
         public Uid Market { get; private set; }
         public Uid Contract { get; private set; }
         public Side Side { get; private set; }
+
+        public EventHandler<EventArgs> StateUpdated;
 
         public bool Cancellable
         {
@@ -54,11 +58,20 @@ namespace IronSmarkets.Data
         internal void Update(Proto.Seto.OrderExecuted message)
         {
             State.Update(message);
+            OnStateUpdated();
         }
 
         internal void Update(Proto.Seto.OrderCancelled message)
         {
             State.Update(message);
+            OnStateUpdated();
+        }
+
+        private void OnStateUpdated()
+        {
+            var ev = StateUpdated;
+            if (ev != null)
+                ev(this, new EventArgs());
         }
 
         internal static Order FromSeto(

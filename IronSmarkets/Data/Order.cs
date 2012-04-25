@@ -51,6 +51,16 @@ namespace IronSmarkets.Data
             Side = side;
         }
 
+        internal void Update(Proto.Seto.OrderExecuted message)
+        {
+            State.Update(message);
+        }
+
+        internal void Update(Proto.Seto.OrderCancelled message)
+        {
+            State.Update(message);
+        }
+
         internal static Order FromSeto(
             Proto.Seto.OrderState state,
             Proto.Seto.PriceType priceType,

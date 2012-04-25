@@ -40,6 +40,14 @@ namespace IronSmarkets.Data
         Cancelled
     }
 
+    public enum OrderCancelledReason
+    {
+        None,
+        MemberRequested,
+        MarketHalted,
+        InsufficientLiquidity
+    }
+
     public class OrderState
     {
         private static readonly BiDictionary<Proto.Seto.OrderCreateType, OrderCreateType> OrderCreateTypes =
@@ -56,13 +64,21 @@ namespace IronSmarkets.Data
                 { Proto.Seto.OrderStatus.ORDERSTATUSPARTIALLYCANCELLED, OrderStatus.PartiallyCancelled },
                 { Proto.Seto.OrderStatus.ORDERSTATUSCANCELLED, OrderStatus.Cancelled }
             };
+        private static readonly IDictionary<Proto.Seto.OrderCancelledReason, OrderCancelledReason> OrderCancelledReasons =
+            new Dictionary<Proto.Seto.OrderCancelledReason, OrderCancelledReason>
+            {
+                { Proto.Seto.OrderCancelledReason.ORDERCANCELLEDMEMBERREQUESTED, OrderCancelledReason.MemberRequested },
+                { Proto.Seto.OrderCancelledReason.ORDERCANCELLEDMARKETHALTED, OrderCancelledReason.MarketHalted },
+                { Proto.Seto.OrderCancelledReason.ORDERCANCELLEDINSUFFICIENTLIQUIDITY, OrderCancelledReason.InsufficientLiquidity }
+            };
 
         private readonly Uid _uid;
         private readonly OrderCreateType _type;
-        private readonly OrderStatus _status;
-        private readonly Quantity _quantity;
         private readonly ulong _created;
-        private readonly Quantity _quantityFilled;
+        private readonly Quantity _quantity;
+        private OrderStatus _status;
+        private Quantity _quantityFilled;
+        private OrderCancelledReason _cancelReason;
 
         public Uid Uid { get { return _uid; } }
         public OrderCreateType Type { get { return _type; } }
@@ -70,6 +86,7 @@ namespace IronSmarkets.Data
         public Quantity Quantity { get { return _quantity; } }
         public DateTime Created { get { return SetoMap.FromMicroseconds(_created); } }
         public Quantity QuantityFilled { get { return _quantityFilled; } }
+        public OrderCancelledReason CancelReason { get { return _cancelReason; } }
 
         internal OrderState(
             Uid uid,
@@ -85,6 +102,27 @@ namespace IronSmarkets.Data
             _quantity = quantity;
             _created = created;
             _quantityFilled = quantityFilled;
+        }
+
+        internal void Update(Proto.Seto.OrderExecuted message)
+        {
+            var quantityType = Quantity.QuantityTypeFromSeto(message.QuantityType);
+            _quantityFilled = new Quantity(
+                quantityType,
+                message.Quantity + _quantityFilled.Raw);
+            if (_quantityFilled == _quantity)
+                _status = OrderStatus.Filled;
+            else
+                _status = OrderStatus.PartiallyFilled;
+        }
+
+        internal void Update(Proto.Seto.OrderCancelled message)
+        {
+            _cancelReason = OrderCancelledReasons[message.Reason];
+            if (_quantityFilled.Raw == 0)
+                _status = OrderStatus.Cancelled;
+            else
+                _status = OrderStatus.PartiallyCancelled;
         }
 
         internal static OrderState FromSeto(Proto.Seto.OrderState state)

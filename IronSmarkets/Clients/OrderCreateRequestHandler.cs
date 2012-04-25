@@ -42,8 +42,11 @@ namespace IronSmarkets.Clients
         private static readonly ILog Log = LogManager.GetLogger(
             System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-        public OrderCreateRequestHandler(ISmarketsClient client) : base(client)
+        private readonly OrderMap _orderMap;
+
+        public OrderCreateRequestHandler(ISmarketsClient client, OrderMap orderMap) : base(client)
         {
+            _orderMap = orderMap;
         }
 
         public Response<Order> Request(NewOrder request)
@@ -53,9 +56,10 @@ namespace IronSmarkets.Clients
                 OrderCreate = request.ToOrderCreate()
             };
             var req = BeginRequest(payload);
-            return new Response<Order>(
-                payload.EtoPayload.Seq,
-                request.ToOrder(Uid.FromUuid128(req.Response.Order)));
+            var uid = Uid.FromUuid128(req.Response.Order);
+            var order = request.ToOrder(uid);
+            _orderMap.Add(order);
+            return new Response<Order>(payload.EtoPayload.Seq, order);
         }
 
         protected override Order Map(ISmarketsClient client, Proto.Seto.OrderAccepted message)

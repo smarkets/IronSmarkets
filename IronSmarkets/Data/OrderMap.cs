@@ -95,7 +95,7 @@ namespace IronSmarkets.Data
             orders.Orders.ForAll(x => Add(Order.FromSeto(x, priceType, orders.Price, market, contract, side)));
         }
 
-        private void Add(Order order)
+        internal void Add(Order order)
         {
             _inner[order.Uid] = order;
         }

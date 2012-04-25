@@ -115,7 +115,7 @@ namespace IronSmarkets.Clients
             _marketQuotesRequestHandler = new MarketQuotesRequestHandler(this);
             _ordersForAccountRequestHandler = new OrdersForAccountRequestHandler(this, _orderMap);
             _ordersForMarketRequestHandler = new OrdersForMarketRequestHandler(this, _orderMap);
-            _orderCreateRequestHandler = new OrderCreateRequestHandler(this);
+            _orderCreateRequestHandler = new OrderCreateRequestHandler(this, _orderMap);
         }
 
         public static ISmarketsClient Create(

@@ -53,7 +53,7 @@ namespace IronSmarkets.Data
                 Price, new OrderState(
                     orderUid,
                     Type,
-                    OrderStatus.Pending,
+                    OrderStatus.Live,
                     Quantity,
                     SetoMap.ToMicroseconds(DateTime.UtcNow),
                     new Quantity(Quantity.Type, 0)),

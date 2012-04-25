@@ -37,6 +37,7 @@ namespace IronSmarkets.Clients
             get
             {
                 _replied.WaitOne();
+                _replied.Close();
                 if (_responseException != null)
                 {
                     throw _responseException;

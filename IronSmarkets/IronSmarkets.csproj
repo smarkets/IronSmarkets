@@ -64,6 +64,7 @@
     <Compile Include="Clients\HttpFoundHandler.cs" />
     <Compile Include="Clients\IAsyncHttpFoundHandler.cs" />
     <Compile Include="Clients\IQuoteSink.cs" />
+    <Compile Include="Clients\IResponse.cs" />
     <Compile Include="Clients\ISyncRequest.cs" />
     <Compile Include="Clients\KeyQueueRpcHandler.cs" />
     <Compile Include="Clients\MarketQuoteHandler.cs" />

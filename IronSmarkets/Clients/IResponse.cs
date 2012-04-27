@@ -20,22 +20,11 @@
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-using System;
-
 namespace IronSmarkets.Clients
 {
-    internal sealed class Response<T> : IResponse<T>
+    public interface IResponse<T>
     {
-        private readonly ulong _sequence;
-        private readonly T _data;
-
-        public ulong Sequence { get { return _sequence; } }
-        public T Data { get { return _data; } }
-
-        internal Response(ulong sequence, T data)
-        {
-            _sequence = sequence;
-            _data = data;
-        }
+        ulong Sequence { get; }
+        T Data { get; }
     }
 }

@@ -22,22 +22,15 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using log4net;
-
-using IronSmarkets.Data;
 
 namespace IronSmarkets.Clients
 {
     internal abstract class QueueRpcHandler<TPayload, TResponse, TState> : RpcHandler<TPayload, TResponse, TState>
     {
-        private static readonly ILog Log = LogManager.GetLogger(
-            System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-
         private readonly Queue<SyncRequest<TPayload, TResponse, TState>> _requests =
             new Queue<SyncRequest<TPayload, TResponse, TState>>();
 
-        public QueueRpcHandler(ISmarketsClient client) : base(client)
+        protected QueueRpcHandler(ISmarketsClient client) : base(client)
         {
         }
 

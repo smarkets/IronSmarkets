@@ -25,11 +25,6 @@ using System.IO;
 
 using ProtoBuf;
 
-using IronSmarkets.Clients;
-using IronSmarkets.Data;
-using IronSmarkets.Sessions;
-using IronSmarkets.Sockets;
-
 using Seto = IronSmarkets.Proto.Seto;
 
 namespace IronSmarkets.Tests.Mocks

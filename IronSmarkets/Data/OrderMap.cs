@@ -38,10 +38,6 @@ namespace IronSmarkets.Data
         {
         }
 
-        private OrderMap(IDictionary<Uid, Order> orders) : base(orders)
-        {
-        }
-
         public void Merge(IEnumerable<KeyValuePair<Uid, Order>> orders)
         {
             orders.ForAll(Add);
@@ -97,7 +93,7 @@ namespace IronSmarkets.Data
 
         internal void Add(Order order)
         {
-            _inner[order.Uid] = order;
+            Inner[order.Uid] = order;
         }
     }
 }

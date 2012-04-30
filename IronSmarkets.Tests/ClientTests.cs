@@ -44,7 +44,7 @@ namespace IronSmarkets.Tests
         [Fact]
         public void HandleQuotes()
         {
-            var socket = new MockSessionSocket(SocketSettings);
+            var socket = new MockSessionSocket();
 
             socket.Expect(
                 new Seto.Payload {
@@ -223,7 +223,7 @@ namespace IronSmarkets.Tests
             var session = new SeqSession(socket, SessionSettings);
             IClientSettings mockSettings = new ClientSettings(SocketSettings, SessionSettings);
 
-            var mockHttpHandler = new MockHttpFoundHandler<Proto.Seto.Events>();
+            var mockHttpHandler = new MockHttpFoundHandler<Seto.Events>();
             mockHttpHandler.AddDocument(MockUrls.Football20120221);
             using (var client = SmarketsClient.Create(mockSettings, session, mockHttpHandler))
             {
@@ -237,7 +237,7 @@ namespace IronSmarkets.Tests
                 var mockMarketUid = new Uid(317002);
                 var mockContractUid = new Uid(608008);
                 var mockMap = client.GetEvents(builder.GetResult()).Data;
-                var mockEvent = mockMap[mockEventUid];
+                Assert.True(mockMap.ContainsKey(mockEventUid));
                 var mockMarket = client.MarketMap[mockMarketUid];
                 var mockContract = client.ContractMap[mockContractUid];
                 mockMarket.SubscribeQuotes(client);
@@ -248,9 +248,7 @@ namespace IronSmarkets.Tests
                     mockQuotes = args.Quotes;
                     marketUpdatedEvent.Set();
                 };
-                mockContract.ContractQuotesUpdated += (sender, args) => {
-                    contractUpdatedEvent.Set();
-                };
+                mockContract.ContractQuotesUpdated += (sender, args) => contractUpdatedEvent.Set();
                 var mockOrder = new NewOrder {
                     Type = OrderCreateType.Limit,
                     Market = mockMarketUid,
@@ -259,7 +257,7 @@ namespace IronSmarkets.Tests
                     Quantity = new Quantity(QuantityType.PayoffCurrency, 60000),
                     Price = new Price(PriceType.PercentOdds, 5714)
                 };
-                var mockOrderResponse = client.CreateOrder(mockOrder).Data;
+                Assert.NotNull(client.CreateOrder(mockOrder).Data);
                 Assert.True(marketUpdatedEvent.WaitOne(1000));
                 Assert.Equal(mockQuotes.QuantityType, QuantityType.PayoffCurrency);
                 Assert.Equal(mockQuotes.PriceType, PriceType.PercentOdds);
@@ -283,7 +281,7 @@ namespace IronSmarkets.Tests
         [Fact]
         public void MultipleOrdersAcceptedAsynchronously()
         {
-            var socket = new MockSessionSocket(SocketSettings);
+            var socket = new MockSessionSocket();
 
             socket.Expect(
                 new Seto.Payload {

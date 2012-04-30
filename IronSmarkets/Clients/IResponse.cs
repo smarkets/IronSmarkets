@@ -24,7 +24,7 @@ using System;
 
 namespace IronSmarkets.Clients
 {
-    public interface IResponse<T>
+    public interface IResponse<out T>
     {
         ulong Sequence { get; }
         T Data { get; }

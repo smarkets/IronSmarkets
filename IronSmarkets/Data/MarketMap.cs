@@ -50,7 +50,7 @@ namespace IronSmarkets.Data
             var markets = from m in setoMarkets select Market.FromSeto(client, m, parent);
             foreach (var market in markets)
             {
-                _inner[market.Info.Uid] = market;
+                Inner[market.Info.Uid] = market;
             }
         }
     }

@@ -21,8 +21,6 @@
 // SOFTWARE.
 
 using System;
-using System.Collections.Generic;
-using System.Threading;
 
 using log4net;
 
@@ -43,8 +41,8 @@ namespace IronSmarkets.Clients
             protected override Order Map(ISmarketsClient client, Proto.Seto.OrderAccepted message)
             {
                 var uid = Uid.FromUuid128(message.Order);
-                var order = _state.Item1.ToOrder(uid);
-                _state.Item2.Add(order);
+                var order = State.Item1.ToOrder(uid);
+                State.Item2.Add(order);
                 return order;
             }
         }
@@ -64,7 +62,7 @@ namespace IronSmarkets.Clients
             {
                 case Proto.Seto.PayloadType.PAYLOADORDERACCEPTED:
                     // Normal case
-                    request.SetResponse(_client, payload.OrderAccepted);
+                    request.SetResponse(Client, payload.OrderAccepted);
                     break;
                 case Proto.Seto.PayloadType.PAYLOADORDERREJECTED:
                     request.SetException(OrderRejectedException.FromSeto(payload.OrderRejected));

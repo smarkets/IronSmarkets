@@ -66,13 +66,13 @@ namespace IronSmarkets.Data
 
         public void Add(Uid uid)
         {
-            if (_inner.ContainsKey(uid))
+            if (Inner.ContainsKey(uid))
             {
                 throw new ArgumentException(
                     string.Format(
                         "Uid {0} already exists in map", uid));
             }
-            _inner[uid] = ContractQuotes.Empty(uid, _priceType, _quantityType);
+            Inner[uid] = ContractQuotes.Empty(uid, _priceType, _quantityType);
         }
     }
 }

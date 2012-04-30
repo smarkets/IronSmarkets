@@ -27,7 +27,6 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 
-using log4net;
 using ProtoBuf;
 
 using IronSmarkets.Exceptions;
@@ -79,10 +78,6 @@ namespace IronSmarkets.Tests.Mocks
         public Payload Payload { get { throw new InvalidOperationException(); } }
         public bool Outgoing { get { return false; } }
 
-        public ExpectsAny()
-        {
-        }
-
         public bool Expects(Payload payload)
         {
             return true;
@@ -109,10 +104,6 @@ namespace IronSmarkets.Tests.Mocks
 
     public sealed class MockSessionSocket : IDisposable, ISocket<Payload>
     {
-        private static readonly ILog Log = LogManager.GetLogger(
-            System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-
-        private readonly ISocketSettings _settings;
         private readonly Queue<IPayloadWrapper> _payloads =
             new Queue<IPayloadWrapper>();
         private readonly ConcurrentQueue<Payload> _incoming =
@@ -132,11 +123,6 @@ namespace IronSmarkets.Tests.Mocks
             {
                 return _connected;
             }
-        }
-
-        public MockSessionSocket(ISocketSettings settings)
-        {
-            _settings = settings;
         }
 
         ~MockSessionSocket()

@@ -20,8 +20,6 @@
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-using System.IO;
-
 namespace IronSmarkets.Sockets
 {
     public interface ISocket<T>

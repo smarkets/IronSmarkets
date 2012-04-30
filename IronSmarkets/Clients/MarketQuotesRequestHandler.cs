@@ -20,13 +20,7 @@
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-using System;
-using System.Collections.Generic;
-
-using log4net;
-
 using IronSmarkets.Data;
-using IronSmarkets.Exceptions;
 
 using Seto = IronSmarkets.Proto.Seto;
 
@@ -52,7 +46,7 @@ namespace IronSmarkets.Clients
 
         protected override void Extract(SyncRequest<Seto.MarketQuotes, MarketQuotes, object> request, Seto.Payload payload)
         {
-            request.SetResponse(_client, payload.MarketQuotes);
+            request.SetResponse(Client, payload.MarketQuotes);
         }
 
         protected override Uid ExtractRequestKey(Seto.Payload payload)

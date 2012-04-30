@@ -22,12 +22,8 @@
 
 using System;
 using System.Threading;
-
-using log4net;
-
 using IronSmarkets.Data;
 using IronSmarkets.Events;
-using IronSmarkets.Exceptions;
 using IronSmarkets.Sessions;
 using IronSmarkets.Sockets;
 
@@ -69,10 +65,6 @@ namespace IronSmarkets.Clients
 
     public sealed class SmarketsClient : ISmarketsClient
     {
-        private static readonly ILog Log = LogManager.GetLogger(
-            System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-
-        private readonly IClientSettings _settings;
         private readonly ISession<PS.Payload> _session;
         private readonly Receiver<PS.Payload> _receiver;
 
@@ -81,12 +73,12 @@ namespace IronSmarkets.Clients
         private readonly MarketMap _marketMap = new MarketMap();
         private readonly ContractMap _contractMap = new ContractMap();
 
-        private readonly IRpcHandler<PS.Events, IEventMap, EventMap> _eventsRequestHandler;
-        private readonly IRpcHandler<PS.AccountState, AccountState, object> _accountStateRequestHandler;
-        private readonly IRpcHandler<PS.MarketQuotes, MarketQuotes, object> _marketQuotesRequestHandler;
-        private readonly IRpcHandler<PS.OrdersForAccount, IOrderMap, OrderMap> _ordersForAccountRequestHandler;
-        private readonly IRpcHandler<PS.OrdersForMarket, IOrderMap, OrderMap> _ordersForMarketRequestHandler;
-        private readonly IRpcHandler<PS.OrderAccepted, Order, Tuple<NewOrder, OrderMap>> _orderCreateRequestHandler;
+        private readonly IRpcHandler<IEventMap, EventMap> _eventsRequestHandler;
+        private readonly IRpcHandler<AccountState, object> _accountStateRequestHandler;
+        private readonly IRpcHandler<MarketQuotes, object> _marketQuotesRequestHandler;
+        private readonly IRpcHandler<IOrderMap, OrderMap> _ordersForAccountRequestHandler;
+        private readonly IRpcHandler<IOrderMap, OrderMap> _ordersForMarketRequestHandler;
+        private readonly IRpcHandler<Order, Tuple<NewOrder, OrderMap>> _orderCreateRequestHandler;
         private readonly IAsyncHttpFoundHandler<PS.Events> _httpHandler;
 
         private readonly QuoteHandler<PS.MarketQuotes> _marketQuotesHandler = new MarketQuoteHandler();
@@ -96,11 +88,9 @@ namespace IronSmarkets.Clients
         private int _disposed;
 
         private SmarketsClient(
-            IClientSettings settings,
             ISession<PS.Payload> session,
             IAsyncHttpFoundHandler<PS.Events> httpHandler)
         {
-            _settings = settings;
             _session = session;
             _session.PayloadReceived += (sender, args) =>
                 OnPayloadReceived(args.Payload);
@@ -131,7 +121,7 @@ namespace IronSmarkets.Clients
             if (httpHandler == null)
                 httpHandler = new HttpFoundHandler<PS.Events>(
                     settings.HttpRequestTimeout);
-            var client = new SmarketsClient(settings, session, httpHandler);
+            var client = new SmarketsClient(session, httpHandler);
             httpHandler.SetClient(client);
             return client;
         }

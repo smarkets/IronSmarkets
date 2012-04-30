@@ -42,10 +42,6 @@ namespace IronSmarkets.Data
         {
         }
 
-        private ContractMap(IDictionary<Uid, Contract> contracts) : base(contracts)
-        {
-        }
-
         public void MergeFromContracts(
             ISmarketsClient client,
             IEnumerable<Proto.Seto.ContractInfo> setoContracts,
@@ -54,7 +50,7 @@ namespace IronSmarkets.Data
             var contracts = from c in setoContracts select Contract.FromSeto(c, market);
             foreach (var contract in contracts)
             {
-                _inner[contract.Info.Uid] = contract;
+                Inner[contract.Info.Uid] = contract;
             }
         }
     }

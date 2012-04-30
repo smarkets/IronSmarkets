@@ -36,18 +36,14 @@ namespace IronSmarkets.Data
 
     internal class EventMap : ReadOnlyDictionaryWrapper<Uid, Event>, IEventMap
     {
-        private IList<Event> _roots = null;
+        private IList<Event> _roots;
 
         public IEnumerable<Event> Roots
         {
             get
             {
-                if (null == _roots)
-                {
-                    _roots = new List<Event>(
-                        Values.Where(ev => !ev.Info.ParentUid.HasValue)).AsReadOnly();
-                }
-                return _roots;
+                return _roots ?? (_roots = new List<Event>(
+                                      Values.Where(ev => !ev.Info.ParentUid.HasValue)).AsReadOnly());
             }
         }
 
@@ -63,7 +59,7 @@ namespace IronSmarkets.Data
         {
             // XXX: This kind of breaks the encapsulation of a read-only
             // dictionary
-            _inner.MergeLeft(FromSeto(client, setoEvents));
+            Inner.MergeLeft(FromSeto(client, setoEvents));
             _roots = null;
             return this;
         }

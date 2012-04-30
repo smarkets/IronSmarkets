@@ -20,24 +20,17 @@
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using log4net;
-
-using IronSmarkets.Data;
 
 namespace IronSmarkets.Clients
 {
     internal abstract class KeyQueueRpcHandler<TKey, TPayload, TResponse, TState> : RpcHandler<TPayload, TResponse, TState>
     {
-        private static readonly ILog Log = LogManager.GetLogger(
-            System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-
         private readonly IDictionary<TKey, Queue<SyncRequest<TPayload, TResponse, TState>>> _requests =
             new Dictionary<TKey, Queue<SyncRequest<TPayload, TResponse, TState>>>();
 
-        public KeyQueueRpcHandler(ISmarketsClient client) : base(client)
+        protected KeyQueueRpcHandler(ISmarketsClient client) : base(client)
         {
         }
 

@@ -20,13 +20,7 @@
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-using System;
-using System.Collections.Generic;
-
-using log4net;
-
 using IronSmarkets.Data;
-using IronSmarkets.Exceptions;
 
 using Seto = IronSmarkets.Proto.Seto;
 
@@ -42,7 +36,7 @@ namespace IronSmarkets.Clients
 
             protected override IOrderMap Map(ISmarketsClient client, Seto.OrdersForAccount state)
             {
-                return _state.MergeFromSeto(client, state);
+                return State.MergeFromSeto(client, state);
             }
         }
 
@@ -52,7 +46,7 @@ namespace IronSmarkets.Clients
 
         protected override void Extract(SyncRequest<Seto.OrdersForAccount, IOrderMap, OrderMap> request, Seto.Payload payload)
         {
-            request.SetResponse(_client, payload.OrdersForAccount);
+            request.SetResponse(Client, payload.OrdersForAccount);
         }
 
         protected override SyncRequest<Seto.OrdersForAccount, IOrderMap, OrderMap> NewRequest(ulong sequence, OrderMap state)

@@ -20,11 +20,6 @@
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-using System;
-using System.Collections.Generic;
-
-using log4net;
-
 using IronSmarkets.Data;
 
 using Seto = IronSmarkets.Proto.Seto;
@@ -33,9 +28,6 @@ namespace IronSmarkets.Clients
 {
     internal sealed class ContractQuoteHandler : QuoteHandler<Seto.ContractQuotes>
     {
-        private static readonly ILog Log = LogManager.GetLogger(
-            System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-
         public override UidPair<Seto.ContractQuotes> Extract(Seto.Payload payload)
         {
             return new UidPair<Seto.ContractQuotes>(

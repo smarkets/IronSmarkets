@@ -21,8 +21,7 @@
 // SOFTWARE.
 
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
+using System.Globalization;
 
 namespace IronSmarkets.Data
 {
@@ -65,7 +64,7 @@ namespace IronSmarkets.Data
 
         public override string ToString()
         {
-            return new Money(_quantity.MoneyUnits, _currency).ToString();
+            return new Money(_quantity.MoneyUnits, _currency).ToString(CultureInfo.InvariantCulture);
         }
 
         public override bool Equals(object right)

@@ -23,6 +23,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 
@@ -402,6 +403,7 @@ namespace IronSmarkets.Sessions
 
         public void RemovePayloadHandler(Predicate<Payload> predicate)
         {
+            Debug.Assert(_payloadHandler != null, "_payloadHandler != null");
             _payloadHandler -= predicate;
         }
 

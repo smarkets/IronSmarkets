@@ -31,12 +31,11 @@ namespace IronSmarkets.Clients
         private readonly ulong _sequence;
 
         private ManualResetEvent _replied = new ManualResetEvent(false);
-        private TPayload _response;
         private TResponse _data;
         private Exception _responseException;
         private int _disposed;
 
-        protected readonly TState _state;
+        protected readonly TState State;
 
         public ulong Sequence { get { return _sequence; } }
 
@@ -64,10 +63,10 @@ namespace IronSmarkets.Clients
             }
         }
 
-        public SyncRequest(ulong sequence, TState state)
+        protected SyncRequest(ulong sequence, TState state)
         {
             _sequence = sequence;
-            _state = state;
+            State = state;
         }
 
         ~SyncRequest()

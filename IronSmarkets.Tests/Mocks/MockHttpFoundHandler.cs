@@ -20,7 +20,6 @@
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-using System;
 using System.Collections.Generic;
 using System.IO;
 
@@ -31,7 +30,7 @@ using ProtoBuf;
 
 namespace IronSmarkets.Tests.Mocks
 {
-    public interface IMockHttpDocument<T>
+    public interface IMockHttpDocument<out T>
     {
         string Url { get; }
         T Payload { get; }
@@ -44,11 +43,7 @@ namespace IronSmarkets.Tests.Mocks
 
         private ISmarketsClient _client;
 
-        private IDictionary<string, T> documents_ = new Dictionary<string, T>();
-
-        public MockHttpFoundHandler()
-        {
-        }
+        private readonly IDictionary<string, T> _documents = new Dictionary<string, T>();
 
         public void SetClient(ISmarketsClient client)
         {
@@ -62,18 +57,18 @@ namespace IronSmarkets.Tests.Mocks
 
         public void AddDocument(string url, T payload)
         {
-            documents_[url] = payload;
+            _documents[url] = payload;
         }
 
         public void BeginFetchHttpFound(
             ISyncRequest<T> syncRequest, Proto.Seto.Payload payload)
         {
             var url = payload.HttpFound.Url;
-            if (documents_.ContainsKey(url))
+            if (_documents.ContainsKey(url))
             {
                 if (Log.IsDebugEnabled) Log.Debug(
                     string.Format("Returning canned data for URL {0}", url));
-                syncRequest.SetResponse(_client, documents_[url]);
+                syncRequest.SetResponse(_client, _documents[url]);
             }
             else
             {

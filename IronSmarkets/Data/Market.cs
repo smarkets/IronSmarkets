@@ -23,7 +23,6 @@
 using System;
 
 using IronSmarkets.Clients;
-using IronSmarkets.Extensions;
 
 namespace IronSmarkets.Data
 {
@@ -33,7 +32,6 @@ namespace IronSmarkets.Data
         private readonly Event _parent;
 
         private MarketQuotes _quotes;
-        private ulong _subscriptionSeq;
         private IQuoteSink _sink;
 
         public Event Parent { get { return _parent; } }
@@ -52,8 +50,10 @@ namespace IronSmarkets.Data
         {
             if (_sink != null)
                 throw new InvalidOperationException("Already subscribed");
+            if (sink == null)
+                throw new ArgumentNullException("sink");
             _sink = sink;
-            _subscriptionSeq = _sink.SubscribeMarket(_info.Uid);
+            _sink.SubscribeMarket(_info.Uid);
         }
 
         public void UnsubscribeQuotes()
@@ -62,7 +62,6 @@ namespace IronSmarkets.Data
                 throw new InvalidOperationException("Not subscribed");
             _sink.UnsubscribeMarket(_info.Uid);
             _sink = null;
-            _subscriptionSeq = 0;
         }
 
         internal void OnMarketQuotesReceived(object sender, QuotesReceivedEventArgs<Proto.Seto.MarketQuotes> e)

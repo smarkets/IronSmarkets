@@ -21,9 +21,6 @@
 // SOFTWARE.
 
 using System;
-using System.Collections.Generic;
-
-using log4net;
 
 using IronSmarkets.Data;
 using IronSmarkets.Exceptions;
@@ -42,7 +39,7 @@ namespace IronSmarkets.Clients
 
             protected override IEventMap Map(ISmarketsClient client, Seto.Events events)
             {
-                return _state.MergeFromSeto(client, events);
+                return State.MergeFromSeto(client, events);
             }
         }
 

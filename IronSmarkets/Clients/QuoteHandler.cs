@@ -22,8 +22,7 @@
 
 using System;
 using System.Collections.Generic;
-
-using log4net;
+using System.Diagnostics;
 
 using IronSmarkets.Data;
 
@@ -43,9 +42,6 @@ namespace IronSmarkets.Clients
 
     internal abstract class QuoteHandler<T>
     {
-        private static readonly ILog Log = LogManager.GetLogger(
-            System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-
         private readonly IDictionary<Uid, EventHandler<QuotesReceivedEventArgs<T>>> _handlers =
             new Dictionary<Uid, EventHandler<QuotesReceivedEventArgs<T>>>();
         private readonly object _lock = new object();
@@ -71,6 +67,7 @@ namespace IronSmarkets.Clients
             lock (_lock)
             {
                 EventHandler<QuotesReceivedEventArgs<T>> md = _handlers[uid];
+                Debug.Assert(handler != null, "handler != null");
                 md -= handler;
                 if (md == null)
                 {

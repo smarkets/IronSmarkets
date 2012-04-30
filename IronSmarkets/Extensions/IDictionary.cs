@@ -52,16 +52,16 @@ namespace IronSmarkets.Extensions
     internal class ReadOnlyDictionaryWrapper<TKey, TValue> :
         IDictionary<TKey, TValue>, IReadOnlyMap<TKey, TValue>
     {
-        protected readonly IDictionary<TKey, TValue> _inner;
+        protected readonly IDictionary<TKey, TValue> Inner;
 
         public ReadOnlyDictionaryWrapper(IDictionary<TKey, TValue> inner)
         {
-            _inner = inner;
+            Inner = inner;
         }
 
         public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator()
         {
-            return _inner.GetEnumerator();
+            return Inner.GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
@@ -71,32 +71,32 @@ namespace IronSmarkets.Extensions
 
         public bool Contains(KeyValuePair<TKey, TValue> item)
         {
-            return _inner.Contains(item);
+            return Inner.Contains(item);
         }
 
         public void CopyTo(KeyValuePair<TKey, TValue>[] array, int arrayIndex)
         {
-            _inner.CopyTo(array, arrayIndex);
+            Inner.CopyTo(array, arrayIndex);
         }
 
         public int Count
         {
-            get { return _inner.Count; }
+            get { return Inner.Count; }
         }
 
         public bool ContainsKey(TKey key)
         {
-            return _inner.ContainsKey(key);
+            return Inner.ContainsKey(key);
         }
 
         public bool TryGetValue(TKey key, out TValue value)
         {
-            return _inner.TryGetValue(key, out value);
+            return Inner.TryGetValue(key, out value);
         }
 
         public TValue this[TKey key]
         {
-            get { return _inner[key]; }
+            get { return Inner[key]; }
             set
             {
                 throw new NotSupportedException("Dictionary is read-only");
@@ -105,12 +105,12 @@ namespace IronSmarkets.Extensions
 
         public ICollection<TKey> Keys
         {
-            get { return _inner.Keys; }
+            get { return Inner.Keys; }
         }
 
         public ICollection<TValue> Values
         {
-            get { return _inner.Values; }
+            get { return Inner.Values; }
         }
 
         public bool IsReadOnly { get { return true; } }

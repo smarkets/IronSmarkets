@@ -20,31 +20,28 @@
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-using System;
-using System.Collections.Generic;
-
 using log4net;
 
 namespace IronSmarkets.Clients
 {
-    internal interface IRpcHandler<TPayload, TResponse, TState>
+    internal interface IRpcHandler<out TResponse, in TState>
     {
         IResponse<TResponse> BeginRequest(Proto.Seto.Payload payload, TState state);
         void Handle(Proto.Seto.Payload payload);
     }
-    
-    internal abstract class RpcHandler<TPayload, TResponse, TState> : IRpcHandler<TPayload, TResponse, TState>
+
+    internal abstract class RpcHandler<TPayload, TResponse, TState> : IRpcHandler<TResponse, TState>
     {
         private static readonly ILog Log = LogManager.GetLogger(
             System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         private readonly object _lock = new object();
 
-        protected readonly ISmarketsClient _client;
+        protected readonly ISmarketsClient Client;
 
-        public RpcHandler(ISmarketsClient client)
+        protected RpcHandler(ISmarketsClient client)
         {
-            _client = client;
+            Client = client;
         }
 
         public IResponse<TResponse> BeginRequest(Proto.Seto.Payload payload, TState state)
@@ -61,7 +58,7 @@ namespace IronSmarkets.Clients
                 // last sequence number for these types of requests in
                 // a volatile long variable and spin-wait in the
                 // receiver where necessary.
-                _client.SendPayload(payload);
+                Client.SendPayload(payload);
                 var req = NewRequest(payload.EtoPayload.Seq, state);
                 AddRequest(payload, req);
                 return req;

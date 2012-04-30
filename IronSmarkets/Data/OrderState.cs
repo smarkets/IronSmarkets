@@ -64,7 +64,7 @@ namespace IronSmarkets.Data
                 { Proto.Seto.OrderStatus.ORDERSTATUSPARTIALLYCANCELLED, OrderStatus.PartiallyCancelled },
                 { Proto.Seto.OrderStatus.ORDERSTATUSCANCELLED, OrderStatus.Cancelled }
             };
-        private static readonly IDictionary<Proto.Seto.OrderCancelledReason, OrderCancelledReason> OrderCancelledReasons =
+        internal static readonly IDictionary<Proto.Seto.OrderCancelledReason, OrderCancelledReason> OrderCancelledReasons =
             new Dictionary<Proto.Seto.OrderCancelledReason, OrderCancelledReason>
             {
                 { Proto.Seto.OrderCancelledReason.ORDERCANCELLEDMEMBERREQUESTED, OrderCancelledReason.MemberRequested },
@@ -110,19 +110,13 @@ namespace IronSmarkets.Data
             _quantityFilled = new Quantity(
                 quantityType,
                 message.Quantity + _quantityFilled.Raw);
-            if (_quantityFilled == _quantity)
-                _status = OrderStatus.Filled;
-            else
-                _status = OrderStatus.PartiallyFilled;
+            _status = _quantityFilled == _quantity ? OrderStatus.Filled : OrderStatus.PartiallyFilled;
         }
 
         internal void Update(Proto.Seto.OrderCancelled message)
         {
             _cancelReason = OrderCancelledReasons[message.Reason];
-            if (_quantityFilled.Raw == 0)
-                _status = OrderStatus.Cancelled;
-            else
-                _status = OrderStatus.PartiallyCancelled;
+            _status = _quantityFilled.Raw == 0 ? OrderStatus.Cancelled : OrderStatus.PartiallyCancelled;
         }
 
         internal static OrderState FromSeto(Proto.Seto.OrderState state)

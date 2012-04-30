@@ -196,6 +196,18 @@ namespace IronSmarkets.Tests
                     }
                 });
 
+            socket.Expect(
+                new Seto.Payload {
+                    Type = Seto.PayloadType.PAYLOADETO,
+                    EtoPayload = new Eto.Payload {
+                        Type = Eto.PayloadType.PAYLOADLOGOUT,
+                        Seq = 5,
+                        Logout = new Eto.Logout {
+                            Reason = Eto.LogoutReason.LOGOUTNONE
+                        }
+                    }
+                });
+
             socket.Next(
                 new Seto.Payload {
                     Type = Seto.PayloadType.PAYLOADETO,
@@ -203,7 +215,7 @@ namespace IronSmarkets.Tests
                         Type = Eto.PayloadType.PAYLOADLOGOUT,
                         Seq = 6,
                         Logout = new Eto.Logout {
-                            Reason = Eto.LogoutReason.LOGOUTHEARTBEATTIMEOUT
+                            Reason = Eto.LogoutReason.LOGOUTCONFIRMATION
                         }
                     }
                 });
@@ -264,10 +276,11 @@ namespace IronSmarkets.Tests
                 Assert.Equal(mockContractQuotes.QuantityType, QuantityType.PayoffCurrency);
                 Assert.Equal(mockContractQuotes.PriceType, PriceType.PercentOdds);
                 Assert.Equal(mockContractQuotes.Uid, mockContractUid);
+                client.Logout();
             }
         }
 
-        [Fact(Skip="Refactoring...")]
+        [Fact]
         public void MultipleOrdersAcceptedAsynchronously()
         {
             var socket = new MockSessionSocket(SocketSettings);
@@ -374,6 +387,18 @@ namespace IronSmarkets.Tests
                     }
                 });
 
+            socket.Expect(
+                new Seto.Payload {
+                    Type = Seto.PayloadType.PAYLOADETO,
+                    EtoPayload = new Eto.Payload {
+                        Type = Eto.PayloadType.PAYLOADLOGOUT,
+                        Seq = 4,
+                        Logout = new Eto.Logout {
+                            Reason = Eto.LogoutReason.LOGOUTNONE
+                        }
+                    }
+                });
+
             socket.Next(
                 new Seto.Payload {
                     Type = Seto.PayloadType.PAYLOADETO,
@@ -381,7 +406,7 @@ namespace IronSmarkets.Tests
                         Type = Eto.PayloadType.PAYLOADLOGOUT,
                         Seq = 4,
                         Logout = new Eto.Logout {
-                            Reason = Eto.LogoutReason.LOGOUTHEARTBEATTIMEOUT
+                            Reason = Eto.LogoutReason.LOGOUTCONFIRMATION
                         }
                     }
                 });
@@ -406,6 +431,7 @@ namespace IronSmarkets.Tests
                 var mockOrderResponse2 = client.CreateOrder(mockOrder);
                 Assert.NotNull(mockOrderResponse1.Data);
                 Assert.NotNull(mockOrderResponse2.Data);
+                client.Logout();
             }
         }
     }

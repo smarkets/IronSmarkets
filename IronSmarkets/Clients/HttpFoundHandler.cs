@@ -49,9 +49,16 @@ namespace IronSmarkets.Clients
 
         private readonly int _timeout;
 
+        private ISmarketsClient _client;
+
         public HttpFoundHandler(int timeout)
         {
             _timeout = timeout;
+        }
+
+        public void SetClient(ISmarketsClient client)
+        {
+            _client = client;
         }
 
         public void BeginFetchHttpFound(
@@ -82,7 +89,7 @@ namespace IronSmarkets.Clients
                 {
                     if (Log.IsDebugEnabled) Log.Debug("Received a response, deserializing");
                     Stream receiveStream = resp.GetResponseStream();
-                    requestState.Request.Response = Serializer.Deserialize<T>(receiveStream);
+                    requestState.Request.SetResponse(_client, Serializer.Deserialize<T>(receiveStream));
                 }
             }
             catch (WebException wex)

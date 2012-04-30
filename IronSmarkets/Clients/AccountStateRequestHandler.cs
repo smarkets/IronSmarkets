@@ -32,20 +32,32 @@ using Seto = IronSmarkets.Proto.Seto;
 
 namespace IronSmarkets.Clients
 {
-    internal class AccountStateRequestHandler : QueueRpcHandler<Seto.AccountState, AccountState>
+    internal class AccountStateRequestHandler : QueueRpcHandler<Seto.AccountState, AccountState, object>
     {
+        private class AccountStateSyncRequest : SyncRequest<Seto.AccountState, AccountState, object>
+        {
+            public AccountStateSyncRequest(ulong sequence, object state) : base(sequence, state)
+            {
+            }
+
+            protected override AccountState Map(ISmarketsClient client, Seto.AccountState state)
+            {
+                return AccountState.FromSeto(client, state);
+            }
+        }
+
         public AccountStateRequestHandler(ISmarketsClient client) : base(client)
         {
         }
 
-        protected override AccountState Map(ISmarketsClient client, Seto.AccountState state)
+        protected override SyncRequest<Seto.AccountState, AccountState, object> NewRequest(ulong sequence, object state)
         {
-            return AccountState.FromSeto(client, state);
+            return new AccountStateSyncRequest(sequence, state);
         }
 
-        protected override void Extract(SyncRequest<Seto.AccountState> request, Seto.Payload payload)
+        protected override void Extract(SyncRequest<Seto.AccountState, AccountState, object> request, Seto.Payload payload)
         {
-            request.Response = payload.AccountState;
+            request.SetResponse(_client, payload.AccountState);
         }
     }
 }

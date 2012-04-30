@@ -32,23 +32,27 @@ using Seto = IronSmarkets.Proto.Seto;
 
 namespace IronSmarkets.Clients
 {
-    internal class OrdersForMarketRequestHandler : KeyQueueRpcHandler<Uid, Seto.OrdersForMarket, IOrderMap>
+    internal class OrdersForMarketRequestHandler : KeyQueueRpcHandler<Uid, Seto.OrdersForMarket, IOrderMap, OrderMap>
     {
-        private readonly OrderMap _orderMap;
-
-        public OrdersForMarketRequestHandler(ISmarketsClient client, OrderMap orderMap) : base(client)
+        private class OrdersForMarketSyncRequest : SyncRequest<Seto.OrdersForMarket, IOrderMap, OrderMap>
         {
-            _orderMap = orderMap;
+            public OrdersForMarketSyncRequest(ulong sequence, OrderMap orderMap) : base(sequence, orderMap)
+            {
+            }
+
+            protected override IOrderMap Map(ISmarketsClient client, Seto.OrdersForMarket state)
+            {
+                return _state.MergeFromSeto(client, state);
+            }
         }
 
-        protected override IOrderMap Map(ISmarketsClient client, Seto.OrdersForMarket state)
+        public OrdersForMarketRequestHandler(ISmarketsClient client) : base(client)
         {
-            return _orderMap.MergeFromSeto(client, state);
         }
 
-        protected override void Extract(SyncRequest<Seto.OrdersForMarket> request, Seto.Payload payload)
+        protected override void Extract(SyncRequest<Seto.OrdersForMarket, IOrderMap, OrderMap> request, Seto.Payload payload)
         {
-            request.Response = payload.OrdersForMarket;
+            request.SetResponse(_client, payload.OrdersForMarket);
         }
 
         protected override Uid ExtractRequestKey(Seto.Payload payload)
@@ -59,6 +63,11 @@ namespace IronSmarkets.Clients
         protected override Uid ExtractResponseKey(Seto.Payload payload)
         {
             return Uid.FromUuid128(payload.OrdersForMarket.Market);
+        }
+
+        protected override SyncRequest<Seto.OrdersForMarket, IOrderMap, OrderMap> NewRequest(ulong sequence, OrderMap orderMap)
+        {
+            return new OrdersForMarketSyncRequest(sequence, orderMap);
         }
     }
 }

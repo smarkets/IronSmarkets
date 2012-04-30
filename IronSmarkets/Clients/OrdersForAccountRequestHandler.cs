@@ -32,23 +32,32 @@ using Seto = IronSmarkets.Proto.Seto;
 
 namespace IronSmarkets.Clients
 {
-    internal class OrdersForAccountRequestHandler : QueueRpcHandler<Seto.OrdersForAccount, IOrderMap>
+    internal class OrdersForAccountRequestHandler : QueueRpcHandler<Seto.OrdersForAccount, IOrderMap, OrderMap>
     {
-        private readonly OrderMap _orderMap;
-
-        public OrdersForAccountRequestHandler(ISmarketsClient client, OrderMap orderMap) : base(client)
+        private class OrdersForAccountSyncRequest : SyncRequest<Seto.OrdersForAccount, IOrderMap, OrderMap>
         {
-            _orderMap = orderMap;
+            public OrdersForAccountSyncRequest(ulong sequence, OrderMap orderMap) : base(sequence, orderMap)
+            {
+            }
+
+            protected override IOrderMap Map(ISmarketsClient client, Seto.OrdersForAccount state)
+            {
+                return _state.MergeFromSeto(client, state);
+            }
         }
 
-        protected override IOrderMap Map(ISmarketsClient client, Seto.OrdersForAccount state)
+        public OrdersForAccountRequestHandler(ISmarketsClient client) : base(client)
         {
-            return _orderMap.MergeFromSeto(client, state);
         }
 
-        protected override void Extract(SyncRequest<Seto.OrdersForAccount> request, Seto.Payload payload)
+        protected override void Extract(SyncRequest<Seto.OrdersForAccount, IOrderMap, OrderMap> request, Seto.Payload payload)
         {
-            request.Response = payload.OrdersForAccount;
+            request.SetResponse(_client, payload.OrdersForAccount);
+        }
+
+        protected override SyncRequest<Seto.OrdersForAccount, IOrderMap, OrderMap> NewRequest(ulong sequence, OrderMap state)
+        {
+            return new OrdersForAccountSyncRequest(sequence, state);
         }
     }
 }

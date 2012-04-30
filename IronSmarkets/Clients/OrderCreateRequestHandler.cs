@@ -31,52 +31,40 @@ using IronSmarkets.Exceptions;
 
 namespace IronSmarkets.Clients
 {
-    internal interface IOrderCreateRpcHandler : IRpcHandler<Proto.Seto.OrderAccepted, Order>
-    {
-        Response<Order> Request(NewOrder request);
-    }
-
     internal sealed class OrderCreateRequestHandler
-        : SeqRpcHandler<Proto.Seto.OrderAccepted, Order>, IOrderCreateRpcHandler
+        : SeqRpcHandler<Proto.Seto.OrderAccepted, Order, Tuple<NewOrder, OrderMap>>
     {
+        private class OrderCreateSyncRequest : SyncRequest<Proto.Seto.OrderAccepted, Order, Tuple<NewOrder, OrderMap>>
+        {
+            public OrderCreateSyncRequest(ulong sequence, Tuple<NewOrder, OrderMap> state) : base(sequence, state)
+            {
+            }
+
+            protected override Order Map(ISmarketsClient client, Proto.Seto.OrderAccepted message)
+            {
+                var uid = Uid.FromUuid128(message.Order);
+                var order = _state.Item1.ToOrder(uid);
+                _state.Item2.Add(order);
+                return order;
+            }
+        }
+
         private static readonly ILog Log = LogManager.GetLogger(
             System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-        private readonly OrderMap _orderMap;
-
-        public OrderCreateRequestHandler(ISmarketsClient client, OrderMap orderMap) : base(client)
+        public OrderCreateRequestHandler(ISmarketsClient client) : base(client)
         {
-            _orderMap = orderMap;
-        }
-
-        public Response<Order> Request(NewOrder request)
-        {
-            var payload = new Proto.Seto.Payload {
-                Type = Proto.Seto.PayloadType.PAYLOADORDERCREATE,
-                OrderCreate = request.ToOrderCreate()
-            };
-            var req = BeginRequest(payload);
-            var uid = Uid.FromUuid128(req.Response.Order);
-            var order = request.ToOrder(uid);
-            _orderMap.Add(order);
-            return new Response<Order>(payload.EtoPayload.Seq, order);
-        }
-
-        protected override Order Map(ISmarketsClient client, Proto.Seto.OrderAccepted message)
-        {
-            // Ok, this class hierarchy needs some refactoring...
-            throw new NotImplementedException();
         }
 
         protected override void Extract(
-            SyncRequest<Proto.Seto.OrderAccepted> request,
+            SyncRequest<Proto.Seto.OrderAccepted, Order, Tuple<NewOrder, OrderMap>> request,
             Proto.Seto.Payload payload)
         {
             switch (payload.Type)
             {
                 case Proto.Seto.PayloadType.PAYLOADORDERACCEPTED:
                     // Normal case
-                    request.Response = payload.OrderAccepted;
+                    request.SetResponse(_client, payload.OrderAccepted);
                     break;
                 case Proto.Seto.PayloadType.PAYLOADORDERREJECTED:
                     request.SetException(OrderRejectedException.FromSeto(payload.OrderRejected));
@@ -112,6 +100,11 @@ namespace IronSmarkets.Clients
                             " was dispatched to an order create" +
                             " handler.", payload.Type));
             }
+        }
+
+        protected override SyncRequest<Proto.Seto.OrderAccepted, Order, Tuple<NewOrder, OrderMap>> NewRequest(ulong sequence, Tuple<NewOrder, OrderMap> state)
+        {
+            return new OrderCreateSyncRequest(sequence, state);
         }
     }
 }

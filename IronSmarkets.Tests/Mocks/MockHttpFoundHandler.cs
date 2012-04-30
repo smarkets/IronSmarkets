@@ -42,10 +42,17 @@ namespace IronSmarkets.Tests.Mocks
         private static readonly ILog Log = LogManager.GetLogger(
             System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
+        private ISmarketsClient _client;
+
         private IDictionary<string, T> documents_ = new Dictionary<string, T>();
 
         public MockHttpFoundHandler()
         {
+        }
+
+        public void SetClient(ISmarketsClient client)
+        {
+            _client = client;
         }
 
         public void AddDocument(IMockHttpDocument<T> document)
@@ -66,13 +73,13 @@ namespace IronSmarkets.Tests.Mocks
             {
                 if (Log.IsDebugEnabled) Log.Debug(
                     string.Format("Returning canned data for URL {0}", url));
-                syncRequest.Response = documents_[url];
+                syncRequest.SetResponse(_client, documents_[url]);
             }
             else
             {
                 if (Log.IsDebugEnabled) Log.Debug(
                     string.Format("Simulating a 404 for URL {0}", url));
-                syncRequest.Response = Serializer.Deserialize<T>(new MemoryStream());
+                syncRequest.SetResponse(_client, Serializer.Deserialize<T>(new MemoryStream()));
             }
         }
     }

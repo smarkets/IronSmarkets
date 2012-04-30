@@ -32,28 +32,37 @@ using Seto = IronSmarkets.Proto.Seto;
 
 namespace IronSmarkets.Clients
 {
-    internal class EventsRequestHandler : SeqRpcHandler<Seto.Events, IEventMap>
+    internal class EventsRequestHandler : SeqRpcHandler<Seto.Events, IEventMap, EventMap>
     {
-        private readonly EventMap _eventMap;
+        private class EventSyncRequest : SyncRequest<Seto.Events, IEventMap, EventMap>
+        {
+            public EventSyncRequest(ulong sequence, EventMap eventMap) : base(sequence, eventMap)
+            {
+            }
+
+            protected override IEventMap Map(ISmarketsClient client, Seto.Events events)
+            {
+                return _state.MergeFromSeto(client, events);
+            }
+        }
+
         private readonly IAsyncHttpFoundHandler<Seto.Events> _httpHandler;
 
         public EventsRequestHandler(
             ISmarketsClient client,
-            EventMap eventMap,
             IAsyncHttpFoundHandler<Seto.Events> httpHandler)
             : base(client)
         {
-            _eventMap = eventMap;
             _httpHandler = httpHandler;
         }
 
-        protected override IEventMap Map(ISmarketsClient client, Seto.Events events)
+        protected override SyncRequest<Seto.Events, IEventMap, EventMap> NewRequest(ulong sequence, EventMap eventMap)
         {
-            return _eventMap.MergeFromSeto(client, events);
+            return new EventSyncRequest(sequence, eventMap);
         }
 
         protected override void Extract(
-            SyncRequest<Seto.Events> request, Seto.Payload payload)
+            SyncRequest<Seto.Events, IEventMap, EventMap> request, Seto.Payload payload)
         {
             switch (payload.Type)
             {

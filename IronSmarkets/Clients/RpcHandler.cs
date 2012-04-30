@@ -27,30 +27,28 @@ using log4net;
 
 namespace IronSmarkets.Clients
 {
-    internal interface IRpcHandler<TPayload, TResponse>
+    internal interface IRpcHandler<TPayload, TResponse, TState>
     {
-        SyncRequest<TPayload> BeginRequest(Proto.Seto.Payload payload);
-        IResponse<TResponse> Request(Proto.Seto.Payload payload);
+        IResponse<TResponse> BeginRequest(Proto.Seto.Payload payload, TState state);
         void Handle(Proto.Seto.Payload payload);
     }
     
-    internal abstract class RpcHandler<TPayload, TResponse> : IRpcHandler<TPayload, TResponse>
+    internal abstract class RpcHandler<TPayload, TResponse, TState> : IRpcHandler<TPayload, TResponse, TState>
     {
         private static readonly ILog Log = LogManager.GetLogger(
             System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-        private readonly ISmarketsClient _client;
-
         private readonly object _lock = new object();
+
+        protected readonly ISmarketsClient _client;
 
         public RpcHandler(ISmarketsClient client)
         {
             _client = client;
         }
 
-        public SyncRequest<TPayload> BeginRequest(Proto.Seto.Payload payload)
+        public IResponse<TResponse> BeginRequest(Proto.Seto.Payload payload, TState state)
         {
-            var req = new SyncRequest<TPayload>();
             lock (_lock)
             {
                 // XXX: At the moment, SendPayload needs to be inside
@@ -64,22 +62,15 @@ namespace IronSmarkets.Clients
                 // a volatile long variable and spin-wait in the
                 // receiver where necessary.
                 _client.SendPayload(payload);
+                var req = NewRequest(payload.EtoPayload.Seq, state);
                 AddRequest(payload, req);
+                return req;
             }
-            return req;
-        }
-
-        public IResponse<TResponse> Request(Proto.Seto.Payload payload)
-        {
-            var req = BeginRequest(payload);
-            return new Response<TResponse>(
-                payload.EtoPayload.Seq,
-                Map(_client, req.Response));
         }
 
         public void Handle(Proto.Seto.Payload payload)
         {
-            SyncRequest<TPayload> req;
+            SyncRequest<TPayload, TResponse, TState> req;
             lock (_lock)
             {
                 req = GetRequest(payload);
@@ -94,9 +85,9 @@ namespace IronSmarkets.Clients
             }
         }
 
-        protected abstract TResponse Map(ISmarketsClient client, TPayload payload);
-        protected abstract void Extract(SyncRequest<TPayload> request, Proto.Seto.Payload payload);
-        protected abstract void AddRequest(Proto.Seto.Payload payload, SyncRequest<TPayload> request);
-        protected abstract SyncRequest<TPayload> GetRequest(Proto.Seto.Payload payload);
+        protected abstract void Extract(SyncRequest<TPayload, TResponse, TState> request, Proto.Seto.Payload payload);
+        protected abstract void AddRequest(Proto.Seto.Payload payload, SyncRequest<TPayload, TResponse, TState> request);
+        protected abstract SyncRequest<TPayload, TResponse, TState> GetRequest(Proto.Seto.Payload payload);
+        protected abstract SyncRequest<TPayload, TResponse, TState> NewRequest(ulong sequence, TState state);
     }
 }

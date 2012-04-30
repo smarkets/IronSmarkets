@@ -25,30 +25,43 @@ using System.Threading;
 
 namespace IronSmarkets.Clients
 {
-    internal sealed class SyncRequest<T> : ISyncRequest<T>
+    internal abstract class SyncRequest<TPayload, TResponse, TState> :
+        ISyncRequest<TPayload>, IResponse<TResponse>
     {
         private readonly ManualResetEvent _replied =
             new ManualResetEvent(false);
+        private readonly ulong _sequence;
 
-        private T _response;
+        private TPayload _response;
+        private TResponse _data;
         private Exception _responseException;
 
-        public T Response {
+        protected readonly TState _state;
+
+        public ulong Sequence { get { return _sequence; } }
+
+        public TResponse Data
+        {
             get
             {
                 _replied.WaitOne();
                 _replied.Close();
                 if (_responseException != null)
-                {
                     throw _responseException;
-                }
-                return _response;
+                return _data;
             }
-            set
-            {
-                _response = value;
-                _replied.Set();
-            }
+        }
+
+        public SyncRequest(ulong sequence, TState state)
+        {
+            _sequence = sequence;
+            _state = state;
+        }
+
+        public void SetResponse(ISmarketsClient client, TPayload response)
+        {
+            _data = Map(client, response);
+            _replied.Set();
         }
 
         public void SetException(Exception exception)
@@ -56,5 +69,7 @@ namespace IronSmarkets.Clients
             _responseException = exception;
             _replied.Set();
         }
+
+        protected abstract TResponse Map(ISmarketsClient client, TPayload payload);
     }
 }

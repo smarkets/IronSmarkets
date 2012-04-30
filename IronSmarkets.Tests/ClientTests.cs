@@ -215,6 +215,7 @@ namespace IronSmarkets.Tests
             mockHttpHandler.AddDocument(MockUrls.Football20120221);
             using (var client = SmarketsClient.Create(mockSettings, session, mockHttpHandler))
             {
+                mockHttpHandler.SetClient(client);
                 client.Login();
                 var builder = new EventQueryBuilder();
                 builder.SetCategory("sport");

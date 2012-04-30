@@ -27,26 +27,26 @@ using log4net;
 
 namespace IronSmarkets.Clients
 {
-    internal abstract class SeqRpcHandler<TPayload, TResponse> : RpcHandler<TPayload, TResponse>
+    internal abstract class SeqRpcHandler<TPayload, TResponse, TState> : RpcHandler<TPayload, TResponse, TState>
     {
         private static readonly ILog Log = LogManager.GetLogger(
             System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-        private readonly IDictionary<ulong, SyncRequest<TPayload>> _requests =
-            new Dictionary<ulong, SyncRequest<TPayload>>();
+        private readonly IDictionary<ulong, SyncRequest<TPayload, TResponse, TState>> _requests =
+            new Dictionary<ulong, SyncRequest<TPayload, TResponse, TState>>();
 
         public SeqRpcHandler(ISmarketsClient client) : base(client)
         {
         }
 
-        protected override void AddRequest(Proto.Seto.Payload payload, SyncRequest<TPayload> request)
+        protected override void AddRequest(Proto.Seto.Payload payload, SyncRequest<TPayload, TResponse, TState> request)
         {
             _requests[payload.EtoPayload.Seq] = request;
         }
 
-        protected override SyncRequest<TPayload> GetRequest(Proto.Seto.Payload payload)
+        protected override SyncRequest<TPayload, TResponse, TState> GetRequest(Proto.Seto.Payload payload)
         {
-            SyncRequest<TPayload> req;
+            SyncRequest<TPayload, TResponse, TState> req;
             var originalSeq = ExtractSeq(payload);
             if (_requests.TryGetValue(originalSeq, out req)) {
                 _requests.Remove(originalSeq);

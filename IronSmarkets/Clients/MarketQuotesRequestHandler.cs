@@ -32,20 +32,27 @@ using Seto = IronSmarkets.Proto.Seto;
 
 namespace IronSmarkets.Clients
 {
-    internal class MarketQuotesRequestHandler : KeyQueueRpcHandler<Uid, Seto.MarketQuotes, MarketQuotes>
+    internal class MarketQuotesRequestHandler : KeyQueueRpcHandler<Uid, Seto.MarketQuotes, MarketQuotes, object>
     {
+        private class MarketQuotesSyncRequest : SyncRequest<Seto.MarketQuotes, MarketQuotes, object>
+        {
+            public MarketQuotesSyncRequest(ulong sequence, object state) : base(sequence, state)
+            {
+            }
+
+            protected override MarketQuotes Map(ISmarketsClient client, Seto.MarketQuotes quotes)
+            {
+                return MarketQuotes.FromSeto(quotes);
+            }
+        }
+
         public MarketQuotesRequestHandler(ISmarketsClient client) : base(client)
         {
         }
 
-        protected override MarketQuotes Map(ISmarketsClient client, Seto.MarketQuotes quotes)
+        protected override void Extract(SyncRequest<Seto.MarketQuotes, MarketQuotes, object> request, Seto.Payload payload)
         {
-            return MarketQuotes.FromSeto(quotes);
-        }
-
-        protected override void Extract(SyncRequest<Seto.MarketQuotes> request, Seto.Payload payload)
-        {
-            request.Response = payload.MarketQuotes;
+            request.SetResponse(_client, payload.MarketQuotes);
         }
 
         protected override Uid ExtractRequestKey(Seto.Payload payload)
@@ -56,6 +63,11 @@ namespace IronSmarkets.Clients
         protected override Uid ExtractResponseKey(Seto.Payload payload)
         {
             return Uid.FromUuid128(payload.MarketQuotes.Market);
+        }
+
+        protected override SyncRequest<Seto.MarketQuotes, MarketQuotes, object> NewRequest(ulong sequence, object state)
+        {
+            return new MarketQuotesSyncRequest(sequence, state);
         }
     }
 }

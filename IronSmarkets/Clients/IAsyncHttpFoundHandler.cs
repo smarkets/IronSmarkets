@@ -25,5 +25,6 @@ namespace IronSmarkets.Clients
     public interface IAsyncHttpFoundHandler<T>
     {
         void BeginFetchHttpFound(ISyncRequest<T> syncRequest, Proto.Seto.Payload payload);
+        void SetClient(ISmarketsClient client);
     }
 }

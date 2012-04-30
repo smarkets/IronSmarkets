@@ -29,33 +29,33 @@ using IronSmarkets.Data;
 
 namespace IronSmarkets.Clients
 {
-    internal abstract class KeyQueueRpcHandler<TKey, TPayload, TResponse> : RpcHandler<TPayload, TResponse>
+    internal abstract class KeyQueueRpcHandler<TKey, TPayload, TResponse, TState> : RpcHandler<TPayload, TResponse, TState>
     {
         private static readonly ILog Log = LogManager.GetLogger(
             System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-        private readonly IDictionary<TKey, Queue<SyncRequest<TPayload>>> _requests =
-            new Dictionary<TKey, Queue<SyncRequest<TPayload>>>();
+        private readonly IDictionary<TKey, Queue<SyncRequest<TPayload, TResponse, TState>>> _requests =
+            new Dictionary<TKey, Queue<SyncRequest<TPayload, TResponse, TState>>>();
 
         public KeyQueueRpcHandler(ISmarketsClient client) : base(client)
         {
         }
 
-        protected override void AddRequest(Proto.Seto.Payload payload, SyncRequest<TPayload> request)
+        protected override void AddRequest(Proto.Seto.Payload payload, SyncRequest<TPayload, TResponse, TState> request)
         {
             var key = ExtractRequestKey(payload);
             if (!_requests.ContainsKey(key))
             {
-                _requests[key] = new Queue<SyncRequest<TPayload>>();
+                _requests[key] = new Queue<SyncRequest<TPayload, TResponse, TState>>();
             }
             _requests[key].Enqueue(request);
         }
 
-        protected override SyncRequest<TPayload> GetRequest(Proto.Seto.Payload payload)
+        protected override SyncRequest<TPayload, TResponse, TState> GetRequest(Proto.Seto.Payload payload)
         {
             TKey key = ExtractResponseKey(payload);
-            SyncRequest<TPayload> req = null;
-            Queue<SyncRequest<TPayload>> queue;
+            SyncRequest<TPayload, TResponse, TState> req = null;
+            Queue<SyncRequest<TPayload, TResponse, TState>> queue;
             if (_requests.TryGetValue(key, out queue))
             {
                 Debug.Assert(queue.Count > 0);

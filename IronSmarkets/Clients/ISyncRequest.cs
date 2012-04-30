@@ -26,7 +26,7 @@ namespace IronSmarkets.Clients
 {
     public interface ISyncRequest<T>
     {
-        T Response { get; set; }
+        void SetResponse(ISmarketsClient client, T response);
         void SetException(Exception exception);
     }
 }

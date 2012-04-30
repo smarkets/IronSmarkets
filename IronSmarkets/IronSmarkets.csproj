@@ -75,7 +75,6 @@
     <Compile Include="Clients\QueueRpcHandler.cs" />
     <Compile Include="Clients\QuoteHandler.cs" />
     <Compile Include="Clients\Receiver.cs" />
-    <Compile Include="Clients\Response.cs" />
     <Compile Include="Clients\RpcHandler.cs" />
     <Compile Include="Clients\SeqRpcHandler.cs" />
     <Compile Include="Clients\Settings.cs" />

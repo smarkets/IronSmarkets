@@ -20,11 +20,20 @@
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+using System;
+
 namespace IronSmarkets.Clients
 {
     public interface IResponse<T>
     {
         ulong Sequence { get; }
         T Data { get; }
+
+        // Forward to the WaitHandle
+        bool WaitOne();
+        bool WaitOne(int millisecondsTimeout);
+        bool WaitOne(TimeSpan timeout);
+        bool WaitOne(int millisecondsTimeout, bool exitContext);
+        bool WaitOne(TimeSpan timeout, bool exitContext);
     }
 }

@@ -44,8 +44,7 @@ namespace IronSmarkets.Clients
         {
             get
             {
-                _replied.WaitOne();
-                _replied.Close();
+                WaitOne();
                 if (_responseException != null)
                     throw _responseException;
                 return _data;
@@ -56,6 +55,61 @@ namespace IronSmarkets.Clients
         {
             _sequence = sequence;
             _state = state;
+        }
+
+        public bool WaitOne()
+        {
+            if (_replied.WaitOne())
+            {
+                _replied.Close();
+                return true;
+            }
+
+            return false;
+        }
+
+        public bool WaitOne(int millisecondsTimeout)
+        {
+            if (_replied.WaitOne(millisecondsTimeout))
+            {
+                _replied.Close();
+                return true;
+            }
+
+            return false;
+        }
+
+        public bool WaitOne(TimeSpan timeout)
+        {
+            if (_replied.WaitOne(timeout))
+            {
+                _replied.Close();
+                return true;
+            }
+
+            return false;
+        }
+
+        public bool WaitOne(int millisecondsTimeout, bool exitContext)
+        {
+            if (_replied.WaitOne(millisecondsTimeout, exitContext))
+            {
+                _replied.Close();
+                return true;
+            }
+
+            return false;
+        }
+
+        public bool WaitOne(TimeSpan timeout, bool exitContext)
+        {
+            if (_replied.WaitOne(timeout, exitContext))
+            {
+                _replied.Close();
+                return true;
+            }
+
+            return false;
         }
 
         public void SetResponse(ISmarketsClient client, TPayload response)

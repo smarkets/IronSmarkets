@@ -106,13 +106,8 @@ namespace IronSmarkets.Tests.Mocks
     {
         private readonly Queue<IPayloadWrapper> _payloads =
             new Queue<IPayloadWrapper>();
-        private readonly ConcurrentQueue<Payload> _incoming =
-            new ConcurrentQueue<Payload>();
-
-        // We only expect 1 waiting thread, so this WaitHandle should
-        // suffice
-        private readonly AutoResetEvent _incomingEvent =
-            new AutoResetEvent(false);
+        private readonly BlockingCollection<Payload> _incoming =
+            new BlockingCollection<Payload>(new ConcurrentQueue<Payload>());
 
         private bool _disposed;
         private bool _connected;
@@ -183,8 +178,7 @@ namespace IronSmarkets.Tests.Mocks
                 throw new ConnectionException(
                     "Socket not connected");
 
-            _incoming.Enqueue(payload);
-            _incomingEvent.Set();
+            _incoming.Add(payload);
         }
 
         public void Flush()
@@ -218,14 +212,11 @@ namespace IronSmarkets.Tests.Mocks
                 var next = _payloads.Peek();
                 if (next.Outgoing)
                     return _payloads.Dequeue().Payload;
-                // We are very impatient in unit tests
-                if (!_incomingEvent.WaitOne(1000)) ThrowNotConnected();
                 Payload lastIn;
-                if (!_incoming.TryPeek(out lastIn)) ThrowNotConnected();
+                // We are very impatient in unit tests
+                if (!_incoming.TryTake(out lastIn, 1000)) ThrowNotConnected();
                 if (!next.Expects(lastIn))
                     throw new InvalidOperationException();
-                if (!_incoming.TryDequeue(out lastIn))
-                    ThrowNotConnected();
                 _payloads.Dequeue();
             }
         }

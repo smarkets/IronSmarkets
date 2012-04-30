@@ -59,7 +59,7 @@ namespace IronSmarkets.Clients
         IResponse<IOrderMap> GetOrders();
         IResponse<IOrderMap> GetOrdersByMarket(Uid market);
 
-        void CancelOrder(Order order);
+        IResponse<OrderCancelledReason> CancelOrder(Order order);
         IResponse<Order> CreateOrder(NewOrder order);
     }
 
@@ -79,6 +79,7 @@ namespace IronSmarkets.Clients
         private readonly IRpcHandler<IOrderMap, OrderMap> _ordersForAccountRequestHandler;
         private readonly IRpcHandler<IOrderMap, OrderMap> _ordersForMarketRequestHandler;
         private readonly IRpcHandler<Order, Tuple<NewOrder, OrderMap>> _orderCreateRequestHandler;
+        private readonly IRpcHandler<OrderCancelledReason, OrderMap> _orderCancelRequestHandler;
         private readonly IAsyncHttpFoundHandler<PS.Events> _httpHandler;
 
         private readonly QuoteHandler<PS.MarketQuotes> _marketQuotesHandler = new MarketQuoteHandler();
@@ -106,6 +107,7 @@ namespace IronSmarkets.Clients
             _ordersForAccountRequestHandler = new OrdersForAccountRequestHandler(this);
             _ordersForMarketRequestHandler = new OrdersForMarketRequestHandler(this);
             _orderCreateRequestHandler = new OrderCreateRequestHandler(this);
+            _orderCancelRequestHandler = new OrderCancelRequestHandler(this);
         }
 
         public static ISmarketsClient Create(
@@ -415,7 +417,7 @@ namespace IronSmarkets.Clients
                 }, _orderMap);
         }
 
-        public void CancelOrder(Order order)
+        public IResponse<OrderCancelledReason> CancelOrder(Order order)
         {
             if (IsDisposed)
                 throw new ObjectDisposedException(
@@ -427,13 +429,13 @@ namespace IronSmarkets.Clients
                     string.Format(
                         "Order cannot be cancelled: {0}", order.State.Status));
 
-            SendPayload(
+            return _orderCancelRequestHandler.BeginRequest(
                 new PS.Payload {
                     Type = PS.PayloadType.PAYLOADORDERCANCEL,
                         OrderCancel = new PS.OrderCancel {
                         Order = order.Uid.ToUuid128()
                     }
-                });
+                }, _orderMap);
         }
 
         public IResponse<Order> CreateOrder(NewOrder order)
@@ -533,6 +535,10 @@ namespace IronSmarkets.Clients
                     {
                         order.Update(payload.OrderCancelled);
                     }
+                    _orderCancelRequestHandler.Handle(payload);
+                    break;
+                case PS.PayloadType.PAYLOADORDERCANCELREJECTED:
+                    _orderCancelRequestHandler.Handle(payload);
                     break;
             }
 

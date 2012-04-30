@@ -219,7 +219,7 @@ namespace IronSmarkets.Tests.Mocks
                 if (next.Outgoing)
                     return _payloads.Dequeue().Payload;
                 // We are very impatient in unit tests
-                if (!_incomingEvent.WaitOne(1000)) ThrowNotConnected();
+                if (!_incomingEvent.WaitOne()) ThrowNotConnected();
                 Payload lastIn;
                 if (!_incoming.TryPeek(out lastIn)) ThrowNotConnected();
                 if (!next.Expects(lastIn))

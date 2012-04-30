@@ -69,6 +69,7 @@
     <Compile Include="Clients\KeyQueueRpcHandler.cs" />
     <Compile Include="Clients\MarketQuoteHandler.cs" />
     <Compile Include="Clients\MarketQuotesRequestHandler.cs" />
+    <Compile Include="Clients\OrderCancelRequestHandler.cs" />
     <Compile Include="Clients\OrderCreateRequestHandler.cs" />
     <Compile Include="Clients\OrdersForAccountRequestHandler.cs" />
     <Compile Include="Clients\OrdersForMarketRequestHandler.cs" />
@@ -120,6 +121,7 @@
     <Compile Include="Exceptions\MessageStreamException.cs" />
     <Compile Include="Exceptions\NoHandlerException.cs" />
     <Compile Include="Exceptions\NotLoggedInException.cs" />
+    <Compile Include="Exceptions\OrderCancelRejectedException.cs" />
     <Compile Include="Exceptions\OrderInvalidException.cs" />
     <Compile Include="Exceptions\OrderRejectedException.cs" />
     <Compile Include="Exceptions\RequestTimedOutException.cs" />

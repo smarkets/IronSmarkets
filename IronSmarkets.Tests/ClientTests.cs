@@ -41,6 +41,8 @@ namespace IronSmarkets.Tests
         private static readonly SocketSettings SocketSettings = new SocketSettings("mock", 3701);
         private static readonly SessionSettings SessionSettings = new SessionSettings("mockuser", "mockpassword");
 
+        private static readonly TimeSpan DataWait = new TimeSpan(0, 0, 2);  // wait 2 seconds
+
         [Fact]
         public void HandleQuotes()
         {
@@ -236,7 +238,9 @@ namespace IronSmarkets.Tests
                 var mockEventUid = new Uid(247001);
                 var mockMarketUid = new Uid(317002);
                 var mockContractUid = new Uid(608008);
-                var mockMap = client.GetEvents(builder.GetResult()).Data;
+                var mockMapResponse = client.GetEvents(builder.GetResult());
+                Assert.True(mockMapResponse.WaitOne(DataWait));
+                var mockMap = mockMapResponse.Data;
                 Assert.True(mockMap.ContainsKey(mockEventUid));
                 var mockMarket = client.MarketMap[mockMarketUid];
                 var mockContract = client.ContractMap[mockContractUid];
@@ -257,7 +261,9 @@ namespace IronSmarkets.Tests
                     Quantity = new Quantity(QuantityType.PayoffCurrency, 60000),
                     Price = new Price(PriceType.PercentOdds, 5714)
                 };
-                Assert.NotNull(client.CreateOrder(mockOrder).Data);
+                var createResponse = client.CreateOrder(mockOrder);
+                Assert.True(createResponse.WaitOne(DataWait));
+                Assert.NotNull(createResponse.Data);
                 Assert.True(marketUpdatedEvent.WaitOne(1000));
                 Assert.Equal(mockQuotes.QuantityType, QuantityType.PayoffCurrency);
                 Assert.Equal(mockQuotes.PriceType, PriceType.PercentOdds);
@@ -427,6 +433,8 @@ namespace IronSmarkets.Tests
                 };
                 var mockOrderResponse1 = client.CreateOrder(mockOrder);
                 var mockOrderResponse2 = client.CreateOrder(mockOrder);
+                Assert.True(mockOrderResponse1.WaitOne(DataWait));
+                Assert.True(mockOrderResponse2.WaitOne(DataWait));
                 Assert.NotNull(mockOrderResponse1.Data);
                 Assert.NotNull(mockOrderResponse2.Data);
                 client.Logout();
@@ -640,10 +648,14 @@ namespace IronSmarkets.Tests
                 };
                 var mockOrderResponse1 = client.CreateOrder(mockOrder);
                 var mockOrderResponse2 = client.CreateOrder(mockOrder);
+                Assert.True(mockOrderResponse1.WaitOne(DataWait));
+                Assert.True(mockOrderResponse2.WaitOne(DataWait));
                 Assert.NotNull(mockOrderResponse1.Data);
                 Assert.NotNull(mockOrderResponse2.Data);
                 var mockOrderCancelResponse2 = client.CancelOrder(mockOrderResponse2.Data);
                 var mockOrderCancelResponse1 = client.CancelOrder(mockOrderResponse1.Data);
+                Assert.True(mockOrderCancelResponse1.WaitOne(DataWait));
+                Assert.True(mockOrderCancelResponse2.WaitOne(DataWait));
                 Assert.Equal(mockOrderCancelResponse1.Data, OrderCancelledReason.MemberRequested);
                 Assert.Equal(mockOrderCancelResponse2.Data, OrderCancelledReason.MemberRequested);
                 client.Logout();

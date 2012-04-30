@@ -26,15 +26,15 @@ using System.Threading;
 namespace IronSmarkets.Clients
 {
     internal abstract class SyncRequest<TPayload, TResponse, TState> :
-        ISyncRequest<TPayload>, IResponse<TResponse>
+        ISyncRequest<TPayload>, IResponse<TResponse>, IDisposable
     {
-        private readonly ManualResetEvent _replied =
-            new ManualResetEvent(false);
         private readonly ulong _sequence;
 
+        private ManualResetEvent _replied = new ManualResetEvent(false);
         private TPayload _response;
         private TResponse _data;
         private Exception _responseException;
+        private int _disposed;
 
         protected readonly TState _state;
 
@@ -44,10 +44,23 @@ namespace IronSmarkets.Clients
         {
             get
             {
+                if (IsDisposed)
+                    throw new ObjectDisposedException(
+                        "SyncRequest",
+                        "Accessed Data property on disposed object");
+
                 WaitOne();
                 if (_responseException != null)
                     throw _responseException;
                 return _data;
+            }
+        }
+
+        public bool IsDisposed
+        {
+            get
+            {
+                return Thread.VolatileRead(ref _disposed) == 1;
             }
         }
 
@@ -57,71 +70,100 @@ namespace IronSmarkets.Clients
             _state = state;
         }
 
+        ~SyncRequest()
+        {
+            Dispose(false);
+        }
+
         public bool WaitOne()
         {
-            if (_replied.WaitOne())
-            {
-                _replied.Close();
-                return true;
-            }
+            if (IsDisposed)
+                throw new ObjectDisposedException(
+                    "SyncRequest",
+                    "Called WaitOne on disposed object");
 
-            return false;
+            return _replied.WaitOne();
         }
 
         public bool WaitOne(int millisecondsTimeout)
         {
-            if (_replied.WaitOne(millisecondsTimeout))
-            {
-                _replied.Close();
-                return true;
-            }
+            if (IsDisposed)
+                throw new ObjectDisposedException(
+                    "SyncRequest",
+                    "Called WaitOne on disposed object");
 
-            return false;
+            return _replied.WaitOne(millisecondsTimeout);
         }
 
         public bool WaitOne(TimeSpan timeout)
         {
-            if (_replied.WaitOne(timeout))
-            {
-                _replied.Close();
-                return true;
-            }
+            if (IsDisposed)
+                throw new ObjectDisposedException(
+                    "SyncRequest",
+                    "Called WaitOne on disposed object");
 
-            return false;
+            return _replied.WaitOne(timeout);
         }
 
         public bool WaitOne(int millisecondsTimeout, bool exitContext)
         {
-            if (_replied.WaitOne(millisecondsTimeout, exitContext))
-            {
-                _replied.Close();
-                return true;
-            }
+            if (IsDisposed)
+                throw new ObjectDisposedException(
+                    "SyncRequest",
+                    "Called WaitOne on disposed object");
 
-            return false;
+            return _replied.WaitOne(millisecondsTimeout, exitContext);
         }
 
         public bool WaitOne(TimeSpan timeout, bool exitContext)
         {
-            if (_replied.WaitOne(timeout, exitContext))
-            {
-                _replied.Close();
-                return true;
-            }
+            if (IsDisposed)
+                throw new ObjectDisposedException(
+                    "SyncRequest",
+                    "Called WaitOne on disposed object");
 
-            return false;
+            return _replied.WaitOne(timeout, exitContext);
         }
 
         public void SetResponse(ISmarketsClient client, TPayload response)
         {
+            if (IsDisposed)
+                throw new ObjectDisposedException(
+                    "SyncRequest",
+                    "Called SetResponse on disposed object");
+
             _data = Map(client, response);
             _replied.Set();
         }
 
         public void SetException(Exception exception)
         {
+            if (IsDisposed)
+                throw new ObjectDisposedException(
+                    "SyncRequest",
+                    "Called SetException on disposed object");
+
             _responseException = exception;
             _replied.Set();
+        }
+
+        void IDisposable.Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (Interlocked.CompareExchange(ref _disposed, 1, 0) == 0)
+            {
+                if (disposing)
+                {
+                    _replied.Dispose();
+                }
+
+                _replied = null;
+            }
         }
 
         protected abstract TResponse Map(ISmarketsClient client, TPayload payload);

@@ -20,6 +20,8 @@
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+using System.Collections.Generic;
+
 using IronSmarkets.Data;
 using IronSmarkets.Proto.Seto;
 
@@ -51,14 +53,38 @@ namespace IronSmarkets.Messages
             };
         }
 
+        public static Payload LoginResponse(string session, ulong reset)
+        {
+            return new Payload {
+                Type = PayloadType.PAYLOADETO,
+                EtoPayload = new Eto.Payload {
+                    Type = Eto.PayloadType.PAYLOADLOGINRESPONSE,
+                    LoginResponse = new Eto.LoginResponse {
+                        Session = session,
+                        Reset = reset
+                    }
+                }
+            };
+        }
+
         public static Payload Logout()
+        {
+            return LogoutReason(Eto.LogoutReason.LOGOUTNONE);
+        }
+
+        public static Payload LogoutConfirmation()
+        {
+            return LogoutReason(Eto.LogoutReason.LOGOUTCONFIRMATION);
+        }
+
+        private static Payload LogoutReason(Eto.LogoutReason reason)
         {
             return new Payload {
                 Type = PayloadType.PAYLOADETO,
                 EtoPayload = new Eto.Payload {
                     Type = Eto.PayloadType.PAYLOADLOGOUT,
                     Logout = new Eto.Logout {
-                        Reason = Eto.LogoutReason.LOGOUTNONE
+                        Reason = reason
                     }
                 }
             };
@@ -107,6 +133,35 @@ namespace IronSmarkets.Messages
             };
         }
 
+        public static Payload MarketQuotes(Uid market)
+        {
+            return new Payload {
+                Type = PayloadType.PAYLOADMARKETQUOTES,
+                MarketQuotes = new Proto.Seto.MarketQuotes {
+                    Market = market.ToUuid128(),
+                    PriceType = Proto.Seto.PriceType.PRICEPERCENTODDS,
+                    QuantityType = Proto.Seto.QuantityType.QUANTITYPAYOFFCURRENCY
+                }
+            };
+        }
+
+        public static Payload ContractQuotes(Uid contract,
+                                             IEnumerable<Proto.Seto.Quote> bids,
+                                             IEnumerable<Proto.Seto.Quote> offers)
+        {
+            var payload = new Payload {
+                Type = PayloadType.PAYLOADCONTRACTQUOTES,
+                ContractQuotes = new Proto.Seto.ContractQuotes {
+                    Contract = contract.ToUuid128()
+                }
+            };
+
+            payload.ContractQuotes.Bids.AddRange(bids);
+            payload.ContractQuotes.Offers.AddRange(offers);
+
+            return payload;
+        }
+
         public static Payload MarketUnsubscribe(Uid market)
         {
             return new Payload {
@@ -122,6 +177,17 @@ namespace IronSmarkets.Messages
             return new Payload {
                 Type = PayloadType.PAYLOADEVENTSREQUEST,
                 EventsRequest = query.ToEventsRequest()
+            };
+        }
+
+        public static Payload HttpFound(string url, ulong sequence)
+        {
+            return new Payload {
+                Type = PayloadType.PAYLOADHTTPFOUND,
+                HttpFound = new HttpFound {
+                    Seq = sequence,
+                    Url = url
+                }
             };
         }
 
@@ -179,6 +245,28 @@ namespace IronSmarkets.Messages
             return new Payload {
                 Type = PayloadType.PAYLOADORDERCREATE,
                 OrderCreate = order.ToOrderCreate()
+            };
+        }
+
+        public static Payload OrderAccepted(Uid order, ulong sequence)
+        {
+            return new Payload {
+                Type = PayloadType.PAYLOADORDERACCEPTED,
+                OrderAccepted = new OrderAccepted {
+                    Seq = sequence,
+                    Order = order.ToUuid128()
+                }
+            };
+        }
+
+        public static Payload OrderCancelled(Uid order)
+        {
+            return new Payload {
+                Type = PayloadType.PAYLOADORDERCANCELLED,
+                OrderCancelled = new OrderCancelled {
+                    Order = order.ToUuid128(),
+                    Reason = Proto.Seto.OrderCancelledReason.ORDERCANCELLEDMEMBERREQUESTED
+                }
             };
         }
     }

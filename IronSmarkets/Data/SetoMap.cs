@@ -44,7 +44,7 @@ namespace IronSmarkets.Data
 
             return new DateTime(
                 (int)date.Year, (int)date.Month, (int)date.Day,
-                (int)time.Hour, (int)time.Minute, 0);
+                (int)time.Hour, (int)time.Minute, 0, DateTimeKind.Utc);
         }
 
         public static decimal FromDecimal(Proto.Seto.Decimal sDecimal)

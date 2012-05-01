@@ -31,6 +31,7 @@ using log4net;
 
 using IronSmarkets.Events;
 using IronSmarkets.Exceptions;
+using IronSmarkets.Messages;
 using IronSmarkets.Proto.Seto;
 using IronSmarkets.Sockets;
 
@@ -108,18 +109,8 @@ namespace IronSmarkets.Sessions
             if (Log.IsDebugEnabled) Log.Debug("Opening socket connection");
             _socket.Connect();
 
-            // Construct the login payload protobuf
-            // TODO: Create some message factories so this is less ugly
-            var loginPayload = new Payload {
-                Type = PayloadType.PAYLOADLOGIN,
-                EtoPayload = new Eto.Payload {
-                    Type = Eto.PayloadType.PAYLOADLOGIN
-                },
-                Login = new Login {
-                    Username = _settings.Username,
-                    Password = _settings.Password
-                }
-            };
+            var loginPayload = Payloads.Login(_settings.Username,
+                                                          _settings.Password);
 
             if (_settings.SessionId != null)
             {
@@ -182,15 +173,7 @@ namespace IronSmarkets.Sessions
             if (!_loginSent)
                 throw new NotLoggedInException();
 
-            var logoutPayload = new Payload {
-                Type = PayloadType.PAYLOADETO,
-                EtoPayload = new Eto.Payload {
-                    Type = Eto.PayloadType.PAYLOADLOGOUT,
-                    Logout = new Eto.Logout {
-                        Reason = Eto.LogoutReason.LOGOUTNONE
-                    }
-                }
-            };
+            var logoutPayload = Payloads.Logout();
             if (Log.IsDebugEnabled) Log.Debug(
                 "Sending logout payload with 'none' reason");
 
@@ -327,12 +310,7 @@ namespace IronSmarkets.Sessions
                         if (Log.IsDebugEnabled) Log.Debug(
                             string.Format(
                                 "Received heartbeat, sending heartbeat"));
-                        Send(new Payload {
-                                Type = PayloadType.PAYLOADETO,
-                                EtoPayload = new Eto.Payload {
-                                    Type = Eto.PayloadType.PAYLOADHEARTBEAT
-                                }
-                            });
+                        Send(Payloads.Heartbeat());
                     }
 
                     return payload;
@@ -346,15 +324,7 @@ namespace IronSmarkets.Sessions
 
                 if (payload.EtoPayload.Seq > _inSequence)
                 {
-                    var replayPayload = new Payload {
-                        Type = PayloadType.PAYLOADETO,
-                        EtoPayload = new Eto.Payload {
-                            Type = Eto.PayloadType.PAYLOADREPLAY,
-                            Replay = new Eto.Replay {
-                                Seq = _inSequence
-                            }
-                        }
-                    };
+                    var replayPayload = Payloads.Replay(_inSequence);
 
                     // Do not flush the send because we do not want a
                     // deadlock.

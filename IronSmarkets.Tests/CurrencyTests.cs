@@ -33,44 +33,44 @@ namespace IronSmarkets.Tests
 {
     public sealed class CurrencyTests
     {
-	[Fact]
-	public void CurrencyFromCurrentCultureEqualsCurrentCultureCurrency()
-	{
-	    var currency1 = Currency.FromIso3LetterCode(
-		new RegionInfo(CultureInfo.CurrentCulture.LCID).ISOCurrencySymbol);
-	    var currency2 = Currency.FromCurrentCulture();
+        [Fact]
+        public void CurrencyFromCurrentCultureEqualsCurrentCultureCurrency()
+        {
+            var currency1 = Currency.FromIso3LetterCode(
+                new RegionInfo(CultureInfo.CurrentCulture.LCID).ISOCurrencySymbol);
+            var currency2 = Currency.FromCurrentCulture();
 
-	    Assert.Equal(currency1.Description, currency2.Description);
-	}
+            Assert.Equal(currency1.Description, currency2.Description);
+        }
 
-	[Fact]
-	public void CurrencyFromSpecificCultureInfoIsCorrect()
-	{
-	    // Use CultureInfo for es-ES
-	    var currency = Currency.FromCultureInfo(new CultureInfo(3082));
+        [Fact]
+        public void CurrencyFromSpecificCultureInfoIsCorrect()
+        {
+            // Use CultureInfo for es-ES
+            var currency = Currency.FromCultureInfo(new CultureInfo(3082));
 
-	    // Ensure that we end up with EUR
-	    Assert.Equal(978, currency.Description.IsoNumericCode);
-	    Assert.Equal("EUR", currency.Description.Iso3LetterCode);
-	}
+            // Ensure that we end up with EUR
+            Assert.Equal(978, currency.Description.IsoNumericCode);
+            Assert.Equal("EUR", currency.Description.Iso3LetterCode);
+        }
 
-	[Fact]
-	public void CurrencyFromSpecificIsoCodeIsCorrect()
-	{
-	    var currency = Currency.FromIso3LetterCode("EUR");
+        [Fact]
+        public void CurrencyFromSpecificIsoCodeIsCorrect()
+        {
+            var currency = Currency.FromIso3LetterCode("EUR");
 
-	    Assert.Equal(978, currency.Description.IsoNumericCode);
-	}
+            Assert.Equal(978, currency.Description.IsoNumericCode);
+        }
 
-	[Fact]
-	public void CurrencyHasValueEquality()
-	{
-	    var currency1 = Currency.FromIso3LetterCode("GBP");
-	    var currency2 = Currency.FromIso3LetterCode("GBP");
-	    object boxedCurrency2 = currency2;
+        [Fact]
+        public void CurrencyHasValueEquality()
+        {
+            var currency1 = Currency.FromIso3LetterCode("GBP");
+            var currency2 = Currency.FromIso3LetterCode("GBP");
+            object boxedCurrency2 = currency2;
 
-	    Assert.True(currency1.Equals(currency2));
-	    Assert.True(currency1.Equals(boxedCurrency2));
-	}
+            Assert.True(currency1.Equals(currency2));
+            Assert.True(currency1.Equals(boxedCurrency2));
+        }
     }
 }

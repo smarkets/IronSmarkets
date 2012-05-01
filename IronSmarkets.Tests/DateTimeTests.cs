@@ -30,17 +30,60 @@ namespace IronSmarkets.Tests
 {
     public sealed class DateTimeTests
     {
-	[Fact]
-	public void MicrosecondsRoundtrip()
-	{
+        [Fact]
+        public void MicrosecondsRoundtrip()
+        {
             var dt = MicrosecondNow();
             var dt2 = MicrosecondNow().AddDays(1);
-            Assert.Equal(dt, SetoMap.FromMicroseconds(SetoMap.ToMicroseconds(dt)));
-            Assert.NotEqual(dt2, SetoMap.FromMicroseconds(SetoMap.ToMicroseconds(dt)));
+            var dtRoundtrip = SetoMap.FromMicroseconds(SetoMap.ToMicroseconds(dt));
+            var dt2Roundtrip = SetoMap.FromMicroseconds(SetoMap.ToMicroseconds(dt));
+            Assert.Equal(dt, dtRoundtrip);
+            Assert.Equal(dt.Kind, dtRoundtrip.Kind);
+            Assert.NotEqual(dt2, dt2Roundtrip);
+            Assert.Equal(dt2.Kind, dt2Roundtrip.Kind);
             Assert.Equal((ulong)9800, SetoMap.ToMicroseconds(SetoMap.FromMicroseconds(9800)));
             Assert.Equal((ulong)1, SetoMap.ToMicroseconds(SetoMap.FromMicroseconds(1)));
             Assert.NotEqual((ulong)1, SetoMap.ToMicroseconds(SetoMap.FromMicroseconds(2)));
-	}
+        }
+
+        [Fact]
+        public void SetoDateRoundtrip()
+        {
+            var date = new Proto.Seto.Date();
+            date.Year = 2012;
+            date.Month = 1;
+            date.Day = 1;
+            var dateTime = SetoMap.FromDateTime(date, null);
+            Assert.NotNull(dateTime);
+            Assert.Equal(dateTime.Value.Year, (int)date.Year);
+            Assert.Equal(dateTime.Value.Month, (int)date.Month);
+            Assert.Equal(dateTime.Value.Day, (int)date.Day);
+            Assert.Equal(dateTime.Value.Hour, 0);
+            Assert.Equal(dateTime.Value.Minute, 0);
+            Assert.Equal(dateTime.Value.Second, 0);
+            Assert.Equal(dateTime.Value.Kind, DateTimeKind.Utc);
+        }
+
+        [Fact]
+        public void SetoDateTimeRoundtrip()
+        {
+            var date = new Proto.Seto.Date();
+            date.Year = 2012;
+            date.Month = 1;
+            date.Day = 1;
+            var time = new Proto.Seto.Time();
+            time.Hour = 5;
+            time.Minute = 10;
+            var dateTime = SetoMap.FromDateTime(date, time);
+            Assert.NotNull(dateTime);
+            Assert.Equal(dateTime.Value.Year, (int)date.Year);
+            Assert.Equal(dateTime.Value.Month, (int)date.Month);
+            Assert.Equal(dateTime.Value.Day, (int)date.Day);
+            Assert.Equal(dateTime.Value.Hour, (int)time.Hour);
+            Assert.Equal(dateTime.Value.Minute, (int)time.Minute);
+            Assert.Equal(dateTime.Value.Second, 0);
+            Assert.Equal(dateTime.Value.Kind, DateTimeKind.Utc);
+        }
 
         /// <summary>
         ///   Provides a DateTime with microsecond resolution (instead

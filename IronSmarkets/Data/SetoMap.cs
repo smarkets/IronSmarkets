@@ -39,7 +39,9 @@ namespace IronSmarkets.Data
 
             if (time == null)
             {
-                return new DateTime((int)date.Year, (int)date.Month, (int)date.Day);
+                return DateTime.SpecifyKind(
+                    new DateTime((int)date.Year, (int)date.Month, (int)date.Day),
+                    DateTimeKind.Utc);
             }
 
             return new DateTime(

@@ -49,6 +49,16 @@ namespace IronSmarkets.Data
                 (int)time.Hour, (int)time.Minute, 0, DateTimeKind.Utc);
         }
 
+        public static Date FromDateTime(DateTime datetime)
+        {
+            DateTime utcDateTime = datetime.ToUniversalTime();
+            return new Date {
+                Year = (uint)utcDateTime.Year,
+                Month = (uint)utcDateTime.Month,
+                Day = (uint)utcDateTime.Day
+            };
+        }
+
         public static decimal FromDecimal(Proto.Seto.Decimal sDecimal)
         {
             var val = new decimal(sDecimal.Value);

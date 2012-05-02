@@ -116,6 +116,7 @@
     <Compile Include="Data\Uid.cs" />
     <Compile Include="Events\IPayloadEvents.cs" />
     <Compile Include="Exceptions\ConnectionException.cs" />
+    <Compile Include="Exceptions\InvalidEventQueryException.cs" />
     <Compile Include="Exceptions\InvalidRequestException.cs" />
     <Compile Include="Exceptions\LoginFailedException.cs" />
     <Compile Include="Exceptions\MessageStreamException.cs" />

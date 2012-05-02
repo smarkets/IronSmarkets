@@ -22,28 +22,34 @@
 
 using System;
 
+using IronSmarkets.Exceptions;
+
 namespace IronSmarkets.Data
 {
     public sealed class EventQueryBuilder
     {
-        private Proto.Seto.EventCategory _category;
-        private Proto.Seto.SportByDateType _sport;
+        private Proto.Seto.EventCategory? _category;
+        private Proto.Seto.SportByDateType? _sport;
         private DateTime? _dateTime;
 
         public void SetCategory(string category)
         {
-            if (!EventInfo.Categories.TryGetValue(category, out _category))
+            Proto.Seto.EventCategory setoCategory;
+            if (!EventInfo.Categories.TryGetValue(category, out setoCategory))
             {
                 throw new ArgumentException("Invalid category.");
             }
+            _category = setoCategory;
         }
 
         public void SetSport(string sport)
         {
-            if (!EventInfo.Sports.TryGetValue(sport, out _sport))
+            Proto.Seto.SportByDateType setoSport;
+            if (!EventInfo.Sports.TryGetValue(sport, out setoSport))
             {
                 throw new ArgumentException("Invalid sport.");
             }
+            _sport = setoSport;
         }
 
         public void SetDateTime(DateTime dateTime)
@@ -53,11 +59,23 @@ namespace IronSmarkets.Data
 
         public EventQuery GetResult()
         {
-            if (_category != Proto.Seto.EventCategory.EVENTCATEGORYSPORT && _dateTime.HasValue)
+            if (!_category.HasValue)
             {
-                throw new ArgumentException(
+                throw new InvalidEventQueryException("Must specify a category");
+            }
+
+            if (_category.Value != Proto.Seto.EventCategory.EVENTCATEGORYSPORT && _dateTime.HasValue)
+            {
+                throw new InvalidEventQueryException(
                     "Date can only be specified for football, " +
                     "horse racing, and tennis.");
+            }
+
+            if (_category.Value != Proto.Seto.EventCategory.EVENTCATEGORYSPORT && _sport.HasValue)
+            {
+                throw new InvalidEventQueryException(
+                    "Sport can only be specified when category " +
+                    "is also sport.");
             }
 
             var request = new Proto.Seto.EventsRequest {
@@ -80,20 +98,25 @@ namespace IronSmarkets.Data
                 }
                 else
                 {
+                    if (_sport.HasValue)
+                    {
+                        throw new InvalidEventQueryException(
+                            "Date must be specified when sport is specified.");
+                    }
                     request.Type = Proto.Seto.EventsRequestType.EVENTSREQUESTSPORTOTHER;
                 }
             }
             else
             {
+                if (!_sport.HasValue)
+                {
+                    throw new InvalidEventQueryException("Must specify a sport when specifying a date");
+                }
                 var dateTime = _dateTime.GetValueOrDefault();
                 request.Type = Proto.Seto.EventsRequestType.EVENTSREQUESTSPORTBYDATE;
                 request.SportByDate = new Proto.Seto.SportByDate {
-                    Type = _sport,
-                    Date = new Proto.Seto.Date {
-                        Year = (uint)dateTime.Year,
-                        Month = (uint)dateTime.Month,
-                        Day = (uint)dateTime.Day
-                    }
+                    Type = _sport.Value,
+                    Date = SetoMap.FromDateTime(dateTime)
                 };
             }
 

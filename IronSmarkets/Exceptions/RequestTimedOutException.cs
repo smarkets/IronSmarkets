@@ -23,9 +23,12 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
+using System.Security.Permissions;
 
 namespace IronSmarkets.Exceptions
 {
+    [Serializable]
     public class RequestTimedOutException : Exception
     {
         private const string DefaultMessage =
@@ -35,6 +38,12 @@ namespace IronSmarkets.Exceptions
 
         public override string Message { get { return DefaultMessage; } }
         public int Timeout { get { return _timeout; } }
+
+        [SecurityPermission(SecurityAction.Demand, SerializationFormatter = true)]
+        protected RequestTimedOutException(SerializationInfo info, StreamingContext ctxt) : base(info, ctxt)
+        {
+            _timeout = info.GetInt32("Timeout");
+        }
 
         public RequestTimedOutException(int timeout)
         {
@@ -47,6 +56,18 @@ namespace IronSmarkets.Exceptions
                     { "Timeout", Timeout }
                 };
             }
+        }
+
+        [SecurityPermissionAttribute(SecurityAction.Demand, SerializationFormatter = true)]
+        public override void GetObjectData(SerializationInfo info, StreamingContext context)
+        {
+            if (info == null)
+            {
+                throw new ArgumentNullException("info");
+            }
+
+            info.AddValue("Timeout", Timeout);
+            base.GetObjectData(info, context);
         }
     }
 }

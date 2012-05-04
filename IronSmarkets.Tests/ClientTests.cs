@@ -27,6 +27,7 @@ using System.Threading;
 
 using IronSmarkets.Clients;
 using IronSmarkets.Data;
+using IronSmarkets.Exceptions;
 using IronSmarkets.Messages;
 using IronSmarkets.Sessions;
 using IronSmarkets.Sockets;
@@ -215,6 +216,33 @@ namespace IronSmarkets.Tests
                 Assert.Equal(mockOrderCancelResponse1.Data, OrderCancelledReason.MemberRequested);
                 Assert.Equal(mockOrderCancelResponse2.Data, OrderCancelledReason.MemberRequested);
                 client.Logout();
+            }
+        }
+
+        [Fact]
+        public void ReceiverDeadlockTest()
+        {
+            var socket = new MockSessionSocket();
+            socket.Expect(Payloads.Sequenced(Payloads.Login("mockuser", "mockpassword"), 1));
+            socket.Next(Payloads.Sequenced(Payloads.LoginResponse("00000000-0000-0000-0000-000000658a8", 2), 1));
+            socket.Expect(Payloads.Sequenced(Payloads.Ping(), 2));
+            socket.Next(Payloads.Sequenced(Payloads.Pong(), 2));
+            socket.Expect(Payloads.Sequenced(Payloads.Ping(), 3));
+
+            var session = new SeqSession(socket, SessionSettings);
+            IClientSettings mockSettings = new ClientSettings(SocketSettings, SessionSettings);
+            ManualResetEvent waiter = new ManualResetEvent(false);
+            using (var client = SmarketsClient.Create(mockSettings, session))
+            {
+                client.Login();
+                client.AddPayloadHandler(
+                    (payload) => {
+                        Assert.Throws<ReceiverDeadlockException>(() => client.Ping());
+                        waiter.Set();
+                        return true;
+                    });
+                client.Ping();
+                waiter.WaitOne();
             }
         }
     }

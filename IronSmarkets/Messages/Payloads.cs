@@ -123,6 +123,16 @@ namespace IronSmarkets.Messages
             };
         }
 
+        public static Payload Pong()
+        {
+            return new Payload {
+                Type = PayloadType.PAYLOADETO,
+                EtoPayload = new Eto.Payload {
+                    Type = Eto.PayloadType.PAYLOADPONG
+                }
+            };
+        }
+
         public static Payload MarketSubscribe(Uid market)
         {
             return new Payload {

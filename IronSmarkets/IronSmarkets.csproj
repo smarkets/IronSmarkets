@@ -125,6 +125,7 @@
     <Compile Include="Exceptions\OrderCancelRejectedException.cs" />
     <Compile Include="Exceptions\OrderInvalidException.cs" />
     <Compile Include="Exceptions\OrderRejectedException.cs" />
+    <Compile Include="Exceptions\ReceiverDeadlockException.cs" />
     <Compile Include="Exceptions\RequestTimedOutException.cs" />
     <Compile Include="Extensions\IDictionary.cs" />
     <Compile Include="Extensions\IEnumerable.cs" />

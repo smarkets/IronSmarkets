@@ -25,6 +25,7 @@ using System.Threading;
 
 using IronSmarkets.Data;
 using IronSmarkets.Events;
+using IronSmarkets.Exceptions;
 using IronSmarkets.Messages;
 using IronSmarkets.Sessions;
 using IronSmarkets.Sockets;
@@ -245,6 +246,11 @@ namespace IronSmarkets.Clients
                     "SmarketsClient",
                     "Called SendPayload on disposed object");
 
+            if (_receiver.IsCurrentThread)
+                throw new ReceiverDeadlockException(
+                    "SendPayload called from receiver thread "
+                    + "which would result in a deadlock");
+
             _session.SendPayload(payload);
         }
 
@@ -254,6 +260,11 @@ namespace IronSmarkets.Clients
                 throw new ObjectDisposedException(
                     "SmarketsClient",
                     "Called Login on disposed object");
+
+            if (_receiver.IsCurrentThread)
+                throw new ReceiverDeadlockException(
+                    "Login called from receiver thread "
+                    + "which would result in a deadlock");
 
             ulong seq = _session.Login();
             _receiver.Start();
@@ -267,6 +278,11 @@ namespace IronSmarkets.Clients
                     "SmarketsClient",
                     "Called Logout on disposed object");
 
+            if (_receiver.IsCurrentThread)
+                throw new ReceiverDeadlockException(
+                    "Logout called from receiver thread "
+                    + "which would result in a deadlock");
+
             ulong seq = _session.Logout();
             _receiver.Stop();
             return seq;
@@ -278,6 +294,11 @@ namespace IronSmarkets.Clients
                 throw new ObjectDisposedException(
                     "SmarketsClient",
                     "Called Ping on disposed object");
+
+            if (_receiver.IsCurrentThread)
+                throw new ReceiverDeadlockException(
+                    "Ping called from receiver thread "
+                    + "which would result in a deadlock");
 
             var payload = Payloads.Ping();
             SendPayload(payload);
@@ -291,6 +312,11 @@ namespace IronSmarkets.Clients
                     "SmarketsClient",
                     "Called SubscribeMarket on disposed object");
 
+            if (_receiver.IsCurrentThread)
+                throw new ReceiverDeadlockException(
+                    "SubscribeMarket called from receiver thread "
+                    + "which would result in a deadlock");
+
             var payload = Payloads.MarketSubscribe(market);
             SendPayload(payload);
             return payload.EtoPayload.Seq;
@@ -303,6 +329,11 @@ namespace IronSmarkets.Clients
                     "SmarketsClient",
                     "Called UnsubscribeMarket on disposed object");
 
+            if (_receiver.IsCurrentThread)
+                throw new ReceiverDeadlockException(
+                    "UnsubscribeMarket called from receiver thread "
+                    + "which would result in a deadlock");
+
             var payload = Payloads.MarketUnsubscribe(market);
             SendPayload(payload);
             return payload.EtoPayload.Seq;
@@ -314,6 +345,11 @@ namespace IronSmarkets.Clients
                 throw new ObjectDisposedException(
                     "SmarketsClient",
                     "Called GetEvents on disposed object");
+
+            if (_receiver.IsCurrentThread)
+                throw new ReceiverDeadlockException(
+                    "GetEvents called from receiver thread "
+                    + "which would result in a deadlock");
 
             return _eventsRequestHandler.BeginRequest(
                 Payloads.EventsRequest(query), _eventMap);
@@ -341,6 +377,11 @@ namespace IronSmarkets.Clients
 
         private IResponse<AccountState> GetAccountStateInternal(Uid? account)
         {
+            if (_receiver.IsCurrentThread)
+                throw new ReceiverDeadlockException(
+                    "GetAccountState called from receiver thread "
+                    + "which would result in a deadlock");
+
             return _accountStateRequestHandler.BeginRequest(
                 Payloads.AccountStateRequest(account), null);
         }
@@ -351,6 +392,11 @@ namespace IronSmarkets.Clients
                 throw new ObjectDisposedException(
                     "SmarketsClient",
                     "Called GetQuotesByMarket on disposed object");
+
+            if (_receiver.IsCurrentThread)
+                throw new ReceiverDeadlockException(
+                    "GetQuotesByMarket called from receiver thread "
+                    + "which would result in a deadlock");
 
             return _marketQuotesRequestHandler.BeginRequest(
                 Payloads.MarketQuotesRequest(market), null);
@@ -363,6 +409,11 @@ namespace IronSmarkets.Clients
                     "SmarketsClient",
                     "Called GetOrdersByAccount on disposed object");
 
+            if (_receiver.IsCurrentThread)
+                throw new ReceiverDeadlockException(
+                    "GetOrders called from receiver thread "
+                    + "which would result in a deadlock");
+
             return _ordersForAccountRequestHandler.BeginRequest(
                 Payloads.OrdersForAccount(), _orderMap);
         }
@@ -373,6 +424,11 @@ namespace IronSmarkets.Clients
                 throw new ObjectDisposedException(
                     "SmarketsClient",
                     "Called GetOrdersByMarket on disposed object");
+
+            if (_receiver.IsCurrentThread)
+                throw new ReceiverDeadlockException(
+                    "GetOrdersByMarket called from receiver thread "
+                    + "which would result in a deadlock");
 
             return _ordersForMarketRequestHandler.BeginRequest(
                 Payloads.OrdersForMarket(market), _orderMap);
@@ -390,6 +446,11 @@ namespace IronSmarkets.Clients
                     string.Format(
                         "Order cannot be cancelled: {0}", order.State.Status));
 
+            if (_receiver.IsCurrentThread)
+                throw new ReceiverDeadlockException(
+                    "CancelOrder called from receiver thread "
+                    + "which would result in a deadlock");
+
             return _orderCancelRequestHandler.BeginRequest(
                 Payloads.OrderCancel(order.Uid), _orderMap);
         }
@@ -400,6 +461,11 @@ namespace IronSmarkets.Clients
                 throw new ObjectDisposedException(
                     "SmarketsClient",
                     "Called CreateOrder on disposed object");
+
+            if (_receiver.IsCurrentThread)
+                throw new ReceiverDeadlockException(
+                    "CreateOrder called from receiver thread "
+                    + "which would result in a deadlock");
 
             return _orderCreateRequestHandler.BeginRequest(
                 Payloads.OrderCreate(order),

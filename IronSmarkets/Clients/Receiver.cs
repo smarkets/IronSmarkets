@@ -40,6 +40,14 @@ namespace IronSmarkets.Clients
 
         private volatile bool _complete;
 
+        internal bool IsCurrentThread
+        {
+            get
+            {
+                return Thread.CurrentThread == _loop;
+            }
+        }
+
         public Receiver(ISession<T> session)
         {
             _session = session;

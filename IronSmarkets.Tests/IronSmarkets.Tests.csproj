@@ -67,6 +67,7 @@
     <Compile Include="DateTimeTests.cs" />
     <Compile Include="DecimalOddsTests.cs" />
     <Compile Include="EventQueryBuilderTests.cs" />
+    <Compile Include="ExceptionTests.cs" />
     <Compile Include="MoneyTests.cs" />
     <Compile Include="UidTests.cs" />
     <Compile Include="Mocks\MockHttpFoundHandler.cs" />

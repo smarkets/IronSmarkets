@@ -46,7 +46,7 @@ namespace IronSmarkets.Exceptions
             _errorMessage = info.GetString("ErrorMessage");
         }
 
-        private InvalidRequestException(string errorMessage)
+        internal InvalidRequestException(string errorMessage)
         {
             _errorMessage = errorMessage;
         }

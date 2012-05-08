@@ -47,72 +47,119 @@ namespace IronSmarkets.Tests
         }
 
         [Fact]
-        public void SerializableRequestTimedOutException()
-        {
-            var requestTimedOut = new RequestTimedOutException(60);
-            Assert.DoesNotThrow(() => {
-                    var requestTimedOut2 = SerializeAndCompare(requestTimedOut);
-                    Assert.Equal(requestTimedOut.Timeout, requestTimedOut2.Timeout);
-            });
-        }
-
-        [Fact]
         public void SerializableConnectionException()
         {
-            var connectionException = new ConnectionException("foo");
+            var x = new ConnectionException("foo");
             Assert.DoesNotThrow(() => {
-                    var connectionException2 = SerializeAndCompare(connectionException);
-                    Assert.Equal(connectionException.ErrorMessage, connectionException2.ErrorMessage);
+                    var y = SerializeAndCompare(x);
+                    Assert.Equal(x.ErrorMessage, y.ErrorMessage);
             });
         }
 
         [Fact]
         public void SerializableInvalidEventQueryException()
         {
-            var invalidEventQueryException = new InvalidEventQueryException("foo");
+            var x = new InvalidEventQueryException("foo");
             Assert.DoesNotThrow(() => {
-                    var invalidEventQueryException2 = SerializeAndCompare(invalidEventQueryException);
-                    Assert.Equal(invalidEventQueryException.ErrorMessage, invalidEventQueryException2.ErrorMessage);
+                    var y = SerializeAndCompare(x);
+                    Assert.Equal(x.ErrorMessage, y.ErrorMessage);
             });
         }
 
         [Fact]
         public void SerializableInvalidRequestException()
         {
-            var invalidRequestException = new InvalidRequestException("foo");
+            var x = new InvalidRequestException("foo");
             Assert.DoesNotThrow(() => {
-                    var invalidRequestException2 = SerializeAndCompare(invalidRequestException);
-                    Assert.Equal(invalidRequestException.ErrorMessage, invalidRequestException2.ErrorMessage);
+                    var y = SerializeAndCompare(x);
+                    Assert.Equal(x.ErrorMessage, y.ErrorMessage);
             });
         }
 
         [Fact]
         public void SerializableLoginFailedException()
         {
-            var loginFailedException = new LoginFailedException("foo", LogoutReason.LOGOUTUNAUTHORISED);
+            var x = new LoginFailedException("foo", LogoutReason.LOGOUTUNAUTHORISED);
             Assert.DoesNotThrow(() => {
-                    var loginFailedException2 = SerializeAndCompare(loginFailedException);
-                    Assert.Equal(loginFailedException.ErrorMessage, loginFailedException2.ErrorMessage);
-                    Assert.Equal(loginFailedException.LogoutReason, loginFailedException2.LogoutReason);
+                    var y = SerializeAndCompare(x);
+                    Assert.Equal(x.ErrorMessage, y.ErrorMessage);
+                    Assert.Equal(x.LogoutReason, y.LogoutReason);
             });
         }
 
         [Fact]
         public void SerializableMessageStreamException()
         {
-            var messageStreamException = new MessageStreamException("foo");
+            var x = new MessageStreamException("foo");
             Assert.DoesNotThrow(() => {
-                    var messageStreamException2 = SerializeAndCompare(messageStreamException);
-                    Assert.Equal(messageStreamException.ErrorMessage, messageStreamException2.ErrorMessage);
+                    var y = SerializeAndCompare(x);
+                    Assert.Equal(x.ErrorMessage, y.ErrorMessage);
             });
         }
 
         [Fact]
         public void SerializableNoHandlerException()
         {
-            var noHandlerException = new NoHandlerException();
             Assert.DoesNotThrow(() => {
-                    SerializeAndCompare(noHandlerException);
+                    SerializeAndCompare(new NoHandlerException());
+            });
+        }
+
+        [Fact]
+        public void SerializableNotLoggedInException()
+        {
+            Assert.DoesNotThrow(() => {
+                    SerializeAndCompare(new NotLoggedInException());
+            });
+        }
+
+        [Fact]
+        public void SerializableOrderCancelRejectedException()
+        {
+            var x = new OrderCancelRejectedException("foo");
+            Assert.DoesNotThrow(() => {
+                    var y = SerializeAndCompare(x);
+                    Assert.Equal(x.ErrorMessage, y.ErrorMessage);
+            });
+        }
+
+        [Fact]
+        public void SerializableOrderInvalidException()
+        {
+            var x = new OrderInvalidException("foo");
+            Assert.DoesNotThrow(() => {
+                    var y = SerializeAndCompare(x);
+                    Assert.Equal(x.ErrorMessage, y.ErrorMessage);
+            });
+        }
+
+        [Fact]
+        public void SerializableOrderRejectedException()
+        {
+            var x = new OrderRejectedException("foo");
+            Assert.DoesNotThrow(() => {
+                    var y = SerializeAndCompare(x);
+                    Assert.Equal(x.ErrorMessage, y.ErrorMessage);
+            });
+        }
+
+        [Fact]
+        public void SerializableReceiverDeadlockException()
+        {
+            var x = new ReceiverDeadlockException("foo");
+            Assert.DoesNotThrow(() => {
+                    var y = SerializeAndCompare(x);
+                    Assert.Equal(x.ErrorMessage, y.ErrorMessage);
+            });
+        }
+
+        [Fact]
+        public void SerializableRequestTimedOutException()
+        {
+            var x = new RequestTimedOutException(60);
+            Assert.DoesNotThrow(() => {
+                    var y = SerializeAndCompare(x);
+                    Assert.Equal(x.Timeout, y.Timeout);
             });
         }
     }

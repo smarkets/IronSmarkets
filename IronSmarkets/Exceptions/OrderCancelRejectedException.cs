@@ -47,7 +47,7 @@ namespace IronSmarkets.Exceptions
             _errorMessage = info.GetString("ErrorMessage");
         }
 
-        private OrderCancelRejectedException(string errorMessage)
+        internal OrderCancelRejectedException(string errorMessage)
         {
             _errorMessage = errorMessage;
         }

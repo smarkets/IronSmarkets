@@ -48,7 +48,7 @@ namespace IronSmarkets.Exceptions
             _errorMessage = info.GetString("ErrorMessage");
         }
 
-        private OrderInvalidException(string errorMessage)
+        internal OrderInvalidException(string errorMessage)
         {
             _errorMessage = errorMessage;
         }

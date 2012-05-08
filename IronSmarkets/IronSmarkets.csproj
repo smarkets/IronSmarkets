@@ -3,6 +3,9 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <!-- Modify the Framework default value for other versions of .NET/C# -->
+    <!-- .NET 3.5 == NET35, .NET 4.0 == NET40 -->
+    <Framework Condition=" '$(Framework)' == '' ">NET40</Framework>
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{8AAB17E9-6976-4543-ADB4-F2690E316768}</ProjectGuid>
@@ -17,7 +20,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
+    <OutputPath>bin\Debug\$(Framework)</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -25,10 +28,18 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
+    <OutputPath>bin\Release\$(Framework)</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Framework)' == 'NET35' ">
+    <DefineConstants>NET35</DefineConstants>
+    <OutputPath>bin\$(Configuration)\$(Framework)</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Framework)' == 'NET40' ">
+    <DefineConstants>NET40</DefineConstants>
+    <OutputPath>bin\$(Configuration)\$(Framework)</OutputPath>
   </PropertyGroup>
   <PropertyGroup>
     <SignAssembly>true</SignAssembly>
@@ -36,6 +47,17 @@
   <PropertyGroup>
     <AssemblyOriginatorKeyFile>..\Metadata\IronSmarkets.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
+  <ItemGroup Condition=" '$(Framework)' == 'NET40' ">
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="log4net, Version=1.2.11.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a">
+      <HintPath>..\lib\log4net.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup Condition=" '$(Framework)' == 'NET35' ">
+    <Reference Include="log4net, Version=1.2.10.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a">
+      <HintPath>..\lib\net20\log4net.dll</HintPath>
+    </Reference>
+  </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -43,14 +65,10 @@
     <Reference Include="System.Web" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
     <Reference Include="protobuf-net, Version=1.0.0.282, Culture=neutral, PublicKeyToken=257b51d87d2e4d67">
       <HintPath>..\lib\protobuf-net.dll</HintPath>
-    </Reference>
-    <Reference Include="log4net, Version=1.2.11.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a">
-      <HintPath>..\lib\log4net.dll</HintPath>
     </Reference>
     <Reference Include="System.Configuration" />
   </ItemGroup>

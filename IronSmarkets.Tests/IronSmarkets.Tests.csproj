@@ -10,14 +10,25 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>IronSmarkets.Tests</RootNamespace>
     <AssemblyName>IronSmarkets.Tests</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
+  <Choose>
+    <When Condition=" '$(MSBuildToolsVersion)' == '4.0' And '$(Framework)' == '' ">
+      <PropertyGroup>
+        <Framework>NET40</Framework>
+      </PropertyGroup>
+    </When>
+    <When Condition=" '$(Framework)' == '' ">
+      <PropertyGroup>
+        <Framework>NET35</Framework>
+      </PropertyGroup>
+    </When>
+  </Choose>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
+    <OutputPath>bin\Debug\$(Framework)</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -25,7 +36,7 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
+    <OutputPath>bin\Release\$(Framework)</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -36,10 +47,36 @@
   <PropertyGroup>
     <AssemblyOriginatorKeyFile>..\Metadata\IronSmarkets.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
+  <Choose>
+    <When Condition=" '$(Framework)' == 'NET40' ">
+      <PropertyGroup>
+        <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+        <DefineConstants>NET40</DefineConstants>
+        <Framework>NET40</Framework>
+        <OutputPath>bin\$(Configuration)\$(Framework)</OutputPath>
+      </PropertyGroup>
+      <ItemGroup>
+        <Reference Include="Microsoft.CSharp" />
+        <Reference Include="log4net, Version=1.2.11.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a">
+          <HintPath>..\lib\log4net.dll</HintPath>
+        </Reference>
+      </ItemGroup>
+    </When>
+    <When Condition=" '$(Framework)' == 'NET35' ">
+      <PropertyGroup>
+        <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+        <DefineConstants>NET35</DefineConstants>
+        <Framework>NET35</Framework>
+        <OutputPath>bin\$(Configuration)\$(Framework)</OutputPath>
+      </PropertyGroup>
+      <ItemGroup>
+        <Reference Include="log4net, Version=1.2.10.0, Culture=neutral, PublicKeyToken=1b44e1d426115821">
+          <HintPath>..\lib\net20\log4net.dll</HintPath>
+        </Reference>
+      </ItemGroup>
+    </When>
+  </Choose>
   <ItemGroup>
-    <Reference Include="log4net">
-      <HintPath>..\lib\log4net.dll</HintPath>
-    </Reference>
     <Reference Include="Moq">
       <HintPath>..\lib\Moq.dll</HintPath>
     </Reference>
@@ -50,7 +87,6 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
     <Reference Include="xunit">

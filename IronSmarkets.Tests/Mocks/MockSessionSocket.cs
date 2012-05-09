@@ -21,7 +21,9 @@
 // SOFTWARE.
 
 using System;
+#if NET40
 using System.Collections.Concurrent;
+#endif
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -32,6 +34,9 @@ using ProtoBuf;
 using IronSmarkets.Exceptions;
 using IronSmarkets.Proto.Seto;
 using IronSmarkets.Sockets;
+#if NET35
+using IronSmarkets.System.Collections.Concurrent;
+#endif
 
 namespace IronSmarkets.Tests.Mocks
 {

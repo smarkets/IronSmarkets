@@ -35,8 +35,7 @@ namespace IronSmarkets.Sockets
 {
     internal sealed class SessionSocket : IDisposable, ISocket<Payload>
     {
-        private static readonly ILog Log = LogManager.GetLogger(
-            System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly ILog Log = LogManager.GetLogger(typeof(SessionSocket));
 
         private readonly ISocketSettings _settings;
         private readonly TcpClient _client = new TcpClient();

@@ -39,8 +39,7 @@ namespace IronSmarkets.ConsoleExample
 {
     public static class Program
     {
-        private static readonly ILog Log = LogManager.GetLogger(
-            System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly ILog Log = LogManager.GetLogger(typeof(Program));
 
         static bool ValidateServerCertificate(
             object sender,
@@ -109,13 +108,15 @@ namespace IronSmarkets.ConsoleExample
             builder.SetDateTime(DateTime.Today);
             var events = client.GetEvents(builder.GetResult()).Data;
             Log.Debug(string.Format("Got {0} events:", events.Count));
-            foreach (var output in events.Roots.SelectMany(x => GetEventStrings(x)))
+            foreach (var output in events.Roots.SelectMany(x => GetEventStrings(x, null, true)))
                 Log.Debug(output);
             return events;
         }
 
-        static IEnumerable<string> GetEventStrings(Event child, string indent = "", bool last = true)
+        static IEnumerable<string> GetEventStrings(Event child, string indent, bool last)
         {
+            if (indent == null)
+                indent = "";
             var sb = new StringBuilder(indent);
             if (last)
             {

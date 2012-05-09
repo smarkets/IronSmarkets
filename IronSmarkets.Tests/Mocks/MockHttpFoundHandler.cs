@@ -30,7 +30,11 @@ using ProtoBuf;
 
 namespace IronSmarkets.Tests.Mocks
 {
+#if NET40
     public interface IMockHttpDocument<out T>
+#else
+    public interface IMockHttpDocument<T>
+#endif
     {
         string Url { get; }
         T Payload { get; }
@@ -38,8 +42,7 @@ namespace IronSmarkets.Tests.Mocks
 
     public sealed class MockHttpFoundHandler<T> : IAsyncHttpFoundHandler<T>
     {
-        private static readonly ILog Log = LogManager.GetLogger(
-            System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly ILog Log = LogManager.GetLogger(typeof(MockHttpFoundHandler<T>));
 
         private ISmarketsClient _client;
 

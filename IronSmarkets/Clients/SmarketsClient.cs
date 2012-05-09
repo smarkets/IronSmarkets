@@ -29,6 +29,9 @@ using IronSmarkets.Exceptions;
 using IronSmarkets.Messages;
 using IronSmarkets.Sessions;
 using IronSmarkets.Sockets;
+#if NET35
+using IronSmarkets.System;
+#endif
 
 using PS = IronSmarkets.Proto.Seto;
 using PE = IronSmarkets.Proto.Eto;
@@ -113,10 +116,29 @@ namespace IronSmarkets.Clients
             _orderCancelRequestHandler = new OrderCancelRequestHandler(this);
         }
 
+        public static ISmarketsClient Create(IClientSettings settings)
+        {
+            return Create(settings, null, null);
+        }
+
         public static ISmarketsClient Create(
             IClientSettings settings,
-            ISession<PS.Payload> session = null,
-            IAsyncHttpFoundHandler<PS.Events> httpHandler = null)
+            ISession<PS.Payload> session)
+        {
+            return Create(settings, session, null);
+        }
+
+        public static ISmarketsClient Create(
+            IClientSettings settings,
+            IAsyncHttpFoundHandler<PS.Events> httpHandler)
+        {
+            return Create(settings, null, httpHandler);
+        }
+
+        public static ISmarketsClient Create(
+            IClientSettings settings,
+            ISession<PS.Payload> session,
+            IAsyncHttpFoundHandler<PS.Events> httpHandler)
         {
             if (session == null)
                 session = new SeqSession(

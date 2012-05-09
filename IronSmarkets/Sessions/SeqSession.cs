@@ -22,7 +22,11 @@
 
 using System;
 using System.Collections.Generic;
+#if NET40
 using System.Collections.Concurrent;
+#else
+using IronSmarkets.System.Collections.Concurrent;
+#endif
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
@@ -41,8 +45,7 @@ namespace IronSmarkets.Sessions
 {
     public sealed class SeqSession : IDisposable, ISession<Payload>
     {
-        private static readonly ILog Log = LogManager.GetLogger(
-            System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly ILog Log = LogManager.GetLogger(typeof(SeqSession));
 
         private readonly ISocket<Payload> _socket;
         private readonly ISessionSettings _settings;
@@ -232,7 +235,11 @@ namespace IronSmarkets.Sessions
             try
             {
                 if (Log.IsDebugEnabled) Log.Debug("Acquiring writer lock");
+#if NET40
                 Monitor.Enter(_writer, ref writerAcquired);
+#else
+                writerAcquired = Monitor.TryEnter(_writer);
+#endif
                 if (Log.IsDebugEnabled) Log.Debug("Writer lock acquired");
                 var seqs = new List<ulong>(_sendBuffer.Count);
                 if (Log.IsDebugEnabled) Log.Debug(
@@ -277,7 +284,11 @@ namespace IronSmarkets.Sessions
             try
             {
                 if (Log.IsDebugEnabled) Log.Debug("Acquiring reader lock");
+#if NET40
                 Monitor.Enter(_reader, ref readerAcquired);
+#else
+                readerAcquired = Monitor.TryEnter(_reader);
+#endif
                 if (Log.IsDebugEnabled) Log.Debug(
                     "Reading next payload from socket...");
                 var payload = _socket.Read();

@@ -26,6 +26,9 @@ using log4net;
 
 using IronSmarkets.Data;
 using IronSmarkets.Exceptions;
+#if NET35
+using IronSmarkets.System;
+#endif
 
 namespace IronSmarkets.Clients
 {
@@ -47,8 +50,7 @@ namespace IronSmarkets.Clients
             }
         }
 
-        private static readonly ILog Log = LogManager.GetLogger(
-            System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly ILog Log = LogManager.GetLogger(typeof(OrderCreateRequestHandler));
 
         public OrderCreateRequestHandler(ISmarketsClient client) : base(client)
         {

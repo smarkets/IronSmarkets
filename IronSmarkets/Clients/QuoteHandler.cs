@@ -25,6 +25,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 
 using IronSmarkets.Data;
+#if NET35
+using IronSmarkets.System;
+#endif
 
 using Seto = IronSmarkets.Proto.Seto;
 

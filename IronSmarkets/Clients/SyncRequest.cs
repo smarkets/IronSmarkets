@@ -158,7 +158,9 @@ namespace IronSmarkets.Clients
             {
                 if (disposing)
                 {
-                    _replied.Dispose();
+                    var disposable = _replied as IDisposable;
+                    if (disposable != null)
+                        disposable.Dispose();
                 }
 
                 _replied = null;

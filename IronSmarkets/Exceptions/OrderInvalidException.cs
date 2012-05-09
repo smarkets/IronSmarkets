@@ -69,7 +69,11 @@ namespace IronSmarkets.Exceptions
 
         internal static OrderInvalidException FromSeto(Proto.Seto.OrderInvalid seto)
         {
+#if NET40
             var msg = String.Join(", ", seto.Reasons.Select(x => Messages[x]));
+#else
+            var msg = String.Join(", ", seto.Reasons.Select(x => Messages[x]).ToArray());
+#endif
             return new OrderInvalidException(msg);
         }
 

@@ -1,3 +1,0 @@
-#!/bin/sh
-
-exec mono --verify-all bin/xunit.console.clr4.exe IronSmarkets.Tests/bin/Debug/IronSmarkets.Tests.dll /nunit NUnitTestResult.xml /silent

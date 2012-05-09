@@ -3,9 +3,6 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <!-- Modify the Framework default value for other versions of .NET/C# -->
-    <!-- .NET 3.5 == NET35, .NET 4.0 == NET40 -->
-    <Framework Condition=" '$(Framework)' == '' ">NET40</Framework>
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{8AAB17E9-6976-4543-ADB4-F2690E316768}</ProjectGuid>
@@ -13,9 +10,20 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>IronSmarkets</RootNamespace>
     <AssemblyName>IronSmarkets</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
+  <Choose>
+    <When Condition=" '$(Solutions.VSVersion)' == '10.0' And '$(Framework)' == '' ">
+      <PropertyGroup>
+        <Framework>NET40</Framework>
+      </PropertyGroup>
+    </When>
+    <When Condition=" '$(Framework)' == '' ">
+      <PropertyGroup>
+        <Framework>NET35</Framework>
+      </PropertyGroup>
+    </When>
+  </Choose>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
@@ -33,31 +41,41 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Framework)' == 'NET35' ">
-    <DefineConstants>NET35</DefineConstants>
-    <OutputPath>bin\$(Configuration)\$(Framework)</OutputPath>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Framework)' == 'NET40' ">
-    <DefineConstants>NET40</DefineConstants>
-    <OutputPath>bin\$(Configuration)\$(Framework)</OutputPath>
-  </PropertyGroup>
   <PropertyGroup>
     <SignAssembly>true</SignAssembly>
   </PropertyGroup>
   <PropertyGroup>
     <AssemblyOriginatorKeyFile>..\Metadata\IronSmarkets.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(Framework)' == 'NET40' ">
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="log4net, Version=1.2.11.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a">
-      <HintPath>..\lib\log4net.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-  <ItemGroup Condition=" '$(Framework)' == 'NET35' ">
-    <Reference Include="log4net, Version=1.2.10.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a">
-      <HintPath>..\lib\net20\log4net.dll</HintPath>
-    </Reference>
-  </ItemGroup>
+  <Choose>
+    <When Condition=" '$(Framework)' == 'NET40' ">
+      <PropertyGroup>
+        <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+        <DefineConstants>NET40</DefineConstants>
+        <Framework>NET40</Framework>
+        <OutputPath>bin\$(Configuration)\$(Framework)</OutputPath>
+      </PropertyGroup>
+      <ItemGroup>
+        <Reference Include="Microsoft.CSharp" />
+        <Reference Include="log4net, Version=1.2.11.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a">
+          <HintPath>..\lib\log4net.dll</HintPath>
+        </Reference>
+      </ItemGroup>
+    </When>
+    <When Condition=" '$(Framework)' == 'NET35' ">
+      <PropertyGroup>
+        <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+        <DefineConstants>NET35</DefineConstants>
+        <Framework>NET35</Framework>
+        <OutputPath>bin\$(Configuration)\$(Framework)</OutputPath>
+      </PropertyGroup>
+      <ItemGroup>
+        <Reference Include="log4net, Version=1.2.10.0, Culture=neutral, PublicKeyToken=1b44e1d426115821">
+          <HintPath>..\lib\net20\log4net.dll</HintPath>
+        </Reference>
+      </ItemGroup>
+    </When>
+  </Choose>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />

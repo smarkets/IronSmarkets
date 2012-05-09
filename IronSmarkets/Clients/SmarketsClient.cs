@@ -29,6 +29,9 @@ using IronSmarkets.Exceptions;
 using IronSmarkets.Messages;
 using IronSmarkets.Sessions;
 using IronSmarkets.Sockets;
+#if NET35
+using IronSmarkets.System;
+#endif
 
 using PS = IronSmarkets.Proto.Seto;
 using PE = IronSmarkets.Proto.Eto;

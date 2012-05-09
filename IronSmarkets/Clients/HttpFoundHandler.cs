@@ -29,6 +29,9 @@ using log4net;
 using ProtoBuf;
 
 using IronSmarkets.Exceptions;
+#if NET35
+using IronSmarkets.System;
+#endif
 
 namespace IronSmarkets.Clients
 {

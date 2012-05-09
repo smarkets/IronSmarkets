@@ -27,6 +27,9 @@ using log4net;
 
 using IronSmarkets.Data;
 using IronSmarkets.Exceptions;
+#if NET35
+using IronSmarkets.System;
+#endif
 
 namespace IronSmarkets.Clients
 {

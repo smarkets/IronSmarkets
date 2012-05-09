@@ -78,16 +78,18 @@ namespace IronSmarkets.Clients
                     {
                         _requestsByOrder.Remove(uid);
                         _requestsBySeq.Remove(holder.Item1);
+                        return holder.Item3;
                     }
-                    return holder.Item3;
+                    break;
                 case Proto.Seto.PayloadType.PAYLOADORDERCANCELREJECTED:
                     // Use seq to find request
                     if (_requestsBySeq.TryGetValue(payload.OrderCancelRejected.Seq, out holder))
                     {
                         _requestsBySeq.Remove(payload.OrderCancelRejected.Seq);
                         _requestsByOrder.Remove(holder.Item2);
+                        return holder.Item3;
                     }
-                    return holder.Item3;
+                    break;
             }
 
             return null;

@@ -24,7 +24,11 @@ using System;
 
 namespace IronSmarkets.Clients
 {
+#if NET40
     public interface ISyncRequest<in T>
+#else
+    public interface ISyncRequest<T>
+#endif
     {
         void SetResponse(ISmarketsClient client, T response);
         void SetException(Exception exception);

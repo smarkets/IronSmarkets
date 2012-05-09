@@ -42,10 +42,16 @@ namespace IronSmarkets.Clients
         public ISocketSettings SocketSettings { get { return _socketSettings; } }
         public ISessionSettings SessionSettings { get { return _sessionSettings; } }
 
+        public ClientSettings(ISocketSettings socketSettings,
+                              ISessionSettings sessionSettings)
+            : this(socketSettings, sessionSettings, 60000)
+        {
+        }
+
         public ClientSettings(
             ISocketSettings socketSettings,
             ISessionSettings sessionSettings,
-            int httpRequestTimeout = 60000)
+            int httpRequestTimeout)
         {
             _socketSettings = socketSettings;
             _sessionSettings = sessionSettings;

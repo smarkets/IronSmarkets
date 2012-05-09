@@ -27,5 +27,12 @@ distclean: clean
 	git clean -f -x -d
 
 .PHONY: test
-test: all
-	mono --verify-all bin/xunit.console.clr4.exe IronSmarkets.Tests/bin/Debug/IronSmarkets.Tests.dll /nunit NUnitTestResult.xml /silent
+test: test35 test40
+
+.PHONY: test40
+test40: net40
+	mono --verify-all bin/xunit.console.clr4.exe IronSmarkets.Tests/bin/Debug/NET40/IronSmarkets.Tests.dll /nunit NUnitTestResult.xml /silent
+
+.PHONY: test35
+test35: net35
+	mono --verify-all bin/xunit.console.clr4.exe IronSmarkets.Tests/bin/Debug/NET35/IronSmarkets.Tests.dll /nunit NUnitTestResult.xml /silent

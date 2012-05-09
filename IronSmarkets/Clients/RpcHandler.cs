@@ -36,8 +36,7 @@ namespace IronSmarkets.Clients
 
     internal abstract class RpcHandler<TPayload, TResponse, TState> : IRpcHandler<TResponse, TState>
     {
-        private static readonly ILog Log = LogManager.GetLogger(
-            System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly ILog Log = LogManager.GetLogger(typeof(RpcHandler<TPayload, TResponse, TState>));
 
         private readonly object _lock = new object();
 

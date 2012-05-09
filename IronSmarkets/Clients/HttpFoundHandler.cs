@@ -44,8 +44,7 @@ namespace IronSmarkets.Clients
 
     internal sealed class HttpFoundHandler<T> : IAsyncHttpFoundHandler<T>
     {
-        private static readonly ILog Log = LogManager.GetLogger(
-            System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly ILog Log = LogManager.GetLogger(typeof(HttpFoundHandler<T>));
 
         private readonly int _timeout;
 

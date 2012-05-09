@@ -47,8 +47,7 @@ namespace IronSmarkets.Clients
             }
         }
 
-        private static readonly ILog Log = LogManager.GetLogger(
-            System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly ILog Log = LogManager.GetLogger(typeof(OrderCreateRequestHandler));
 
         public OrderCreateRequestHandler(ISmarketsClient client) : base(client)
         {

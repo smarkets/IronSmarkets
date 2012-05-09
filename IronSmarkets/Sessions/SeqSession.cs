@@ -41,8 +41,7 @@ namespace IronSmarkets.Sessions
 {
     public sealed class SeqSession : IDisposable, ISession<Payload>
     {
-        private static readonly ILog Log = LogManager.GetLogger(
-            System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly ILog Log = LogManager.GetLogger(typeof(SeqSession));
 
         private readonly ISocket<Payload> _socket;
         private readonly ISessionSettings _settings;

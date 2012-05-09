@@ -32,8 +32,7 @@ namespace IronSmarkets.Clients
 {
     internal sealed class Receiver<T> where T : Proto.Seto.IPayload
     {
-        private static readonly ILog Log = LogManager.GetLogger(
-            System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly ILog Log = LogManager.GetLogger(typeof(Receiver<T>));
 
         private readonly Thread _loop;
         private readonly ISession<T> _session;

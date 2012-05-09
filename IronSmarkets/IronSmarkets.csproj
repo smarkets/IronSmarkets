@@ -13,7 +13,7 @@
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
   <Choose>
-    <When Condition=" '$(Solutions.VSVersion)' == '10.0' And '$(Framework)' == '' ">
+    <When Condition=" '$(MSBuildToolsVersion)' == '4.0' And '$(Framework)' == '' ">
       <PropertyGroup>
         <Framework>NET40</Framework>
       </PropertyGroup>
@@ -73,6 +73,11 @@
         <Reference Include="log4net, Version=1.2.10.0, Culture=neutral, PublicKeyToken=1b44e1d426115821">
           <HintPath>..\lib\net20\log4net.dll</HintPath>
         </Reference>
+        <Compile Include="System\Tuples.cs" />
+        <Compile Include="System\Collections\IStructuralComparable.cs" />
+        <Compile Include="System\Collections\IStructuralEquatable.cs" />
+        <Compile Include="System\Collections\Concurrent\ConcurrentQueue.cs" />
+        <Compile Include="System\Collections\Concurrent\IProducerConsumerCollection.cs" />
       </ItemGroup>
     </When>
   </Choose>

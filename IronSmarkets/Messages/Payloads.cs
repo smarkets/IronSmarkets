@@ -222,7 +222,7 @@ namespace IronSmarkets.Messages
             };
         }
 
-        public static Payload OrdersForAccount()
+        public static Payload OrdersForAccountRequest()
         {
             return new Payload {
                 Type = PayloadType.PAYLOADORDERSFORACCOUNTREQUEST,
@@ -230,7 +230,7 @@ namespace IronSmarkets.Messages
             };
         }
 
-        public static Payload OrdersForMarket(Uid market)
+        public static Payload OrdersForMarketRequest(Uid market)
         {
             return new Payload {
                 Type = PayloadType.PAYLOADORDERSFORMARKETREQUEST,

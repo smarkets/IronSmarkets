@@ -448,7 +448,7 @@ namespace IronSmarkets.Clients
                     + "which would result in a deadlock");
 
             return _ordersForAccountRequestHandler.BeginRequest(
-                Payloads.OrdersForAccount(), _orderMap);
+                Payloads.OrdersForAccountRequest(), _orderMap);
         }
 
         public IResponse<IOrderMap> GetOrdersByMarket(Uid market)
@@ -464,7 +464,7 @@ namespace IronSmarkets.Clients
                     + "which would result in a deadlock");
 
             return _ordersForMarketRequestHandler.BeginRequest(
-                Payloads.OrdersForMarket(market), _orderMap);
+                Payloads.OrdersForMarketRequest(market), _orderMap);
         }
 
         public IResponse<OrderCancelledReason> CancelOrder(Order order)

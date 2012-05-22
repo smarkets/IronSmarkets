@@ -131,6 +131,19 @@ namespace IronSmarkets.Data
                 new Quantity(quantityType, state.QuantityFilled));
         }
 
+        internal Proto.Seto.OrderState ToSeto()
+        {
+            return new Proto.Seto.OrderState {
+                CreatedMicroseconds = _created,
+                Order = _uid.ToUuid128(),
+                Quantity = _quantity.Raw,
+                QuantityType = _quantity.SetoType,
+                QuantityFilled = _quantityFilled.Raw,
+                Status = OrderStatuses[_status],
+                Type = OrderCreateTypes[_type]
+            };
+        }
+
         internal static Proto.Seto.OrderCreateType FromOrderCreateType(OrderCreateType type)
         {
             return OrderCreateTypes[type];

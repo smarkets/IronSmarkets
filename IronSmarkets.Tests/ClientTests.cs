@@ -231,12 +231,12 @@ namespace IronSmarkets.Tests
 
             var session = new SeqSession(socket, SessionSettings);
             IClientSettings mockSettings = new ClientSettings(SocketSettings, SessionSettings);
-            ManualResetEvent waiter = new ManualResetEvent(false);
+            var waiter = new ManualResetEvent(false);
             using (var client = SmarketsClient.Create(mockSettings, session))
             {
                 client.Login();
                 client.AddPayloadHandler(
-                    (payload) => {
+                    payload => {
                         Assert.Throws<ReceiverDeadlockException>(() => client.Ping());
                         waiter.Set();
                         return true;

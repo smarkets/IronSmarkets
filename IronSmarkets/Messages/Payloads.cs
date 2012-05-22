@@ -238,6 +238,23 @@ namespace IronSmarkets.Messages
         public static Payload OrdersForAccount(IEnumerable<Data.Order> orders)
         {
             var ordersForAccount = new OrdersForAccount();
+            ordersForAccount.Markets.AddRange(OrdersForMarketInternal(orders));
+            return new Payload {
+                Type = PayloadType.PAYLOADORDERSFORACCOUNT,
+                OrdersForAccount = ordersForAccount
+            };
+        }
+
+        public static Payload OrdersForMarket(IEnumerable<Data.Order> orders)
+        {
+            return new Payload {
+                Type = PayloadType.PAYLOADORDERSFORMARKET,
+                OrdersForMarket = OrdersForMarketInternal(orders).First()
+            };
+        }
+
+        private static IEnumerable<OrdersForMarket> OrdersForMarketInternal(IEnumerable<Data.Order> orders)
+        {
             OrdersForMarket ordersForMarket = null;
             OrdersForContract ordersForContract = null;
             OrdersForPrice ordersForPrice = null;
@@ -251,7 +268,7 @@ namespace IronSmarkets.Messages
                         Market = order.Market.ToUuid128(),
                         PriceType = order.Price.SetoType
                     };
-                    ordersForAccount.Markets.Add(ordersForMarket);
+                    yield return ordersForMarket;
                 }
 
                 if (ordersForContract == null || order.Contract != prevOrder.Contract)
@@ -274,11 +291,6 @@ namespace IronSmarkets.Messages
                 ordersForPrice.Orders.Add(order.State.ToSeto());
                 prevOrder = order;
             }
-
-            return new Payload {
-                Type = PayloadType.PAYLOADORDERSFORACCOUNT,
-                OrdersForAccount = ordersForAccount
-            };
         }
 
         public static Payload OrdersForMarketRequest(Uid market)

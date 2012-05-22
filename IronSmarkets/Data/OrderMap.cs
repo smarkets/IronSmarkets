@@ -93,7 +93,10 @@ namespace IronSmarkets.Data
 
         internal void Add(Order order)
         {
-            Inner[order.Uid] = order;
+            if (Inner.ContainsKey(order.Uid))
+                Inner[order.Uid].Update(order);
+            else
+                Inner[order.Uid] = order;
         }
     }
 }

@@ -20,10 +20,15 @@
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+using System;
 using System.Collections.Generic;
+using System.Linq;
 
 using IronSmarkets.Data;
 using IronSmarkets.Proto.Seto;
+#if NET35
+using IronSmarkets.System;
+#endif
 
 using Eto = IronSmarkets.Proto.Eto;
 
@@ -227,6 +232,52 @@ namespace IronSmarkets.Messages
             return new Payload {
                 Type = PayloadType.PAYLOADORDERSFORACCOUNTREQUEST,
                 OrdersForAccountRequest = new OrdersForAccountRequest()
+            };
+        }
+
+        public static Payload OrdersForAccount(IEnumerable<Data.Order> orders)
+        {
+            var ordersForAccount = new OrdersForAccount();
+            OrdersForMarket ordersForMarket = null;
+            OrdersForContract ordersForContract = null;
+            OrdersForPrice ordersForPrice = null;
+            Data.Order prevOrder = null;
+
+            foreach (var order in orders.OrderBy(x => new Tuple<Uid, Uid, Data.Side, Price>(x.Market, x.Contract, x.Side, x.Price)))
+            {
+                if (ordersForMarket == null || order.Market != prevOrder.Market)
+                {
+                    ordersForMarket = new OrdersForMarket {
+                        Market = order.Market.ToUuid128(),
+                        PriceType = order.Price.SetoType
+                    };
+                    ordersForAccount.Markets.Add(ordersForMarket);
+                }
+
+                if (ordersForContract == null || order.Contract != prevOrder.Contract)
+                {
+                    ordersForContract = new OrdersForContract { Contract = order.Contract.ToUuid128() };
+                    ordersForMarket.Contracts.Add(ordersForContract);
+                }
+
+                if (ordersForPrice == null
+                    || order.Price != prevOrder.Price
+                    || order.Side != prevOrder.Side)
+                {
+                    ordersForPrice = new OrdersForPrice { Price = order.Price.Raw };
+                    if (order.Side == Data.Side.Buy)
+                        ordersForContract.Bids.Add(ordersForPrice);
+                    if (order.Side == Data.Side.Sell)
+                        ordersForContract.Offers.Add(ordersForPrice);
+                }
+
+                ordersForPrice.Orders.Add(order.State.ToSeto());
+                prevOrder = order;
+            }
+
+            return new Payload {
+                Type = PayloadType.PAYLOADORDERSFORACCOUNT,
+                OrdersForAccount = ordersForAccount
             };
         }
 

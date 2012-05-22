@@ -55,8 +55,8 @@ namespace IronSmarkets.Data
             {
                 { Proto.Seto.OrderCreateType.ORDERCREATELIMIT, OrderCreateType.Limit }
             };
-        private static readonly IDictionary<Proto.Seto.OrderStatus, OrderStatus> OrderStatuses =
-            new Dictionary<Proto.Seto.OrderStatus, OrderStatus>
+        private static readonly BiDictionary<Proto.Seto.OrderStatus, OrderStatus> OrderStatuses =
+            new BiDictionary<Proto.Seto.OrderStatus, OrderStatus>
             {
                 { Proto.Seto.OrderStatus.ORDERSTATUSLIVE, OrderStatus.Live },
                 { Proto.Seto.OrderStatus.ORDERSTATUSPARTIALLYFILLED, OrderStatus.PartiallyFilled },

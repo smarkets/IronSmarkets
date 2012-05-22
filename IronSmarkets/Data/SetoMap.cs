@@ -77,5 +77,18 @@ namespace IronSmarkets.Data
             var utc = dateTime.ToUniversalTime();
             return (ulong)((utc.Ticks - SinceGregorian) / 10);
         }
+
+        public abstract class Sides
+        {
+            public static Proto.Seto.Side ToSeto(Side side)
+            {
+                return side == Side.Buy ? Proto.Seto.Side.SIDEBUY : Proto.Seto.Side.SIDESELL;
+            }
+
+            public static Side FromSeto(Proto.Seto.Side side)
+            {
+                return side == Proto.Seto.Side.SIDEBUY ? Side.Buy : Side.Sell;
+            }
+        }
     }
 }

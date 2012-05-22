@@ -87,7 +87,7 @@ namespace IronSmarkets.Data
                 OrderState.FromSeto(state),
                 Uid.FromUuid128(market),
                 Uid.FromUuid128(contract),
-                Side.FromSeto(side));
+                SetoMap.Sides.FromSeto(side));
         }
     }
 }

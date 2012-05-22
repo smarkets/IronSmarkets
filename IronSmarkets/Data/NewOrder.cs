@@ -39,7 +39,7 @@ namespace IronSmarkets.Data
                 Type = OrderState.FromOrderCreateType(Type),
                     Market = Market.ToUuid128(),
                     Contract = Contract.ToUuid128(),
-                    Side = Side.ToSeto(),
+                    Side = SetoMap.Sides.ToSeto(Side),
                     QuantityType = Quantity.SetoType,
                     Quantity = Quantity.Raw,
                     PriceType = Price.SetoType,

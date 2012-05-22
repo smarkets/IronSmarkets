@@ -24,62 +24,9 @@ using System;
 
 namespace IronSmarkets.Data
 {
-    public struct Side : IEquatable<Side>
+    public enum Side
     {
-        public static readonly Side Buy  = new Side("buy");
-        public static readonly Side Sell = new Side("sell");
-
-        private readonly string _side;
-
-        private Side(string side)
-        {
-            _side = side;
-        }
-
-        public override int GetHashCode()
-        {
-            return _side.GetHashCode();
-        }
-
-        public override bool Equals(object right)
-        {
-            if (ReferenceEquals(right, null))
-                return false;
-
-            if (GetType() != right.GetType())
-                return false;
-
-            return Equals((Side)right);
-        }
-
-        public bool Equals(Side other)
-        {
-            return _side == other._side;
-        }
-
-        public override string ToString()
-        {
-            return _side;
-        }
-
-        internal Proto.Seto.Side ToSeto()
-        {
-            return _side == "buy" ? Proto.Seto.Side.SIDEBUY : Proto.Seto.Side.SIDESELL;
-        }
-
-        internal static Side FromSeto(Proto.Seto.Side side)
-        {
-            return side == Proto.Seto.Side.SIDEBUY ? Buy : Sell;
-        }
-
-        public static bool operator==(Side left, Side right)
-        {
-            return left.Equals(right);
-        }
-
-        public static bool operator!=(Side left, Side right)
-        {
-            return !left.Equals(right);
-        }
+        Buy,
+        Sell
     }
 }

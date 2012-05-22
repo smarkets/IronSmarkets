@@ -252,5 +252,97 @@ namespace IronSmarkets.System
             return String.Format ("({0}, {1}, {2})", item1, item2, item3);
         }
     }
-}
 
+    [Serializable]
+    public class Tuple<T1, T2, T3, T4> : IStructuralEquatable, IStructuralComparable, IComparable
+    {
+        T1 item1;
+        T2 item2;
+        T3 item3;
+        T4 item4;
+
+        public Tuple (T1 item1, T2 item2, T3 item3, T4 item4)
+        {
+            this.item1 = item1;
+            this.item2 = item2;
+            this.item3 = item3;
+            this.item4 = item4;
+        }
+
+        public T1 Item1 {
+            get { return item1; }
+        }
+
+        public T2 Item2 {
+            get { return item2; }
+        }
+
+        public T3 Item3 {
+            get { return item3; }
+        }
+
+        public T4 Item4 {
+            get { return item4; }
+        }
+
+        int IComparable.CompareTo (object obj)
+        {
+            return ((IStructuralComparable) this).CompareTo (obj, Comparer<object>.Default);
+        }
+
+        int IStructuralComparable.CompareTo (object other, IComparer comparer)
+        {
+            var t = other as Tuple<T1, T2, T3, T4>;
+            if (t == null) {
+                if (other == null) return 1;
+                throw new ArgumentException ();
+            }
+
+            int res = comparer.Compare (item1, t.item1);
+            if (res != 0) return res;
+            res = comparer.Compare (item2, t.item2);
+            if (res != 0) return res;
+            res = comparer.Compare (item3, t.item3);
+            if (res != 0) return res;
+            return comparer.Compare (item4, t.item4);
+        }
+
+        public override bool Equals (object obj)
+        {
+            return ((IStructuralEquatable) this).Equals (obj, EqualityComparer<object>.Default);
+        }
+
+        bool IStructuralEquatable.Equals (object other, IEqualityComparer comparer)
+        {
+            var t = other as Tuple<T1, T2, T3, T4>;
+            if (t == null) {
+                if (other == null) return false;
+                throw new ArgumentException ();
+            }
+
+            return comparer.Equals (item1, t.item1) &&
+                comparer.Equals (item2, t.item2) &&
+                comparer.Equals (item3, t.item3) &&
+                comparer.Equals (item4, t.item4);
+        }
+
+        public override int GetHashCode ()
+        {
+            return ((IStructuralEquatable) this).GetHashCode (EqualityComparer<object>.Default);
+        }
+
+        int IStructuralEquatable.GetHashCode (IEqualityComparer comparer)
+        {
+            int h = comparer.GetHashCode (item1);
+            h = (h << 5) - h + comparer.GetHashCode (item2);
+            h = (h << 5) - h + comparer.GetHashCode (item3);
+            h = (h << 5) - h + comparer.GetHashCode (item4);
+            return h;
+        }
+
+        public override string ToString ()
+        {
+            return String.Format ("({0}, {1}, {2}, {3})", item1, item2, item3, item4);
+        }
+    }
+}

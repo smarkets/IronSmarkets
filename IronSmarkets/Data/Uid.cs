@@ -21,6 +21,9 @@
 // SOFTWARE.
 
 using System;
+#if NET40
+using System.Diagnostics.Contracts;
+#endif
 using System.Globalization;
 
 using IronSmarkets.Proto.Seto;
@@ -74,6 +77,9 @@ namespace IronSmarkets.Data
             return _low.ToString("X").ToLower();
         }
 
+#if NET40
+        [Pure]
+#endif
         public Uuid128 ToUuid128()
         {
             if (_high > 0)

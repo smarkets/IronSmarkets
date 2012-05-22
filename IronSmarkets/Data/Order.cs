@@ -67,6 +67,12 @@ namespace IronSmarkets.Data
             OnStateUpdated();
         }
 
+        internal void Update(Order updated)
+        {
+            State.Update(updated.State);
+            OnStateUpdated();
+        }
+
         private void OnStateUpdated()
         {
             var ev = StateUpdated;

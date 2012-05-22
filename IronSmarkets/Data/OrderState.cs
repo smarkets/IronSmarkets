@@ -119,6 +119,13 @@ namespace IronSmarkets.Data
             _status = _quantityFilled.Raw == 0 ? OrderStatus.Cancelled : OrderStatus.PartiallyCancelled;
         }
 
+        internal void Update(OrderState updated)
+        {
+            _status = updated.Status;
+            _quantityFilled = updated.QuantityFilled;
+            _cancelReason = updated.CancelReason;
+        }
+
         internal static OrderState FromSeto(Proto.Seto.OrderState state)
         {
             var quantityType = Quantity.QuantityTypeFromSeto(state.QuantityType);

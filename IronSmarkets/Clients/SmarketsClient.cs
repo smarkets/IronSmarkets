@@ -44,6 +44,7 @@ namespace IronSmarkets.Clients
         IPayloadEndpoint<PS.Payload>,
         IQuoteSink
     {
+        string SessionId { get; }
         bool IsDisposed { get; }
 
         ulong Login();
@@ -98,6 +99,8 @@ namespace IronSmarkets.Clients
             ISession<PS.Payload> session,
             IAsyncHttpFoundHandler<PS.Events> httpHandler)
         {
+            if (session == null)
+                throw new ArgumentNullException("session cannot be null");
             _session = session;
             _session.PayloadReceived += (sender, args) =>
                 OnPayloadReceived(args.Payload);
@@ -151,6 +154,14 @@ namespace IronSmarkets.Clients
             var client = new SmarketsClient(session, httpHandler);
             httpHandler.SetClient(client);
             return client;
+        }
+
+        public string SessionId
+        {
+            get
+            {
+                return _session.SessionId;
+            }
         }
 
         public bool IsDisposed

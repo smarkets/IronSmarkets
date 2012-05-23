@@ -166,6 +166,7 @@
     <Compile Include="Data\SetoMap.cs" />
     <Compile Include="Data\Side.cs" />
     <Compile Include="Data\Uid.cs" />
+    <Compile Include="Data\UpdatableDictionary.cs" />
     <Compile Include="Events\IPayloadEvents.cs" />
     <Compile Include="Exceptions\ConnectionException.cs" />
     <Compile Include="Exceptions\InvalidEventQueryException.cs" />

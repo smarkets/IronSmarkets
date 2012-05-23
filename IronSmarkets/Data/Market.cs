@@ -26,7 +26,7 @@ using IronSmarkets.Clients;
 
 namespace IronSmarkets.Data
 {
-    public class Market
+    public class Market : IUpdatable<Market>
     {
         private readonly MarketInfo _info;
         private readonly Event _parent;
@@ -38,7 +38,8 @@ namespace IronSmarkets.Data
         public MarketInfo Info { get { return _info; } }
         public MarketQuotes Quotes { get { return _quotes; } }
 
-        public EventHandler<QuotesUpdatedEventArgs<MarketQuotes>> MarketQuotesUpdated;
+        public event EventHandler<QuotesUpdatedEventArgs<MarketQuotes>> MarketQuotesUpdated;
+        public event EventHandler<EventArgs> Updated;
 
         private Market(MarketInfo info, Event parent)
         {
@@ -64,6 +65,11 @@ namespace IronSmarkets.Data
             _sink = null;
         }
 
+        void IUpdatable<Market>.Update(Market source)
+        {
+            OnUpdated();
+        }
+
         internal void OnMarketQuotesReceived(object sender, QuotesReceivedEventArgs<Proto.Seto.MarketQuotes> e)
         {
             _quotes = MarketQuotes.FromSeto(e.Payload);
@@ -85,6 +91,13 @@ namespace IronSmarkets.Data
             var market = new Market(MarketInfo.FromSeto(info), parent);
             client.ContractMap.MergeFromContracts(client, info.Contracts, market);
             return market;
+        }
+
+        private void OnUpdated()
+        {
+            var ev = Updated;
+            if (ev != null)
+                ev(this, new EventArgs());
         }
     }
 }

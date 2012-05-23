@@ -32,10 +32,20 @@ namespace IronSmarkets.Data
         void Merge(IEnumerable<KeyValuePair<Uid, Order>> orders);
     }
 
-    internal sealed class OrderMap : ReadOnlyDictionaryWrapper<Uid, Order>, IOrderMap
+    internal sealed class OrderMap : Dictionary<Uid, Order>, IOrderMap
     {
         public OrderMap() : base(new Dictionary<Uid, Order>())
         {
+        }
+
+        ICollection<Uid> IReadOnlyMap<Uid, Order>.Keys
+        {
+            get { return Keys; }
+        }
+
+        ICollection<Order> IReadOnlyMap<Uid, Order>.Values
+        {
+            get { return Values; }
         }
 
         public void Merge(IEnumerable<KeyValuePair<Uid, Order>> orders)
@@ -91,12 +101,33 @@ namespace IronSmarkets.Data
             orders.Orders.ForAll(x => Add(Order.FromSeto(x, priceType, orders.Price, market, contract, side)));
         }
 
+        private void Add(KeyValuePair<Uid, Order> obj)
+        {
+            Add(obj.Value);
+        }
+
         internal void Add(Order order)
         {
-            if (Inner.ContainsKey(order.Uid))
-                Inner[order.Uid].Update(order);
+            if (ContainsKey(order.Uid))
+            {
+                var dest = this[order.Uid] as IUpdatable<Order>;
+                if (dest != null)
+                    dest.Update(order);
+            }
             else
-                Inner[order.Uid] = order;
+            {
+                this[order.Uid] = order;
+            }
+        }
+
+        bool IReadOnlyMap<Uid, Order>.Contains(KeyValuePair<Uid, Order> item)
+        {
+            return ((ICollection<KeyValuePair<Uid, Order>>) this).Contains(item);
+        }
+
+        void IReadOnlyMap<Uid, Order>.CopyTo(KeyValuePair<Uid, Order>[] array, int arrayIndex)
+        {
+            ((ICollection<KeyValuePair<Uid, Order>>) this).CopyTo(array, arrayIndex);
         }
     }
 }

@@ -34,7 +34,7 @@ namespace IronSmarkets.Data
         IEnumerable<Event> Roots { get; }
     }
 
-    internal class EventMap : ReadOnlyDictionaryWrapper<Uid, Event>, IEventMap
+    internal class EventMap : UpdatableDictionary<Uid, Event>, IEventMap
     {
         private IList<Event> _roots;
 
@@ -57,9 +57,7 @@ namespace IronSmarkets.Data
 
         public EventMap MergeFromSeto(ISmarketsClient client, Proto.Seto.Events setoEvents)
         {
-            // XXX: This kind of breaks the encapsulation of a read-only
-            // dictionary
-            Inner.MergeLeft(FromSeto(client, setoEvents));
+            MergeLeft(FromSeto(client, setoEvents));
             _roots = null;
             return this;
         }

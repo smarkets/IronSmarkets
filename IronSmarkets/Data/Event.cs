@@ -20,13 +20,14 @@
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+using System;
 using System.Collections.Generic;
 
 using IronSmarkets.Clients;
 
 namespace IronSmarkets.Data
 {
-    public class Event
+    public class Event : IUpdatable<Event>
     {
         private EventInfo _info;
         private readonly List<Event> _children =
@@ -34,6 +35,8 @@ namespace IronSmarkets.Data
 
         public EventInfo Info { get { return _info; } }
         public ICollection<Event> Children { get { return _children.AsReadOnly(); } }
+
+        public event EventHandler<EventArgs> Updated;
 
         // Optional
         public Event Parent { get; set; }
@@ -49,6 +52,12 @@ namespace IronSmarkets.Data
             _children.Add(child);
         }
 
+        void IUpdatable<Event>.Update(Event source)
+        {
+            UpdateInfo(source.Info);
+            OnUpdated();
+        }
+
         internal void UpdateInfo(EventInfo info)
         {
             _info = info;
@@ -59,6 +68,13 @@ namespace IronSmarkets.Data
             var newEvent = new Event(EventInfo.FromSeto(info));
             client.MarketMap.MergeFromMarkets(client, info.Markets, newEvent);
             return newEvent;
+        }
+
+        private void OnUpdated()
+        {
+            var ev = Updated;
+            if (ev != null)
+                ev(this, new EventArgs());
         }
     }
 }

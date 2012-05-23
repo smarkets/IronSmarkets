@@ -24,7 +24,7 @@ using System;
 
 namespace IronSmarkets.Data
 {
-    public class Order
+    public class Order : IUpdatable<Order>
     {
         public Uid Uid { get { return State.Uid; } }
         public Price Price { get; private set; }
@@ -33,7 +33,7 @@ namespace IronSmarkets.Data
         public Uid Contract { get; private set; }
         public Side Side { get; private set; }
 
-        public EventHandler<EventArgs> StateUpdated;
+        public event EventHandler<EventArgs> Updated;
 
         public bool Cancellable
         {
@@ -58,24 +58,24 @@ namespace IronSmarkets.Data
         internal void Update(Proto.Seto.OrderExecuted message)
         {
             State.Update(message);
-            OnStateUpdated();
+            OnUpdated();
         }
 
         internal void Update(Proto.Seto.OrderCancelled message)
         {
             State.Update(message);
-            OnStateUpdated();
+            OnUpdated();
         }
 
-        internal void Update(Order updated)
+        void IUpdatable<Order>.Update(Order updated)
         {
             State.Update(updated.State);
-            OnStateUpdated();
+            OnUpdated();
         }
 
-        private void OnStateUpdated()
+        private void OnUpdated()
         {
-            var ev = StateUpdated;
+            var ev = Updated;
             if (ev != null)
                 ev(this, new EventArgs());
         }

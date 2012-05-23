@@ -21,6 +21,7 @@
 // SOFTWARE.
 
 using System.Collections.Generic;
+using System.Linq;
 
 namespace IronSmarkets.Data
 {
@@ -41,7 +42,7 @@ namespace IronSmarkets.Data
         private readonly string _slug;
         private readonly string _name;
         private readonly string _shortname;
-        private readonly IEnumerable<KeyValuePair<Uid, string>> _entities;
+        private readonly List<KeyValuePair<Uid, string>> _entities;
 
         public Uid Uid { get { return _uid; } }
         public string Type { get { return _type; } }
@@ -63,7 +64,13 @@ namespace IronSmarkets.Data
             _slug = slug;
             _name = name;
             _shortname = shortname;
-            _entities = entities;
+            _entities = entities.ToList();
+        }
+
+        internal void Update(ContractInfo info)
+        {
+            _entities.Clear();
+            _entities.AddRange(info.Entities);
         }
 
         internal static ContractInfo FromSeto(Proto.Seto.ContractInfo info)

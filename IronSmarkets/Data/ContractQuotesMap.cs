@@ -24,15 +24,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-using IronSmarkets.Extensions;
-
 namespace IronSmarkets.Data
 {
     public interface IContractQuotesMap : IReadOnlyMap<Uid, ContractQuotes>
     {
     }
 
-    internal class ContractQuotesMap : ReadOnlyDictionaryWrapper<Uid, ContractQuotes>, IContractQuotesMap
+    internal class ContractQuotesMap : Dictionary<Uid, ContractQuotes>, IContractQuotesMap
     {
         private readonly PriceType _priceType;
         private readonly QuantityType _quantityType;
@@ -44,6 +42,16 @@ namespace IronSmarkets.Data
         {
             _priceType = priceType;
             _quantityType = quantityType;
+        }
+
+        ICollection<Uid> IReadOnlyMap<Uid, ContractQuotes>.Keys
+        {
+            get { return Keys; }
+        }
+
+        ICollection<ContractQuotes> IReadOnlyMap<Uid, ContractQuotes>.Values
+        {
+            get { return Values; }
         }
 
         internal static ContractQuotesMap FromSeto(
@@ -66,13 +74,23 @@ namespace IronSmarkets.Data
 
         public void Add(Uid uid)
         {
-            if (Inner.ContainsKey(uid))
+            if (ContainsKey(uid))
             {
                 throw new ArgumentException(
                     string.Format(
                         "Uid {0} already exists in map", uid));
             }
-            Inner[uid] = ContractQuotes.Empty(uid, _priceType, _quantityType);
+            this[uid] = ContractQuotes.Empty(uid, _priceType, _quantityType);
+        }
+
+        bool IReadOnlyMap<Uid, ContractQuotes>.Contains(KeyValuePair<Uid, ContractQuotes> item)
+        {
+            return ((ICollection<KeyValuePair<Uid, ContractQuotes>>) this).Contains(item);
+        }
+
+        void IReadOnlyMap<Uid, ContractQuotes>.CopyTo(KeyValuePair<Uid, ContractQuotes>[] array, int arrayIndex)
+        {
+            ((ICollection<KeyValuePair<Uid, ContractQuotes>>) this).CopyTo(array, arrayIndex);
         }
     }
 }

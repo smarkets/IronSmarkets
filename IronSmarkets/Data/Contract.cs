@@ -26,13 +26,16 @@ using IronSmarkets.Clients;
 
 namespace IronSmarkets.Data
 {
-    public class Contract
+    public class Contract : IUpdatable<Contract>
     {
         private readonly ContractInfo _info;
         private readonly Market _parent;
 
         public ContractInfo Info { get { return _info; } }
         public Market Parent { get { return _parent; } }
+
+        public event EventHandler<QuotesUpdatedEventArgs<ContractQuotes>> ContractQuotesUpdated;
+        public event EventHandler<EventArgs> Updated;
 
         public ContractQuotes Quotes
         {
@@ -41,8 +44,6 @@ namespace IronSmarkets.Data
                 return Parent.Quotes.GetContract(_info.Uid);
             }
         }
-
-        public EventHandler<QuotesUpdatedEventArgs<ContractQuotes>> ContractQuotesUpdated;
 
         private Contract(ContractInfo info, Market parent)
         {
@@ -66,6 +67,19 @@ namespace IronSmarkets.Data
         internal static Contract FromSeto(Proto.Seto.ContractInfo setoInfo, Market parent)
         {
             return new Contract(ContractInfo.FromSeto(setoInfo), parent);
+        }
+
+        void IUpdatable<Contract>.Update(Contract contract)
+        {
+            Info.Update(contract.Info);
+            OnUpdated();
+        }
+
+        private void OnUpdated()
+        {
+            var ev = Updated;
+            if (ev != null)
+                ev(this, new EventArgs());
         }
     }
 }

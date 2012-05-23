@@ -24,7 +24,6 @@ using System.Collections.Generic;
 using System.Linq;
 
 using IronSmarkets.Clients;
-using IronSmarkets.Extensions;
 
 namespace IronSmarkets.Data
 {
@@ -36,7 +35,7 @@ namespace IronSmarkets.Data
             Market market);
     }
 
-    internal class ContractMap : ReadOnlyDictionaryWrapper<Uid, Contract>, IContractMap
+    internal class ContractMap : UpdatableDictionary<Uid, Contract>, IContractMap
     {
         public ContractMap() : base(new Dictionary<Uid, Contract>())
         {
@@ -48,10 +47,7 @@ namespace IronSmarkets.Data
             Market market)
         {
             var contracts = from c in setoContracts select Contract.FromSeto(c, market);
-            foreach (var contract in contracts)
-            {
-                Inner[contract.Info.Uid] = contract;
-            }
+            MergeLeft(contracts.ToDictionary(x => x.Info.Uid));
         }
     }
 }

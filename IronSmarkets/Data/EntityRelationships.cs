@@ -46,12 +46,12 @@ namespace IronSmarkets.Data
                 { EntityRelationshipType.ENTITYRELATIONSHIPAWAYTEAM, "away-team" }
             };
 
-        public static IEnumerable<KeyValuePair<Uid, string>> FromEntities(IEnumerable<EntityRelationship> entities)
+        public static List<KeyValuePair<Uid, string>> FromEntities(IEnumerable<EntityRelationship> entities)
         {
             return entities.Select(
                 entity => new KeyValuePair<Uid, string>(
                     Uid.FromUuid128(entity.Entity),
-                    EntityRelationshipStrings[entity.Relationship]));
+                    EntityRelationshipStrings[entity.Relationship])).ToList();
         }
     }
 }

@@ -20,6 +20,7 @@
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+using System;
 using System.Collections.Generic;
 
 using Xunit;
@@ -67,6 +68,58 @@ namespace IronSmarkets.Tests
                 "ffffffffffffffff0000000000000000"
             };
             tests.ForAll(x => Assert.Equal(Uid.Parse(x).ToString(), x));
+        }
+
+        [Fact]
+        public void SlugTest()
+        {
+            var uid1 = new Uid(340, 2034);
+            var uid2 = new Uid(3408723498, 20347893249);
+            Assert.Equal(uid1.ToSlug(UidTag.Account), "a-1fn9i4uf0qcq7sjlq9");
+            Assert.Equal(uid2.ToSlug(UidTag.Account), "a-8k9z998uxzp3343bc0ongh");
+            UidTag tag;
+            var uid3 = Uid.ParseSlug("1fn9i4uf0qcq7sjlq9", out tag);
+            Assert.Equal(uid3, uid1);
+            Assert.Equal(UidTag.Account, tag);
+            var uid4 = Uid.ParseSlug("a-8k9z998uxzp3343bc0ongh", out tag);
+            Assert.Equal(uid4, uid2);
+            Assert.Equal(UidTag.Account, tag);
+            Assert.Throws<ArgumentException>(() => Uid.ParseSlug("c-8k9z998uxzp3343bc0ongh", out tag));
+            Assert.Throws<ArgumentException>(() => Uid.ParseSlug("a", out tag));
+            Assert.Throws<ArgumentException>(() => Uid.ParseSlug("", out tag));
+            Assert.Throws<ArgumentNullException>(() => Uid.ParseSlug(null, out tag));
+        }
+
+        [Fact]
+        public void HexTest()
+        {
+            var uid1 = new Uid(3408723498, 20347893249);
+            const string uid1Hex = "0000cb2cfe2a00000004bcd43601acc1";
+            var uid2 = new Uid(1);
+            const string uid2Hex = "0000000000000000000000000001acc1";
+            Assert.Equal(uid1.ToHex(UidTag.Account), uid1Hex);
+            Assert.Equal(uid2.ToHex(UidTag.Account), uid2Hex);
+            UidTag tag;
+            var uid3 = Uid.ParseHex(uid1Hex, out tag);
+            Assert.Equal(uid1, uid3);
+            Assert.Equal(tag, UidTag.Account);
+            var uid4 = Uid.ParseHex(uid2Hex, out tag);
+            Assert.Equal(uid2, uid4);
+            Assert.Equal(tag, UidTag.Account);
+            Assert.Throws<ArgumentException>(() => Uid.ParseHex("ffacc2", out tag));
+            Assert.Throws<ArgumentException>(() => Uid.ParseHex("ggacc1", out tag));
+            Assert.Throws<ArgumentException>(() => Uid.ParseHex("", out tag));
+            Assert.Throws<ArgumentNullException>(() => Uid.ParseHex(null, out tag));
+        }
+
+        [Fact]
+        public void HexTagsAreZeroPadded()
+        {
+            new[] {
+                UidTag.Account, UidTag.ContractGroup, UidTag.Contract, UidTag.Order,
+                UidTag.Comment, UidTag.Entity, UidTag.Event, UidTag.Session, UidTag.User,
+                UidTag.Referrer
+            }.ForAll(tag => Assert.Equal(4, tag.HexString.Length));
         }
     }
 }

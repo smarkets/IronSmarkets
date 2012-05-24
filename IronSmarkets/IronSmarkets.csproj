@@ -57,6 +57,7 @@
       </PropertyGroup>
       <ItemGroup>
         <Reference Include="Microsoft.CSharp" />
+        <Reference Include="System.Numerics" />
         <Reference Include="log4net, Version=1.2.11.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a">
           <HintPath>..\lib\log4net.dll</HintPath>
         </Reference>
@@ -80,6 +81,7 @@
         <Compile Include="System\Collections\Concurrent\BlockingCollection.cs" />
         <Compile Include="System\Collections\Concurrent\ConcurrentQueue.cs" />
         <Compile Include="System\Collections\Concurrent\IProducerConsumerCollection.cs" />
+        <Compile Include="System\Numerics\BigInteger.cs" />
         <Compile Include="System\Threading\AtomicBoolean.cs" />
         <Compile Include="System\Threading\CancellationToken.cs" />
         <Compile Include="System\Threading\CancellationTokenRegistration.cs" />
@@ -93,17 +95,17 @@
   </Choose>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Web" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq" />
     <Reference Include="protobuf-net, Version=1.0.0.282, Culture=neutral, PublicKeyToken=257b51d87d2e4d67">
       <HintPath>..\lib\protobuf-net.dll</HintPath>
     </Reference>
-    <Reference Include="System.Configuration" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\Metadata\VersionInfo.cs">

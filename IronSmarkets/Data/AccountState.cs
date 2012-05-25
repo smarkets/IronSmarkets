@@ -39,7 +39,7 @@ namespace IronSmarkets.Data
         public decimal Cash { get { return _cash; } }
         public decimal Bonus { get { return _bonus; } }
         public decimal Exposure { get { return _exposure; } }
-        public decimal Available { get { return _cash - _exposure; } }
+        public decimal Available { get { return _cash + _exposure; } }
 
         private AccountState(
             Uid uid,

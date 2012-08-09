@@ -26,6 +26,8 @@ using System.Collections.Generic;
 using System.Runtime.Serialization;
 using System.Security.Permissions;
 
+using IronSmarkets.Extensions;
+
 namespace IronSmarkets.Exceptions
 {
     [Serializable]
@@ -86,7 +88,7 @@ namespace IronSmarkets.Exceptions
 
         internal static OrderRejectedException FromSeto(Proto.Seto.OrderRejected seto)
         {
-            return new OrderRejectedException(Messages[seto.Reason]);
+            return new OrderRejectedException(Messages.GetValueOrDefault(seto.Reason, "Unknown"));
         }
     }
 }

@@ -1,3 +1,7 @@
+# Important note
+
+**This project is out of date and will not work with current API specification.** There are no plans to update it before the API is made public.
+
 # IronSmarkets
 
 .NET API client for Smarkets.
